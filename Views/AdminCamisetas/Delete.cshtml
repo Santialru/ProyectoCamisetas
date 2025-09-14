@@ -1,0 +1,20 @@
+@model ProyectoCamisetas.Models.Camiseta
+@{
+    ViewData["Title"] = "Eliminar Camiseta";
+}
+
+<h1>Eliminar</h1>
+<p>¿Seguro que deseas eliminar la camiseta <strong>@Model.Equipo - @Model.Temporada (@Model.Tipo)</strong>?</p>
+
+<dl class="row">
+    <dt class="col-sm-3">Nombre</dt><dd class="col-sm-9">@Model.Nombre</dd>
+    <dt class="col-sm-3">SKU</dt><dd class="col-sm-9">@Model.SKU</dd>
+</dl>
+
+<form asp-action="Delete" method="post">
+    <input type="hidden" asp-for="Id" />
+    @Html.AntiForgeryToken()
+    <button class="btn btn-danger" type="submit">Eliminar</button>
+    <a class="btn btn-secondary" asp-action="Index">Cancelar</a>
+</form>
+

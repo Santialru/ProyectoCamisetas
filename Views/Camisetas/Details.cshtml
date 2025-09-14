@@ -1,0 +1,54 @@
+@model ProyectoCamisetas.Models.Camiseta
+@{
+    ViewData["Title"] = @Model.Nombre;
+    var fotos = (Model.Imagenes?.OrderBy(x => x.Orden).Select(x => x.Url).ToList() ?? new List<string>());
+    if (!fotos.Any() && !string.IsNullOrWhiteSpace(Model.ImagenUrl)) { fotos.Add(Model.ImagenUrl!); }
+}
+
+<h1>@Model.Equipo - @Model.Temporada (@Model.Tipo)</h1>
+<p><strong>@Model.Nombre</strong></p>
+
+<div class="row g-3">
+    <div class="col-md-6">
+        @if (fotos.Count <= 1)
+        {
+            <img src="@fotos.FirstOrDefault()" alt="@Model.Nombre" class="jersey-detail border rounded" />
+        }
+        else
+        {
+            var cid = $"carouselCamiseta_{Model.Id}";
+            <div id="@cid" class="carousel slide">
+                <div class="carousel-inner">
+                    @for (int i = 0; i < fotos.Count; i++)
+                    {
+                        <div class="carousel-item @(i == 0 ? "active" : null)">
+                            <img src="@fotos[i]" class="jersey-detail border rounded" alt="img @i" />
+                        </div>
+                    }
+                </div>
+                <button class="carousel-control-prev" type="button" data-bs-target="#@cid" data-bs-slide="prev">
+                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                    <span class="visually-hidden">Anterior</span>
+                </button>
+                <button class="carousel-control-next" type="button" data-bs-target="#@cid" data-bs-slide="next">
+                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                    <span class="visually-hidden">Siguiente</span>
+                </button>
+            </div>
+        }
+    </div>
+    <div class="col-md-6">
+        <dl class="row">
+            <dt class="col-sm-4">Liga</dt><dd class="col-sm-8">@Model.Liga</dd>
+            <dt class="col-sm-4">Marca</dt><dd class="col-sm-8">@Model.Marca</dd>
+            <dt class="col-sm-4">Versión</dt><dd class="col-sm-8">@Model.Version</dd>
+            <dt class="col-sm-4">Colores</dt><dd class="col-sm-8">@Model.ColorPrincipal @if(!string.IsNullOrEmpty(Model.ColorSecundario)){<text>/ @Model.ColorSecundario</text>}</dd>
+            <dt class="col-sm-4">Material</dt><dd class="col-sm-8">@Model.Material</dd>
+            <dt class="col-sm-4">Precio</dt><dd class="col-sm-8">@Model.Precio.ToString("C")</dd>
+            <dt class="col-sm-4">Stock</dt><dd class="col-sm-8">@(Model.EnStock ? "Disponible" : "Encargala!")</dd>
+            <dt class="col-sm-4">SKU</dt><dd class="col-sm-8">@Model.SKU</dd>
+        </dl>
+        <p>@Model.Descripcion</p>
+    </div>
+
+<a class="btn btn-secondary mt-3" asp-action="Index">Volver</a>

@@ -1,0 +1,146 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Clasico del Gol</title>
+    <meta name="description" content="Clasico del Gol - Catálogo de camisetas de fútbol, ediciones únicas y clásicas. Síguenos en Instagram: &#64;clasicodelgol.tuc" />
+    <meta property="og:title" content="Clasico del Gol" />
+    <meta property="og:description" content="Catálogo de camisetas de fútbol. Descubre ediciones únicas y clásicas." />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="/" />
+    <meta property="og:image" content="/img/logo.jpg" />
+    <link rel="icon" type="image/jpeg" href="~/img/logo.jpg" />
+    <script type="importmap"></script>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/ProyectoCamisetas.styles.css" asp-append-version="true" />
+</head>
+<body>
+    <header>
+        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-dark bg-navbar border-bottom box-shadow mb-3">
+            <div class="container-fluid">
+                <a class="navbar-brand d-flex align-items-center gap-2" asp-area="" asp-controller="Home" asp-action="Index">
+                    <img src="~/img/logo.jpg" alt="Logo Clasico del Gol" class="brand-logo" />
+                    <span class="brand-name">Clasico del Gol</span>
+                </a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
+                        aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
+                    <ul class="navbar-nav flex-grow-1">
+                        <li class="nav-item">
+                            <a class="nav-link text-light" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
+                        </li>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle text-light" href="#" id="catalogoDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">Catálogo</a>
+                            <div class="dropdown-menu p-3 mega-dropdown" aria-labelledby="catalogoDropdown">
+                                <div class="row g-3">
+                                    <div class="col-12 col-md-4">
+                                        <h6 class="dropdown-header px-0">Clubes</h6>
+                                        <a class="dropdown-item" asp-controller="Camisetas" asp-action="Index" asp-route-q="River">River</a>
+                                        <a class="dropdown-item" asp-controller="Camisetas" asp-action="Index" asp-route-q="Boca">Boca</a>
+                                        <a class="dropdown-item" asp-controller="Camisetas" asp-action="Index" asp-route-q="Barcelona">Barcelona</a>
+                                        <a class="dropdown-item" asp-controller="Camisetas" asp-action="Index" asp-route-q="Real Madrid">Real Madrid</a>
+                                        <a class="dropdown-item" asp-controller="Camisetas" asp-action="Index" asp-route-q="Chelsea">Chelsea</a>
+                                        <a class="dropdown-item" asp-controller="Camisetas" asp-action="Index" asp-route-q="Manchester United">Manchester United</a>
+                                    </div>
+                                    <div class="col-12 col-md-4">
+                                        <h6 class="dropdown-header px-0">Selecciones</h6>
+                                        <a class="dropdown-item" asp-controller="Camisetas" asp-action="Index" asp-route-q="Argentina">Argentina</a>
+                                        <a class="dropdown-item" asp-controller="Camisetas" asp-action="Index" asp-route-q="Brasil">Brasil</a>
+                                        <a class="dropdown-item" asp-controller="Camisetas" asp-action="Index" asp-route-q="España">España</a>
+                                        <a class="dropdown-item" asp-controller="Camisetas" asp-action="Index" asp-route-q="Portugal">Portugal</a>
+                                        <a class="dropdown-item" asp-controller="Camisetas" asp-action="Index" asp-route-q="Francia">Francia</a>
+                                    </div>
+                                    <div class="col-12 col-md-4">
+                                        <h6 class="dropdown-header px-0">Ligas</h6>
+                                        <a class="dropdown-item" asp-controller="Camisetas" asp-action="Index" asp-route-q="La Liga">La Liga</a>
+                                        <a class="dropdown-item" asp-controller="Camisetas" asp-action="Index" asp-route-q="Premier League">Premier League</a>
+                                        <a class="dropdown-item" asp-controller="Camisetas" asp-action="Index" asp-route-q="Serie A">Serie A</a>
+                                        <a class="dropdown-item" asp-controller="Camisetas" asp-action="Index" asp-route-q="Bundesliga">Bundesliga</a>
+                                        <a class="dropdown-item" asp-controller="Camisetas" asp-action="Index" asp-route-q="Ligue 1">Ligue 1</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </li>
+                        @if (User?.Identity?.IsAuthenticated ?? false)
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link text-light" asp-controller="AdminCamisetas" asp-action="Index">Admin</a>
+                            </li>
+                        }
+                    </ul>
+                    <form class="d-flex nav-search me-3" method="get" asp-controller="Camisetas" asp-action="Index" role="search">
+                        <input class="form-control me-2" type="search" name="q" placeholder="Buscar camisetas..." aria-label="Buscar" value="@Context.Request.Query["q"]">
+                        <button class="btn btn-outline-primary" type="submit">Buscar</button>
+                    </form>
+                    <ul class="navbar-nav ms-auto">
+                        <li class="nav-item d-flex align-items-center me-2">
+                            <a class="nav-link d-flex align-items-center" href="https://www.instagram.com/clasicodelgol.tuc/" target="_blank" rel="noopener" title="Instagram">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 1.366.062 2.633.35 3.608 1.325.975.975 1.263 2.242 1.325 3.608.058 1.266.07 1.646.07 4.85s-.012 3.584-.07 4.85c-.062 1.366-.35 2.633-1.325 3.608-.975.975-2.242 1.263-3.608 1.325-1.266.058-1.646.07-4.85.07s-3.584-.012-4.85-.07c-1.366-.062-2.633-.35-3.608-1.325-.975-.975-1.263-2.242-1.325-3.608C2.175 15.584 2.163 15.204 2.163 12s.012-3.584.07-4.85c.062-1.366.35-2.633 1.325-3.608.975-.975 2.242-1.263 3.608-1.325C8.416 2.175 8.796 2.163 12 2.163zm0 1.837c-3.16 0-3.527.012-4.772.069-1.049.048-1.618.223-1.996.372-.503.195-.862.427-1.239.804-.377.377-.609.736-.804 1.239-.149.378-.324.947-.372 1.996-.057 1.245-.069 1.612-.069 4.772s.012 3.527.069 4.772c.048 1.049.223 1.618.372 1.996.195.503.427.862.804 1.239.377.377.736.609 1.239.804.378.149.947.324 1.996.372 1.245.057 1.612.069 4.772.069s3.527-.012 4.772-.069c1.049-.048 1.618-.223 1.996-.372.503-.195.862-.427 1.239-.804.377-.377.609-.736.804-1.239.149-.378.324-.947.372-1.996.057-1.245.069-1.612.069-4.772s-.012-3.527-.069-4.772c-.048-1.049-.223-1.618-.372-1.996-.195-.503-.427-.862-.804-1.239-.377-.377-.736-.609-1.239-.804-.378-.149-.947-.324-1.996-.372-1.245-.057-1.612-.069-4.772-.069zm0 3.89a5.11 5.11 0 1 1 0 10.22 5.11 5.11 0 0 1 0-10.22zm0 1.837a3.273 3.273 0 1 0 0 6.546 3.273 3.273 0 0 0 0-6.546zM17.338 5.5a1.2 1.2 0 1 1 0 2.4 1.2 1.2 0 0 1 0-2.4z"/></svg>
+                                <span class="ms-1 d-none d-md-inline">&#64;clasicodelgol.tuc</span>
+                            </a>
+                        </li>
+                        @if (User?.Identity?.IsAuthenticated ?? false)
+                        {
+                            
+                            <li class="nav-item">
+                                <form method="post" asp-controller="User" asp-action="Logout" class="d-inline">
+                                    <button type="submit" class="btn btn-link nav-link">Salir</button>
+                                    @Html.AntiForgeryToken()
+                                </form>
+                            </li>
+                        }
+                        else
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link text-light" asp-controller="User" asp-action="Login">Owner Login</a>
+                            </li>
+                        }
+                    </ul>
+                </div>
+            </div>
+        </nav>
+    </header>
+    <div class="container">
+        <main role="main" class="pb-3">
+            @RenderBody()
+        </main>
+    </div>
+
+    <footer class="border-top footer text-muted">
+        <div class="container">
+            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                <span>&copy; 2025 - Clasico del Gol</span>
+                <a href="https://www.instagram.com/clasicodelgol.tuc/" target="_blank" rel="noopener" class="text-decoration-none">
+                    Síguenos en Instagram &#64;clasicodelgol.tuc
+                </a>
+            </div>
+        </div>
+    </footer>
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+
+    <a class="ig-fab" href="https://www.instagram.com/clasicodelgol.tuc/" target="_blank" rel="noopener" title="Instagram &#64;clasicodelgol.tuc">
+        <svg viewBox="0 0 24 24" width="26" height="26" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
+            <defs>
+                <linearGradient id="igGrad" x1="0%" y1="100%" x2="100%" y2="0%">
+                    <stop offset="0%" stop-color="#f58529"/>
+                    <stop offset="35%" stop-color="#feda75"/>
+                    <stop offset="60%" stop-color="#dd2a7b"/>
+                    <stop offset="80%" stop-color="#8134af"/>
+                    <stop offset="100%" stop-color="#515BD4"/>
+                </linearGradient>
+            </defs>
+            <rect x="1" y="1" width="22" height="22" rx="5" fill="url(#igGrad)"/>
+            <rect x="4.5" y="4.5" width="15" height="15" rx="4" fill="none" stroke="#ffffff" stroke-width="2"/>
+            <circle cx="12" cy="12" r="4" fill="none" stroke="#ffffff" stroke-width="2"/>
+            <circle cx="17" cy="7" r="1.2" fill="#ffffff"/>
+        </svg>
+    </a>
+</body>
+</html>

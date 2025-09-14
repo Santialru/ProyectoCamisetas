@@ -1,0 +1,51 @@
+@model IEnumerable<ProyectoCamisetas.Models.Camiseta>
+@{
+    ViewData["Title"] = "Camisetas";
+}
+
+<section class="hero-football mb-4">
+    <div class="hero-content">
+        <h1>Descubre nuestras camisetas</h1>
+        <p>Clásicas, actuales y ediciones limitadas</p>
+        <a class="btn btn-light btn-lg" asp-controller="Camisetas" asp-action="Index">Ver catálogo</a>
+    </div>
+ </section>
+
+<section class="showcase mb-4">
+    <div class="d-flex justify-content-between align-items-end mb-2">
+        <h2 class="m-0">Productos</h2>
+        <a class="link-light small" asp-controller="Camisetas" asp-action="Index">Ver todo</a>
+    </div>
+    <div class="showcase-track">
+        @foreach (var c in Model)
+        {
+            var thumb = c.Imagenes?.OrderBy(x => x.Orden).FirstOrDefault()?.Url ?? c.ImagenUrl;
+            var count = c.Imagenes?.Count ?? 0;
+            if (count == 0 && !string.IsNullOrWhiteSpace(thumb)) { count = 1; }
+            <a class="product-card" asp-controller="Camisetas" asp-action="Details" asp-route-id="@c.Id">
+                <div class="product-image" style="background-image:url('@thumb')">
+                    @if (count > 0)
+                    {
+                        <span class="photo-badge">@count fotos</span>
+                    }
+                </div>
+                <div class="product-info">
+                    <div class="product-top">
+                        <span class="badge @(c.EsEdicionLimitada ? "bg-warning text-dark" : "bg-success")">@(c.EnStock ? "En stock" : "Encargala!")</span>
+                        @if (c.EsEdicionLimitada) { <span class="badge bg-danger ms-1">Edición limitada</span> }
+                    </div>
+                    <h3>@c.Equipo <small class="text-muted">@c.Temporada</small></h3>
+                    <p class="text-truncate m-0">@c.Nombre</p>
+                    <div class="product-foot">
+                        <span class="price">@c.Precio.ToString("C")</span>
+                        <span class="cta">Ver</span>
+                    </div>
+                </div>
+            </a>
+        }
+    </div>
+    @if (!Model.Any())
+    {
+        <div class="text-center text-muted py-4">No hay camisetas disponibles por ahora.</div>
+    }
+ </section>

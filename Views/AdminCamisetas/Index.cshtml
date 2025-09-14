@@ -1,0 +1,43 @@
+@model IEnumerable<ProyectoCamisetas.Models.Camiseta>
+@{
+    ViewData["Title"] = "Administrar Camisetas";
+}
+
+<h1>Administración de Camisetas</h1>
+
+<p>
+    <a class="btn btn-primary" asp-action="Create">Nueva Camiseta</a>
+    <a class="btn btn-outline-secondary" asp-controller="Camisetas" asp-action="Index">Ver Catálogo</a>
+  </p>
+
+<table class="table table-dark table-hover">
+    <thead>
+        <tr>
+            <th>Equipo</th>
+            <th>Temporada</th>
+            <th>Tipo</th>
+            <th>Nombre</th>
+            <th>SKU</th>
+            <th>Precio</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+    @foreach (var item in Model)
+    {
+        <tr>
+            <td>@item.Equipo</td>
+            <td>@item.Temporada</td>
+            <td>@item.Tipo</td>
+            <td>@item.Nombre</td>
+            <td>@item.SKU</td>
+            <td>@item.Precio.ToString("C")</td>
+            <td class="text-nowrap">
+                <a class="btn btn-sm btn-outline-info" asp-action="Details" asp-route-id="@item.Id">Ver</a>
+                <a class="btn btn-sm btn-outline-warning" asp-action="Edit" asp-route-id="@item.Id">Editar</a>
+                <a class="btn btn-sm btn-outline-danger" asp-action="Delete" asp-route-id="@item.Id">Eliminar</a>
+            </td>
+        </tr>
+    }
+    </tbody>
+ </table>

@@ -1,0 +1,111 @@
+@model ProyectoCamisetas.Models.Camiseta
+<div class="row g-3">
+    <div class="col-md-6">
+        <label asp-for="Nombre" class="form-label"></label>
+        <input asp-for="Nombre" class="form-control" />
+        <span asp-validation-for="Nombre" class="text-danger"></span>
+    </div>
+    <div class="col-md-6">
+        <label asp-for="Equipo" class="form-label"></label>
+        <input asp-for="Equipo" class="form-control" />
+        <span asp-validation-for="Equipo" class="text-danger"></span>
+    </div>
+    <div class="col-md-4">
+        <label asp-for="Liga" class="form-label"></label>
+        <input asp-for="Liga" class="form-control" />
+        <span asp-validation-for="Liga" class="text-danger"></span>
+    </div>
+    <div class="col-md-4">
+        <label asp-for="Temporada" class="form-label"></label>
+        <input asp-for="Temporada" class="form-control" />
+        <span asp-validation-for="Temporada" class="text-danger"></span>
+    </div>
+    <div class="col-md-4">
+        <label asp-for="Version" class="form-label"></label>
+        <select asp-for="Version" asp-items="ViewBag.Versiones" class="form-select"></select>
+    </div>
+    <div class="col-md-4">
+        <label asp-for="Tipo" class="form-label"></label>
+        <select asp-for="Tipo" asp-items="ViewBag.Tipos" class="form-select"></select>
+    </div>
+    <div class="col-md-4">
+        <label asp-for="Talla" class="form-label"></label>
+        <select asp-for="Talla" asp-items="ViewBag.Tallas" class="form-select"></select>
+    </div>
+    <div class="col-md-4">
+        <label asp-for="Manga" class="form-label"></label>
+        <select asp-for="Manga" asp-items="ViewBag.Mangas" class="form-select"></select>
+    </div>
+    <div class="col-md-4">
+        <label asp-for="Marca" class="form-label"></label>
+        <input asp-for="Marca" class="form-control" />
+        <span asp-validation-for="Marca" class="text-danger"></span>
+    </div>
+    <div class="col-md-4">
+        <label asp-for="Patrocinador" class="form-label"></label>
+        <input asp-for="Patrocinador" class="form-control" />
+    </div>
+    <div class="col-md-4">
+        <label asp-for="Material" class="form-label"></label>
+        <input asp-for="Material" class="form-control" />
+        <span asp-validation-for="Material" class="text-danger"></span>
+    </div>
+    <div class="col-md-3">
+        <label asp-for="ColorPrincipal" class="form-label"></label>
+        <input asp-for="ColorPrincipal" class="form-control" />
+        <span asp-validation-for="ColorPrincipal" class="text-danger"></span>
+    </div>
+    <div class="col-md-3">
+        <label asp-for="ColorSecundario" class="form-label"></label>
+        <input asp-for="ColorSecundario" class="form-control" />
+    </div>
+    <div class="col-md-3">
+        <label asp-for="Precio" class="form-label"></label>
+        <input asp-for="Precio" class="form-control" />
+        <span asp-validation-for="Precio" class="text-danger"></span>
+    </div>
+    <div class="col-md-3">
+        <label asp-for="Stock" class="form-label"></label>
+        <input asp-for="Stock" class="form-control" />
+        <span asp-validation-for="Stock" class="text-danger"></span>
+    </div>
+    <div class="col-md-4">
+        <label asp-for="SKU" class="form-label"></label>
+        <input asp-for="SKU" class="form-control" />
+        <span asp-validation-for="SKU" class="text-danger"></span>
+    </div>
+    <div class="col-md-4">
+        <label asp-for="FechaLanzamiento" class="form-label"></label>
+        <input asp-for="FechaLanzamiento" type="date" class="form-control" />
+    </div>
+    <div class="col-md-4">
+        <label asp-for="TipoCuello" class="form-label"></label>
+        <input asp-for="TipoCuello" class="form-control" />
+    </div>
+    <div class="col-md-4">
+        <label asp-for="Jugador" class="form-label"></label>
+        <input asp-for="Jugador" class="form-control" />
+    </div>
+    <div class="col-md-2">
+        <label asp-for="Numero" class="form-label"></label>
+        <input asp-for="Numero" class="form-control" />
+    </div>
+    <!-- Imagen principal ya no se ingresa por URL -->
+    <input type="hidden" asp-for="ImagenUrl" />
+    <div class="col-12">
+        <label asp-for="Descripcion" class="form-label"></label>
+        <textarea asp-for="Descripcion" rows="3" class="form-control"></textarea>
+    </div>
+    <div class="col-md-4 form-check">
+        <input asp-for="EsEdicionLimitada" class="form-check-input" />
+        <label asp-for="EsEdicionLimitada" class="form-check-label"></label>
+    </div>
+    <div class="col-md-4 form-check">
+        <input asp-for="EsPersonalizada" class="form-check-input" />
+        <label asp-for="EsPersonalizada" class="form-check-label"></label>
+    </div>
+    <div class="col-md-4">
+        <label asp-for="CodigoBarras" class="form-label"></label>
+        <input asp-for="CodigoBarras" class="form-control" />
+    </div>
+</div>

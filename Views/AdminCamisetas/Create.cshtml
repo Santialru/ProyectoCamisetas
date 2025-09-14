@@ -1,0 +1,215 @@
+@model ProyectoCamisetas.Models.Camiseta
+@{
+    ViewData["Title"] = "Nueva Camiseta";
+}
+
+<h1>Nueva Camiseta</h1>
+
+<form asp-action="Create" method="post">
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+    <div class="row g-3">
+        <div class="col-md-6">
+            <label asp-for="Nombre" class="form-label"></label>
+            <input asp-for="Nombre" class="form-control" />
+            <span asp-validation-for="Nombre" class="text-danger"></span>
+        </div>
+        <div class="col-md-6">
+            <label asp-for="Equipo" class="form-label"></label>
+            <input asp-for="Equipo" class="form-control" />
+            <span asp-validation-for="Equipo" class="text-danger"></span>
+        </div>
+        <div class="col-md-4">
+            <label asp-for="Liga" class="form-label"></label>
+            <input asp-for="Liga" class="form-control" />
+            <span asp-validation-for="Liga" class="text-danger"></span>
+        </div>
+        <div class="col-md-4">
+            <label asp-for="Temporada" class="form-label"></label>
+            <input asp-for="Temporada" class="form-control" placeholder="2024/25" />
+            <span asp-validation-for="Temporada" class="text-danger"></span>
+        </div>
+        <div class="col-md-4">
+            <label asp-for="Version" class="form-label"></label>
+            <select asp-for="Version" asp-items="ViewBag.Versiones" class="form-select"></select>
+        </div>
+        <div class="col-md-4">
+            <label asp-for="Tipo" class="form-label"></label>
+            <select asp-for="Tipo" asp-items="ViewBag.Tipos" class="form-select"></select>
+        </div>
+        <div class="col-md-4">
+            <label asp-for="Talla" class="form-label"></label>
+            <select asp-for="Talla" asp-items="ViewBag.Tallas" class="form-select"></select>
+        </div>
+        <div class="col-md-4">
+            <label asp-for="Manga" class="form-label"></label>
+            <select asp-for="Manga" asp-items="ViewBag.Mangas" class="form-select"></select>
+        </div>
+        <div class="col-md-4">
+            <label asp-for="Marca" class="form-label"></label>
+            <input asp-for="Marca" class="form-control" />
+            <span asp-validation-for="Marca" class="text-danger"></span>
+        </div>
+        <div class="col-md-4">
+            <label asp-for="Patrocinador" class="form-label"></label>
+            <input asp-for="Patrocinador" class="form-control" />
+        </div>
+        <div class="col-md-4">
+            <label asp-for="Material" class="form-label"></label>
+            <input asp-for="Material" class="form-control" />
+            <span asp-validation-for="Material" class="text-danger"></span>
+        </div>
+        <div class="col-md-3">
+            <label asp-for="ColorPrincipal" class="form-label"></label>
+            <input asp-for="ColorPrincipal" class="form-control" />
+            <span asp-validation-for="ColorPrincipal" class="text-danger"></span>
+        </div>
+        <div class="col-md-3">
+            <label asp-for="ColorSecundario" class="form-label"></label>
+            <input asp-for="ColorSecundario" class="form-control" />
+        </div>
+        <div class="col-md-3">
+            <label asp-for="Precio" class="form-label"></label>
+            <input asp-for="Precio" class="form-control" />
+            <span asp-validation-for="Precio" class="text-danger"></span>
+        </div>
+        <div class="col-md-3">
+            <label asp-for="Stock" class="form-label"></label>
+            <input asp-for="Stock" class="form-control" />
+            <span asp-validation-for="Stock" class="text-danger"></span>
+        </div>
+        <div class="col-md-4">
+            <label asp-for="SKU" class="form-label"></label>
+            <input asp-for="SKU" class="form-control" />
+            <span asp-validation-for="SKU" class="text-danger"></span>
+        </div>
+        <div class="col-md-4">
+            <label asp-for="FechaLanzamiento" class="form-label"></label>
+            <input asp-for="FechaLanzamiento" type="date" class="form-control" />
+        </div>
+        <div class="col-md-4">
+            <label asp-for="TipoCuello" class="form-label"></label>
+            <input asp-for="TipoCuello" class="form-control" />
+        </div>
+        <div class="col-md-4">
+            <label asp-for="Jugador" class="form-label"></label>
+            <input asp-for="Jugador" class="form-control" />
+        </div>
+        <div class="col-md-2">
+            <label asp-for="Numero" class="form-label"></label>
+            <input asp-for="Numero" class="form-control" />
+        </div>
+        <input type="hidden" asp-for="ImagenUrl" />
+        <div class="col-12">
+            <label asp-for="Descripcion" class="form-label"></label>
+            <textarea asp-for="Descripcion" rows="3" class="form-control"></textarea>
+        </div>
+        <div class="col-12 mt-2">
+            <button type="button" class="btn btn-outline-primary" id="btnAddImages">Agregar imágenes</button>
+            @for (int i = 0; i < 5; i++)
+            {
+                <input type="hidden" name="ImageUrls" />
+            }
+            <small class="text-muted d-block mt-1">Hasta 5 imágenes. Puedes arrastrar o seleccionar desde tu dispositivo.</small>
+            <div id="dropArea" class="dropzone mt-2"><strong>Arrastra imágenes aquí</strong> o haz clic para elegir (máximo 5)</div>
+            <input id="imagePicker" type="file" accept="image/*" multiple hidden />
+            <div id="img-previews" class="d-flex flex-wrap gap-2 mt-2"></div>
+        </div>
+        <div class="col-md-4 form-check">
+            <input asp-for="EsEdicionLimitada" class="form-check-input" />
+            <label asp-for="EsEdicionLimitada" class="form-check-label"></label>
+        </div>
+        <div class="col-md-4 form-check">
+            <input asp-for="EsPersonalizada" class="form-check-input" />
+            <label asp-for="EsPersonalizada" class="form-check-label"></label>
+        </div>
+        <div class="col-md-4">
+            <label asp-for="CodigoBarras" class="form-label"></label>
+            <input asp-for="CodigoBarras" class="form-control" />
+        </div>
+    </div>
+    <div class="mt-3">
+        <button class="btn btn-primary" type="submit">Guardar</button>
+        <a class="btn btn-secondary" asp-action="Index">Cancelar</a>
+    </div>
+    @Html.AntiForgeryToken()
+ </form>
+
+<partial name="_ValidationScriptsPartial" />
+
+@section Scripts {
+<script>
+(() => {
+  const drop = document.getElementById('dropArea');
+  const picker = document.getElementById('imagePicker');
+  const addBtn = document.getElementById('btnAddImages');
+  addBtn.addEventListener('click', () => picker.click());
+  drop.addEventListener('click', () => picker.click());
+
+  const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+  const upload = async (file) => {
+    const fd = new FormData();
+    fd.append('file', file);
+    const resp = await fetch('@Url.Action("UploadImage","AdminCamisetas")', {
+      method: 'POST',
+      headers: { 'RequestVerificationToken': token },
+      credentials: 'same-origin',
+      body: fd
+    });
+    if (!resp.ok) throw new Error('Error subiendo imagen');
+    return resp.json();
+  };
+
+  const inputs = () => Array.from(document.querySelectorAll('input[name="ImageUrls"]'));
+  const nextEmpty = () => inputs().find(i => !i.value);
+  const setUrls = (arr) => { inputs().forEach((i,idx) => i.value = arr[idx] || ''); };
+
+  const handleFiles = async (fileList) => {
+    for (const file of Array.from(fileList)) {
+      const slot = nextEmpty();
+      if (!slot) break; // ya llegamos al máximo (5)
+      try {
+        const { url } = await upload(file);
+        slot.value = url;
+        addPreview(url);
+      } catch (e) { console.error(e); }
+    }
+  };
+
+  const addPreview = (url) => {
+    const preview = document.getElementById('img-previews');
+    const img = document.createElement('img');
+    img.src = url; img.alt = 'img'; img.draggable = true;
+    img.style = 'width:100px;height:100px;object-fit:cover;border-radius:6px;border:1px solid #ddd;';
+    preview.appendChild(img);
+  };
+
+  drop.addEventListener('dragover', e => { e.preventDefault(); drop.classList.add('dragover'); });
+  drop.addEventListener('dragleave', () => drop.classList.remove('dragover'));
+  drop.addEventListener('drop', e => { e.preventDefault(); drop.classList.remove('dragover'); handleFiles(e.dataTransfer.files); });
+  picker.addEventListener('change', e => handleFiles(picker.files));
+
+  // Drag & drop reordenamiento
+  let dragSrc = null;
+  document.getElementById('img-previews').addEventListener('dragstart', e => {
+    if (e.target.tagName === 'IMG') { dragSrc = e.target; e.dataTransfer.effectAllowed = 'move'; }
+  });
+  document.getElementById('img-previews').addEventListener('dragover', e => { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; });
+  document.getElementById('img-previews').addEventListener('drop', e => {
+    e.preventDefault();
+    const target = e.target.closest('img');
+    if (dragSrc && target && dragSrc !== target) {
+      const parent = target.parentNode;
+      const imgs = Array.from(parent.querySelectorAll('img'));
+      const from = imgs.indexOf(dragSrc);
+      const to = imgs.indexOf(target);
+      if (from > -1 && to > -1) {
+        if (from < to) parent.insertBefore(dragSrc, target.nextSibling); else parent.insertBefore(dragSrc, target);
+        const ordered = Array.from(parent.querySelectorAll('img')).map(i => i.src);
+        setUrls(ordered);
+      }
+    }
+    dragSrc = null;
+  });
+})();
+</script>
+}
