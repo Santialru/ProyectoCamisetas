@@ -21,6 +21,20 @@ namespace ProyectoCamisetas.Controllers
             var destacadas = await _repo.GetDestacadasAsync(q, liga, equipo, temporada, 12, ct);
             var camisetas = await _repo.GetAllAsync(q, liga, equipo, temporada, ct);
 
+            // Priorizar en stock en memoria usando la propiedad EnStock
+            destacadas = destacadas
+                .Where(c => c.EnStock)
+                .OrderByDescending(c => c.EnStock)
+                .ThenBy(c => c.Equipo)
+                .ThenBy(c => c.Temporada)
+                .ToList();
+            camisetas = camisetas
+                .OrderByDescending(c => c.EnStock)
+                .ThenBy(c => c.Equipo)
+                .ThenBy(c => c.Temporada)
+                .ThenBy(c => c.Tipo)
+                .ToList();
+
             var vm = new CatalogoViewModel
             {
                 Destacadas = destacadas,

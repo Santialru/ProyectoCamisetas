@@ -1,12 +1,12 @@
-Ôªø<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - Clasico del Gol</title>
-    <meta name="description" content="Clasico del Gol - Cat√°logo de camisetas de f√∫tbol, ediciones √∫nicas y cl√°sicas. S√≠guenos en Instagram: &#64;clasicodelgol.tuc" />
+    <meta name="description" content="Clasico del Gol - Cat·logo de camisetas de f˙tbol, ediciones ˙nicas y cl·sicas. SÌguenos en Instagram: &#64;clasicodelgol.tuc" />
     <meta property="og:title" content="Clasico del Gol" />
-    <meta property="og:description" content="Cat√°logo de camisetas de f√∫tbol. Descubre ediciones √∫nicas y cl√°sicas." />
+    <meta property="og:description" content="Cat·logo de camisetas de f˙tbol. Descubre ediciones ˙nicas y cl·sicas." />
     <meta property="og:type" content="website" />
     <meta property="og:url" content="/" />
     <meta property="og:image" content="/img/logo.jpg" />
@@ -33,8 +33,9 @@
                         <li class="nav-item">
                             <a class="nav-link text-light" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
                         </li>
+                        
                         <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle text-light" href="#" id="catalogoDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">Cat√°logo</a>
+                            <a class="nav-link dropdown-toggle text-light" asp-controller="Camisetas" asp-action="Index" id="catalogoDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">Cat·logo</a>
                             <div class="dropdown-menu p-3 mega-dropdown" aria-labelledby="catalogoDropdown">
                                 <div class="row g-3">
                                     <div class="col-12 col-md-4">
@@ -50,7 +51,7 @@
                                         <h6 class="dropdown-header px-0">Selecciones</h6>
                                         <a class="dropdown-item" asp-controller="Camisetas" asp-action="Index" asp-route-q="Argentina">Argentina</a>
                                         <a class="dropdown-item" asp-controller="Camisetas" asp-action="Index" asp-route-q="Brasil">Brasil</a>
-                                        <a class="dropdown-item" asp-controller="Camisetas" asp-action="Index" asp-route-q="Espa√±a">Espa√±a</a>
+                                        <a class="dropdown-item" asp-controller="Camisetas" asp-action="Index" asp-route-q="EspaÒa">EspaÒa</a>
                                         <a class="dropdown-item" asp-controller="Camisetas" asp-action="Index" asp-route-q="Portugal">Portugal</a>
                                         <a class="dropdown-item" asp-controller="Camisetas" asp-action="Index" asp-route-q="Francia">Francia</a>
                                     </div>
@@ -77,6 +78,12 @@
                         <button class="btn btn-outline-primary" type="submit">Buscar</button>
                     </form>
                     <ul class="navbar-nav ms-auto">
+                        <li class="nav-item d-flex align-items-center me-2">
+                            <a class="nav-link d-flex align-items-center" href="https://wa.me/qr/7YBEDMKJQDICB1" target="_blank" rel="noopener" title="WhatsApp">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M20.52 3.48A11.86 11.86 0 0 0 12.06 0C5.46.03.13 5.36.16 11.96a11.8 11.8 0 0 0 1.58 5.94L0 24l6.25-1.65a11.93 11.93 0 0 0 5.76 1.47h.01c6.6 0 11.94-5.34 11.97-11.94A11.88 11.88 0 0 0 20.52 3.48Zm-8.27 18.7h-.01a9.9 9.9 0 0 1-5.04-1.38l-.36-.21-3.71.98.99-3.62-.23-.37a9.95 9.95 0 0 1-1.53-5.29C2.33 6.47 6.67 2.12 12.08 2.1a9.86 9.86 0 0 1 7.02 2.9 9.82 9.82 0 0 1 2.92 7c-.02 5.41-4.38 9.76-9.77 9.78Zm5.38-7.13c-.29-.15-1.7-.84-1.96-.94-.26-.1-.45-.15-.64.15-.19.29-.74.94-.9 1.13-.17.19-.33.22-.62.07-.29-.15-1.21-.45-2.31-1.43-.86-.77-1.44-1.72-1.61-2-.17-.29-.02-.45.13-.6.13-.13.29-.33.43-.49.14-.16.19-.27.29-.46.1-.19.05-.35-.02-.5-.07-.15-.64-1.54-.88-2.1-.23-.55-.47-.48-.64-.49h-.55c-.19 0-.5.07-.76.35-.26.29-1 1-1 2.43 0 1.43 1.02 2.81 1.16 3 .14.19 2 3.05 4.85 4.28.68.29 1.21.46 1.63.58.69.22 1.32.19 1.82.12.55-.08 1.7-.69 1.94-1.36.24-.67.24-1.24.17-1.36-.07-.12-.26-.19-.55-.34Z"/></svg>
+                                <span class="ms-1 d-none d-md-inline">WhatsApp</span>
+                            </a>
+                        </li>
                         <li class="nav-item d-flex align-items-center me-2">
                             <a class="nav-link d-flex align-items-center" href="https://www.instagram.com/clasicodelgol.tuc/" target="_blank" rel="noopener" title="Instagram">
                                 <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 1.366.062 2.633.35 3.608 1.325.975.975 1.263 2.242 1.325 3.608.058 1.266.07 1.646.07 4.85s-.012 3.584-.07 4.85c-.062 1.366-.35 2.633-1.325 3.608-.975.975-2.242 1.263-3.608 1.325-1.266.058-1.646.07-4.85.07s-3.584-.012-4.85-.07c-1.366-.062-2.633-.35-3.608-1.325-.975-.975-1.263-2.242-1.325-3.608C2.175 15.584 2.163 15.204 2.163 12s.012-3.584.07-4.85c.062-1.366.35-2.633 1.325-3.608.975-.975 2.242-1.263 3.608-1.325C8.416 2.175 8.796 2.163 12 2.163zm0 1.837c-3.16 0-3.527.012-4.772.069-1.049.048-1.618.223-1.996.372-.503.195-.862.427-1.239.804-.377.377-.609.736-.804 1.239-.149.378-.324.947-.372 1.996-.057 1.245-.069 1.612-.069 4.772s.012 3.527.069 4.772c.048 1.049.223 1.618.372 1.996.195.503.427.862.804 1.239.377.377.736.609 1.239.804.378.149.947.324 1.996.372 1.245.057 1.612.069 4.772.069s3.527-.012 4.772-.069c1.049-.048 1.618-.223 1.996-.372.503-.195.862-.427 1.239-.804.377-.377.609-.736.804-1.239.149-.378.324-.947.372-1.996.057-1.245.069-1.612.069-4.772s-.012-3.527-.069-4.772c-.048-1.049-.223-1.618-.372-1.996-.195-.503-.427-.862-.804-1.239-.377-.377-.736-.609-1.239-.804-.378-.149-.947-.324-1.996-.372-1.245-.057-1.612-.069-4.772-.069zm0 3.89a5.11 5.11 0 1 1 0 10.22 5.11 5.11 0 0 1 0-10.22zm0 1.837a3.273 3.273 0 1 0 0 6.546 3.273 3.273 0 0 0 0-6.546zM17.338 5.5a1.2 1.2 0 1 1 0 2.4 1.2 1.2 0 0 1 0-2.4z"/></svg>
@@ -115,7 +122,7 @@
             <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
                 <span>&copy; 2025 - Clasico del Gol</span>
                 <a href="https://www.instagram.com/clasicodelgol.tuc/" target="_blank" rel="noopener" class="text-decoration-none">
-                    S√≠guenos en Instagram &#64;clasicodelgol.tuc
+                    SÌguenos en Instagram &#64;clasicodelgol.tuc
                 </a>
             </div>
         </div>
@@ -142,5 +149,9 @@
             <circle cx="17" cy="7" r="1.2" fill="#ffffff"/>
         </svg>
     </a>
+    <a class="wa-fab" href="https://wa.me/qr/7YBEDMKJQDICB1" target="_blank" rel="noopener" title="WhatsApp" aria-label="Abrir WhatsApp">
+        <img src="~/img/whatsapp.svg.webp" alt="WhatsApp" class="wa-icon" />
+    </a>
 </body>
 </html>
+

@@ -10,6 +10,7 @@ namespace ProyectoCamisetas.Data
         public DbSet<User> Users => Set<User>();
         public DbSet<Camiseta> Camisetas => Set<Camiseta>();
         public DbSet<CamisetaImagen> CamisetaImagenes => Set<CamisetaImagen>();
+        public DbSet<CamisetaTalleStock> CamisetaTalles => Set<CamisetaTalleStock>();
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -36,6 +37,10 @@ namespace ProyectoCamisetas.Data
                  .WithOne(i => i.Camiseta!)
                  .HasForeignKey(i => i.CamisetaId)
                  .OnDelete(DeleteBehavior.Cascade);
+                e.HasMany(c => c.TallesStock)
+                 .WithOne(ts => ts.Camiseta!)
+                 .HasForeignKey(ts => ts.CamisetaId)
+                 .OnDelete(DeleteBehavior.Cascade);
             });
 
             // CamisetaImagenes -> 'camiseta_imagenes'
@@ -45,6 +50,15 @@ namespace ProyectoCamisetas.Data
                 e.Property(i => i.Orden).HasColumnType("smallint");
                 e.HasIndex(i => i.CamisetaId);
                 e.HasIndex(i => new { i.CamisetaId, i.Orden }).IsUnique();
+            });
+
+            // CamisetaTalleStock -> 'camiseta_talles'
+            modelBuilder.Entity<CamisetaTalleStock>(e =>
+            {
+                e.ToTable("camiseta_talles");
+                e.Property(x => x.Talla).HasConversion<short>();
+                e.HasIndex(x => x.CamisetaId);
+                e.HasIndex(x => new { x.CamisetaId, x.Talla }).IsUnique();
             });
         }
     }

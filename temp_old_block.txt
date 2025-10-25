@@ -1,0 +1,27 @@
+<div class="row row-cols-1 row-cols-md-3 g-3">
+@foreach (var c in Model.Camisetas)
+{
+    var thumb = c.Imagenes?.OrderBy(x => x.Orden).FirstOrDefault()?.Url ?? c.ImagenUrl;
+    var count = c.Imagenes?.Count ?? 0;
+    if (count == 0 && !string.IsNullOrWhiteSpace(thumb)) { count = 1; }
+    <div class="col">
+        <div class="card h-100">
+            @if (!string.IsNullOrWhiteSpace(thumb))
+            {
+                <div class="image-wrap">
+                    <img src="@thumb" class="card-img-top jersey-thumb" alt="@c.Nombre" />
+                    @if (count > 0)
+                    {
+                        <span class="photo-badge">@count fotos</span>
+                    }
+                </div>
+            }
+            <div class="card-body">
+                <h5 class="card-title">@c.Equipo - @c.Temporada (@c.Tipo)</h5>
+                <p class="card-text">@c.Nombre<br/><small class="text-muted">@c.Liga · @c.Marca</small></p>
+                <a class="btn btn-outline-primary btn-sm" asp-action="Details" asp-route-id="@c.Id">Ver detalles</a>
+            </div>
+        </div>
+    </div>
+}
+</div>

@@ -8,16 +8,94 @@
 <p>
     <a class="btn btn-primary" asp-action="Create">Nueva Camiseta</a>
     <a class="btn btn-outline-secondary" asp-controller="Camisetas" asp-action="Index">Ver Catálogo</a>
+  <button type="button" id="toggleBulkPrices" class="btn btn-outline-warning ms-2">Modificar precios</button>
   </p>
 
-<table class="table table-dark table-hover">
+<style>
+  /* Oculta botones flotantes globales en admin */
+  .ig-fab, .wa-fab { display: none !important; }
+</style>
+
+<form method="get" class="row g-2 align-items-end mb-3">
+    <div class="col-sm-4">
+        <label class="form-label">Equipo</label>
+        <select name="equipo" class="form-select">
+            <option value="">Todos</option>
+            @foreach (var eq in (IEnumerable<string>)ViewBag.Equipos ?? Enumerable.Empty<string>())
+            {
+                var sel = (string)ViewBag.SelectedEquipo == eq ? "selected" : null;
+                <option value="@eq" selected="@sel">@eq</option>
+            }
+        </select>
+    </div>
+    <div class="col-sm-4">
+        <label class="form-label">Temporada</label>
+        <select name="temporada" class="form-select">
+            <option value="">Todas</option>
+            @foreach (var tp in (IEnumerable<string>)ViewBag.Temporadas ?? Enumerable.Empty<string>())
+            {
+                var sel = (string)ViewBag.SelectedTemporada == tp ? "selected" : null;
+                <option value="@tp" selected="@sel">@tp</option>
+            }
+        </select>
+    </div>
+    <div class="col-sm-4">
+        <label class="form-label">Ordenar por</label>
+        <select name="orden" class="form-select">
+            @{ var current = (string?)ViewBag.Orden ?? string.Empty; }
+            <option value="">Recientes</option>
+            <option value="equipo_asc" selected="@(current=="equipo_asc" ? "selected" : null)">Equipo (A→Z)</option>
+            <option value="equipo_desc" selected="@(current=="equipo_desc" ? "selected" : null)">Equipo (Z→A)</option>
+            <option value="temporada_asc" selected="@(current=="temporada_asc" ? "selected" : null)">Temporada (asc)</option>
+            <option value="temporada_desc" selected="@(current=="temporada_desc" ? "selected" : null)">Temporada (desc)</option>
+            <option value="precio_asc" selected="@(current=="precio_asc" ? "selected" : null)">Precio (menor→mayor)</option>
+            <option value="precio_desc" selected="@(current=="precio_desc" ? "selected" : null)">Precio (mayor→menor)</option>
+        </select>
+    </div>
+    <div class="col-12 d-flex gap-2 mt-1">
+        <button type="submit" class="btn btn-primary">Aplicar</button>
+        <a class="btn btn-secondary" asp-action="Index">Limpiar</a>
+    </div>
+</form>
+
+<form asp-action="BulkPriceAdjust" method="post" id="bulkForm" class="border rounded p-2 mb-3 d-none">
+    <div class="row g-2 align-items-end">
+        <div class="col-sm-3">
+            <label for="porcentaje" class="form-label">Porcentaje</label>
+            <div class="input-group">
+                <input type="number" step="0.1" min="0.1" class="form-control" id="porcentaje" name="porcentaje" placeholder="10" required>
+                <span class="input-group-text">%</span>
+            </div>
+        </div>
+        <div class="col-sm-4 d-flex gap-2">
+            <div class="form-check">
+                <input class="form-check-input" type="radio" name="modo" id="modoUp" value="up" checked>
+                <label class="form-check-label" for="modoUp">Aumentar</label>
+            </div>
+            <div class="form-check">
+                <input class="form-check-input" type="radio" name="modo" id="modoDown" value="down">
+                <label class="form-check-label" for="modoDown">Disminuir</label>
+            </div>
+        </div>
+        <div class="col-sm-5 text-end">
+            <button type="submit" class="btn btn-warning">Aplicar a seleccionadas</button>
+        </div>
+    </div>
+    @Html.AntiForgeryToken()
+</form>
+
+<div class="table-responsive">
+<table class="table table-dark table-hover table-sm align-middle">
     <thead>
         <tr>
+            <th style="width:36px" class="text-center d-none" id="th-select">
+                <input type="checkbox" id="selectAll" />
+            </th>
             <th>Equipo</th>
-            <th>Temporada</th>
-            <th>Tipo</th>
+            <th class="d-none d-md-table-cell">Temporada</th>
+            <th class="d-none d-lg-table-cell">Tipo</th>
             <th>Nombre</th>
-            <th>SKU</th>
+            <th class="d-none d-lg-table-cell">SKU</th>
             <th>Precio</th>
             <th></th>
         </tr>
@@ -26,18 +104,101 @@
     @foreach (var item in Model)
     {
         <tr>
+            <td class="text-center align-middle d-none sel-cell">
+                <input type="checkbox" name="ids" value="@item.Id" form="bulkForm" />
+            </td>
             <td>@item.Equipo</td>
-            <td>@item.Temporada</td>
-            <td>@item.Tipo</td>
+            <td class="d-none d-md-table-cell">@item.Temporada</td>
+            <td class="d-none d-lg-table-cell">@item.Tipo</td>
             <td>@item.Nombre</td>
-            <td>@item.SKU</td>
+            <td class="d-none d-lg-table-cell">@item.SKU</td>
             <td>@item.Precio.ToString("C")</td>
-            <td class="text-nowrap">
-                <a class="btn btn-sm btn-outline-info" asp-action="Details" asp-route-id="@item.Id">Ver</a>
-                <a class="btn btn-sm btn-outline-warning" asp-action="Edit" asp-route-id="@item.Id">Editar</a>
-                <a class="btn btn-sm btn-outline-danger" asp-action="Delete" asp-route-id="@item.Id">Eliminar</a>
+            <td>
+                <!-- Acciones en pantallas medianas y grandes -->
+                <div class="d-none d-md-flex flex-wrap gap-1">
+                    <a class="btn btn-sm btn-outline-info" asp-controller="Camisetas" asp-action="Details" asp-route-id="@item.Id">Ver</a>
+                    <a class="btn btn-sm btn-outline-warning" asp-action="Edit" asp-route-id="@item.Id">Editar</a>
+                    <a class="btn btn-sm btn-outline-danger" asp-action="Delete" asp-route-id="@item.Id">Eliminar</a>
+                    @{ var tallesDisp = (item.TallesStock ?? Enumerable.Empty<ProyectoCamisetas.Models.CamisetaTalleStock>()).Where(t => t.Cantidad > 0).OrderBy(t => t.Talla).ToList(); }
+                    <div class="btn-group">
+                        <button type="button" class="btn btn-sm btn-outline-success dropdown-toggle @(tallesDisp.Any() ? "" : "disabled opacity-50")" data-bs-toggle="dropdown" aria-expanded="false">Venta</button>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            @if (!tallesDisp.Any())
+                            {
+                                <li><span class="dropdown-item-text text-muted">Sin talles</span></li>
+                            }
+                            else
+                            {
+                                foreach (var ts in tallesDisp)
+                                {
+                                    <li>
+                                        <form asp-action="Venta" asp-route-id="@item.Id" method="post">
+                                            @Html.AntiForgeryToken()
+                                            <input type="hidden" name="talla" value="@ts.Talla" />
+                                            <button type="submit" class="dropdown-item">@ts.Talla (@ts.Cantidad)</button>
+                                        </form>
+                                    </li>
+                                }
+                            }
+                        </ul>
+                    </div>
+                </div>
+                <!-- Menú desplegable en móviles -->
+                <div class="dropdown d-md-none">
+                    <button class="btn btn-sm btn-outline-light dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        Acciones
+                    </button>
+                    <ul class="dropdown-menu">
+                        <li><a class="dropdown-item" asp-controller="Camisetas" asp-action="Details" asp-route-id="@item.Id">Ver</a></li>
+                        <li><a class="dropdown-item" asp-action="Edit" asp-route-id="@item.Id">Editar</a></li>
+                        <li><a class="dropdown-item text-danger" asp-action="Delete" asp-route-id="@item.Id">Eliminar</a></li>
+                        @{
+                            var tallesDispM = (item.TallesStock ?? Enumerable.Empty<ProyectoCamisetas.Models.CamisetaTalleStock>()).Where(t => t.Cantidad > 0).OrderBy(t => t.Talla).ToList();
+                        }
+                        @if (!tallesDispM.Any())
+                        {
+                            <li><span class="dropdown-item-text text-muted">Sin talles disponibles</span></li>
+                        }
+                        else
+                        {
+                            <li><h6 class="dropdown-header">Venta por talle</h6></li>
+                            @foreach (var ts in tallesDispM)
+                            {
+                                <li>
+                                    <form asp-action="Venta" asp-route-id="@item.Id" method="post">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="talla" value="@ts.Talla" />
+                                        <button type="submit" class="dropdown-item text-success">@ts.Talla (@ts.Cantidad)</button>
+                                    </form>
+                                </li>
+                            }
+                        }
+                    </ul>
+                </div>
             </td>
         </tr>
     }
     </tbody>
  </table>
+</div>
+
+<script>
+(() => {
+  const toggleBtn = document.getElementById('toggleBulkPrices');
+  const bulkForm = document.getElementById('bulkForm');
+  const thSelect = document.getElementById('th-select');
+  const selectAll = document.getElementById('selectAll');
+  const selCells = document.querySelectorAll('.sel-cell');
+
+  const setSelVisible = (show) => {
+    bulkForm.classList.toggle('d-none', !show);
+    thSelect.classList.toggle('d-none', !show);
+    selCells.forEach(td => td.classList.toggle('d-none', !show));
+  };
+
+  toggleBtn?.addEventListener('click', () => setSelVisible(bulkForm.classList.contains('d-none')));
+  selectAll?.addEventListener('change', () => {
+    document.querySelectorAll('input[name="ids"]').forEach(cb => { cb.checked = selectAll.checked; });
+  });
+})();
+</script>

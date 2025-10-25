@@ -3,6 +3,7 @@ using ProyectoCamisetas.Data;
 using ProyectoCamisetas.Models;
 using System.Linq.Expressions;
 using Npgsql.EntityFrameworkCore.PostgreSQL;
+using System.Collections.Generic;
 
 namespace ProyectoCamisetas.Repository
 {
@@ -15,7 +16,8 @@ namespace ProyectoCamisetas.Repository
         {
             IQueryable<Camiseta> query = _db.Camisetas
                 .AsNoTracking()
-                .Include(c => c.Imagenes!.OrderBy(i => i.Orden));
+                .Include(c => c.Imagenes!.OrderBy(i => i.Orden))
+                .Include(c => c.TallesStock);
             if (!string.IsNullOrWhiteSpace(q))
             {
                 var tokens = BuildSearchTokens(q);
@@ -41,7 +43,8 @@ namespace ProyectoCamisetas.Repository
         {
             IQueryable<Camiseta> query = _db.Camisetas
                 .AsNoTracking()
-                .Include(c => c.Imagenes!.OrderBy(i => i.Orden));
+                .Include(c => c.Imagenes!.OrderBy(i => i.Orden))
+                .Include(c => c.TallesStock);
             if (!string.IsNullOrWhiteSpace(q))
             {
                 var tokens = BuildSearchTokens(q);
@@ -55,7 +58,7 @@ namespace ProyectoCamisetas.Repository
                 if (!string.IsNullOrWhiteSpace(temporada)) query = query.Where(c => c.Temporada == temporada);
             }
 
-            return await query.Where(c => c.Stock > 0)
+            return await query
                 .OrderByDescending(c => c.EsEdicionLimitada)
                 .ThenByDescending(c => c.Precio)
                 .Take(take)
@@ -65,6 +68,7 @@ namespace ProyectoCamisetas.Repository
         public async Task<IReadOnlyList<Camiseta>> GetAllAdminAsync(CancellationToken ct = default)
         {
             return await _db.Camisetas.AsNoTracking()
+                .Include(c => c.TallesStock)
                 .OrderByDescending(c => c.Id)
                 .ToListAsync(ct);
         }
@@ -74,6 +78,7 @@ namespace ProyectoCamisetas.Repository
             return await _db.Camisetas
                 .AsNoTracking()
                 .Include(c => c.Imagenes!.OrderBy(i => i.Orden))
+                .Include(c => c.TallesStock)
                 .FirstOrDefaultAsync(c => c.Id == id, ct);
         }
 
@@ -81,7 +86,8 @@ namespace ProyectoCamisetas.Repository
         {
             IQueryable<Camiseta> q = _db.Camisetas
                 .AsNoTracking()
-                .Include(c => c.Imagenes!.OrderBy(i => i.Orden));
+                .Include(c => c.Imagenes!.OrderBy(i => i.Orden))
+                .Include(c => c.TallesStock);
             if (onlyAvailable)
                 q = q.Where(c => c.Stock > 0);
 
@@ -142,6 +148,45 @@ namespace ProyectoCamisetas.Repository
                 });
             }
             await _db.SaveChangesAsync(ct);
+        }
+
+        public async Task SetTallesAsync(int camisetaId, IEnumerable<(Talla talla, int cantidad)> talles, CancellationToken ct = default)
+        {
+            var list = talles
+                .Where(t => t.cantidad >= 0)
+                .GroupBy(t => t.talla)
+                .Select(g => new { Talla = g.Key, Cantidad = g.Sum(x => x.cantidad) })
+                .Where(x => x.Cantidad > 0)
+                .ToList();
+
+            var existing = await _db.CamisetaTalles.Where(t => t.CamisetaId == camisetaId).ToListAsync(ct);
+            if (existing.Count > 0)
+            {
+                _db.CamisetaTalles.RemoveRange(existing);
+                await _db.SaveChangesAsync(ct);
+            }
+
+            foreach (var x in list)
+            {
+                _db.CamisetaTalles.Add(new CamisetaTalleStock
+                {
+                    CamisetaId = camisetaId,
+                    Talla = x.Talla,
+                    Cantidad = x.Cantidad
+                });
+            }
+            await _db.SaveChangesAsync(ct);
+        }
+
+        public async Task<bool> RegisterSaleAsync(int camisetaId, Talla talla, CancellationToken ct = default)
+        {
+            var ts = await _db.CamisetaTalles
+                .FirstOrDefaultAsync(t => t.CamisetaId == camisetaId && t.Talla == talla, ct);
+            if (ts is null || ts.Cantidad <= 0) return false;
+            ts.Cantidad -= 1;
+            _db.CamisetaTalles.Update(ts);
+            await _db.SaveChangesAsync(ct);
+            return true;
         }
 
         // Búsqueda unificada helpers

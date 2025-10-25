@@ -12,6 +12,14 @@
     </div>
     </form>
 
+@{
+    var hasFilters = !string.IsNullOrWhiteSpace(Context.Request.Query["q"]) 
+        || !string.IsNullOrWhiteSpace(Context.Request.Query["liga"]) 
+        || !string.IsNullOrWhiteSpace(Context.Request.Query["equipo"]) 
+        || !string.IsNullOrWhiteSpace(Context.Request.Query["temporada"]);
+}
+@if (!hasFilters)
+{
 <section class="showcase mb-4">
     <div class="d-flex justify-content-between align-items-end mb-2">
         <h2 class="m-0">Disponibles ahora</h2>
@@ -32,7 +40,7 @@
                 </div>
                 <div class="product-info">
                     <div class="product-top">
-                        <span class="badge @(c.EsEdicionLimitada ? "bg-warning text-dark" : "bg-success")">@(c.EnStock ? "En stock" : "Encargala!")</span>
+                        <span class="badge @(c.EsEdicionLimitada ? "bg-warning text-dark" : "bg-success")">En stock</span>
                         @if (c.EsEdicionLimitada) { <span class="badge bg-danger ms-1">Edición limitada</span> }
                     </div>
                     <h3>@c.Equipo <small class="text-muted">@c.Temporada</small></h3>
@@ -50,9 +58,79 @@
         <div class="text-center text-muted py-4">No hay camisetas disponibles por ahora.</div>
     }
  </section>
+}
+
+@{
+    var disponibles = Model.Camisetas.Where(x => x.EnStock).ToList();
+    var porEncargo = Model.Camisetas.Where(x => !x.EnStock).ToList();
+}
+
+@if (disponibles.Any())
+{
+    <h3 class="mt-3">En Stock</h3>
+    <div class="row row-cols-1 row-cols-md-3 g-3">
+    @foreach (var c in disponibles)
+    {
+        var thumb = c.Imagenes?.OrderBy(x => x.Orden).FirstOrDefault()?.Url ?? c.ImagenUrl;
+        var count = c.Imagenes?.Count ?? 0;
+        if (count == 0 && !string.IsNullOrWhiteSpace(thumb)) { count = 1; }
+        <div class="col">
+            <div class="card h-100">
+                @if (!string.IsNullOrWhiteSpace(thumb))
+                {
+                    <div class="image-wrap">
+                        <img src="@thumb" class="card-img-top jersey-thumb" alt="@c.Nombre" />
+                        @if (count > 0)
+                        {
+                            <span class="photo-badge">@count fotos</span>
+                        }
+                    </div>
+                }
+                <div class="card-body">
+                    <h5 class="card-title">@c.Equipo - @c.Temporada (@c.Tipo)</h5>
+                    <p class="card-text">@c.Nombre<br/><small class="text-muted">@c.Liga A� @c.Marca</small></p>
+                    <a class="btn btn-outline-primary btn-sm" asp-action="Details" asp-route-id="@c.Id">Ver detalles</a>
+                </div>
+            </div>
+        </div>
+    }
+    </div>
+}
+
+@if (porEncargo.Any())
+{
+    <h3 class="mt-4">Por Encargo</h3>
+    <div class="row row-cols-1 row-cols-md-3 g-3">
+    @foreach (var c in porEncargo)
+    {
+        var thumb = c.Imagenes?.OrderBy(x => x.Orden).FirstOrDefault()?.Url ?? c.ImagenUrl;
+        var count = c.Imagenes?.Count ?? 0;
+        if (count == 0 && !string.IsNullOrWhiteSpace(thumb)) { count = 1; }
+        <div class="col">
+            <div class="card h-100 opacity-90">
+                @if (!string.IsNullOrWhiteSpace(thumb))
+                {
+                    <div class="image-wrap">
+                        <img src="@thumb" class="card-img-top jersey-thumb" alt="@c.Nombre" />
+                        @if (count > 0)
+                        {
+                            <span class="photo-badge">@count fotos</span>
+                        }
+                    </div>
+                }
+                <div class="card-body">
+                    <h5 class="card-title">@c.Equipo - @c.Temporada (@c.Tipo)</h5>
+                    <p class="card-text">@c.Nombre<br/><small class="text-muted">@c.Liga A� @c.Marca</small></p>
+                    <a class="btn btn-outline-primary btn-sm" asp-action="Details" asp-route-id="@c.Id">Ver detalles</a>
+                </div>
+            </div>
+        </div>
+    }
+    </div>
+}
 
 <div class="row row-cols-1 row-cols-md-3 g-3">
-@foreach (var c in Model.Camisetas)
+@foreach (var c in Enumerable.Empty<ProyectoCamisetas.Models.Camiseta>())
 {
     var thumb = c.Imagenes?.OrderBy(x => x.Orden).FirstOrDefault()?.Url ?? c.ImagenUrl;
     var count = c.Imagenes?.Count ?? 0;
@@ -84,6 +162,9 @@
     <div class="text-center py-5">
         <h4 class="mb-3">Estamos trabajando para conseguir tu camiseta</h4>
         <p class="mb-1">Consultanos por Instagram</p>
-        <a class="btn btn-outline-primary" href="https://www.instagram.com/clasicodelgol.tuc/" target="_blank" rel="noopener">&#64;clasicodelgol.tuc</a>
+        <div class="d-flex gap-2 justify-content-center">
+            <a class="btn btn-outline-success" href="https://wa.me/qr/7YBEDMKJQDICB1" target="_blank" rel="noopener">WhatsApp</a>
+            <a class="btn btn-outline-primary" href="https://www.instagram.com/clasicodelgol.tuc/" target="_blank" rel="noopener">&#64;clasicodelgol.tuc</a>
+        </div>
     </div>
 }

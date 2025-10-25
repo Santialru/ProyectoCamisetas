@@ -20,9 +20,53 @@ namespace ProyectoCamisetas.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> Index(CancellationToken ct)
+        public async Task<IActionResult> Index(string? equipo, string? temporada, string? orden, CancellationToken ct)
         {
             var list = await _repo.GetAllAdminAsync(ct);
+
+            // Opciones para filtros
+            ViewBag.Equipos = list.Select(c => c.Equipo).Distinct().OrderBy(x => x).ToList();
+            ViewBag.Temporadas = list.Select(c => c.Temporada).Distinct().OrderByDescending(x => x).ToList();
+
+            // Filtros
+            if (!string.IsNullOrWhiteSpace(equipo))
+            {
+                list = list.Where(c => c.Equipo == equipo).ToList();
+            }
+            if (!string.IsNullOrWhiteSpace(temporada))
+            {
+                list = list.Where(c => c.Temporada == temporada).ToList();
+            }
+
+            // Orden
+            switch ((orden ?? string.Empty).ToLowerInvariant())
+            {
+                case "equipo_asc":
+                    list = list.OrderBy(c => c.Equipo).ThenBy(c => c.Temporada).ThenBy(c => c.Tipo).ToList();
+                    break;
+                case "equipo_desc":
+                    list = list.OrderByDescending(c => c.Equipo).ThenByDescending(c => c.Temporada).ThenBy(c => c.Tipo).ToList();
+                    break;
+                case "temporada_asc":
+                    list = list.OrderBy(c => c.Temporada).ThenBy(c => c.Equipo).ThenBy(c => c.Tipo).ToList();
+                    break;
+                case "temporada_desc":
+                    list = list.OrderByDescending(c => c.Temporada).ThenBy(c => c.Equipo).ThenBy(c => c.Tipo).ToList();
+                    break;
+                case "precio_asc":
+                    list = list.OrderBy(c => c.Precio).ThenBy(c => c.Equipo).ToList();
+                    break;
+                case "precio_desc":
+                    list = list.OrderByDescending(c => c.Precio).ThenBy(c => c.Equipo).ToList();
+                    break;
+                default:
+                    list = list.OrderByDescending(c => c.Id).ToList();
+                    break;
+            }
+
+            ViewBag.SelectedEquipo = equipo;
+            ViewBag.SelectedTemporada = temporada;
+            ViewBag.Orden = orden;
             return View(list);
         }
 
@@ -53,7 +97,22 @@ namespace ProyectoCamisetas.Controllers
 
             await _repo.AddAsync(model, ct);
             var imgs = Request.Form["ImageUrls"].ToArray();
-            await _repo.SetImagesAsync(model.Id, imgs.Where(s => !string.IsNullOrWhiteSpace(s))!.Select(s => s)!.Take(5), ct);
+            await _repo.SetImagesAsync(model.Id, imgs.Where(s => !string.IsNullOrWhiteSpace(s)).Select(s => s!).Take(5), ct);
+            // Talles
+            var talles = Request.Form["Tallas[]"].ToArray();
+            var cantidades = Request.Form["Cantidades[]"].ToArray();
+            var pairs = new List<(Talla talla, int cant)>();
+            for (int i = 0; i < Math.Min(talles.Length, cantidades.Length); i++)
+            {
+                if (int.TryParse(talles[i], out var tVal) && int.TryParse(cantidades[i], out var cVal))
+                {
+                    pairs.Add(((Talla)tVal, cVal));
+                }
+            }
+            if (pairs.Count > 0)
+            {
+                await _repo.SetTallesAsync(model.Id, pairs, ct);
+            }
             return RedirectToAction(nameof(Index));
         }
 
@@ -79,7 +138,19 @@ namespace ProyectoCamisetas.Controllers
 
             await _repo.UpdateAsync(model, ct);
             var imgs = Request.Form["ImageUrls"].ToArray();
-            await _repo.SetImagesAsync(model.Id, imgs.Where(s => !string.IsNullOrWhiteSpace(s))!.Select(s => s)!.Take(5), ct);
+            await _repo.SetImagesAsync(model.Id, imgs.Where(s => !string.IsNullOrWhiteSpace(s)).Select(s => s!).Take(5), ct);
+            // Talles
+            var talles = Request.Form["Tallas[]"].ToArray();
+            var cantidades = Request.Form["Cantidades[]"].ToArray();
+            var pairs = new List<(Talla talla, int cant)>();
+            for (int i = 0; i < Math.Min(talles.Length, cantidades.Length); i++)
+            {
+                if (int.TryParse(talles[i], out var tVal) && int.TryParse(cantidades[i], out var cVal))
+                {
+                    pairs.Add(((Talla)tVal, cVal));
+                }
+            }
+            await _repo.SetTallesAsync(model.Id, pairs, ct);
             return RedirectToAction(nameof(Index));
         }
 
@@ -100,11 +171,75 @@ namespace ProyectoCamisetas.Controllers
             return RedirectToAction(nameof(Index));
         }
 
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> BulkPriceAdjust(decimal porcentaje, string modo, int[] ids, CancellationToken ct)
+        {
+            if (ids == null || ids.Length == 0)
+            {
+                TempData["Error"] = "Selecciona al menos una camiseta.";
+                return RedirectToAction(nameof(Index));
+            }
+            if (porcentaje <= 0)
+            {
+                TempData["Error"] = "El porcentaje debe ser mayor que 0.";
+                return RedirectToAction(nameof(Index));
+            }
+
+            var factor = (double)porcentaje / 100.0;
+            var subir = string.Equals(modo, "up", StringComparison.OrdinalIgnoreCase);
+
+            foreach (var id in ids.Distinct())
+            {
+                var ent = await _repo.GetByIdAsync(id, ct);
+                if (ent is null) continue;
+                var precio = (double)ent.Precio;
+                var nuevo = subir ? precio * (1.0 + factor) : precio * (1.0 - factor);
+                if (nuevo < 0) nuevo = 0;
+                ent.Precio = (decimal)Math.Round(nuevo, 2, MidpointRounding.AwayFromZero);
+                await _repo.UpdateAsync(ent, ct);
+            }
+
+            TempData["Success"] = "Precios actualizados.";
+            return RedirectToAction(nameof(Index));
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Venta(int id, Talla? talla, CancellationToken ct)
+        {
+            var entity = await _repo.GetByIdAsync(id, ct);
+            if (entity is null) return NotFound();
+
+            if (!entity.EnStock)
+            {
+                TempData["Error"] = "No hay stock disponible.";
+                return RedirectToAction(nameof(Index));
+            }
+
+            if (!talla.HasValue)
+            {
+                TempData["Error"] = "Selecciona un talle para registrar la venta.";
+                return RedirectToAction(nameof(Index));
+            }
+
+            var ok = await _repo.RegisterSaleAsync(entity.Id, talla.Value, ct);
+            if (!ok)
+            {
+                TempData["Error"] = "No hay stock en el talle seleccionado.";
+                return RedirectToAction(nameof(Index));
+            }
+
+            TempData["Success"] = $"Venta registrada (talle {talla.Value}).";
+            return RedirectToAction(nameof(Index));
+        }
+
         private void PopulateSelects()
         {
             ViewBag.Tipos = new SelectList(Enum.GetValues(typeof(TipoKit)));
             ViewBag.Versiones = new SelectList(Enum.GetValues(typeof(VersionCamiseta)));
             ViewBag.Tallas = new SelectList(Enum.GetValues(typeof(Talla)));
+            ViewBag.TallasEnum = Enum.GetValues(typeof(Talla));
             ViewBag.Mangas = new SelectList(Enum.GetValues(typeof(Manga)));
         }
 

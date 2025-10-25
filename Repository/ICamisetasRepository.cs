@@ -14,5 +14,7 @@ namespace ProyectoCamisetas.Repository
         Task UpdateAsync(Camiseta entity, CancellationToken ct = default);
         Task<bool> DeleteAsync(int id, CancellationToken ct = default);
         Task SetImagesAsync(int camisetaId, IEnumerable<string> urls, CancellationToken ct = default);
+        Task SetTallesAsync(int camisetaId, IEnumerable<(Talla talla, int cantidad)> talles, CancellationToken ct = default);
+        Task<bool> RegisterSaleAsync(int camisetaId, Talla talla, CancellationToken ct = default);
     }
 }

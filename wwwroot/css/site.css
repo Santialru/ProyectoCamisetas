@@ -130,6 +130,8 @@ body {
   box-shadow: 0 8px 20px rgba(0,0,0,.35);
   border: 1px solid rgba(255,255,255,.2);
 }
+.details-media .carousel-control-prev { left: 10px; }
+.details-media .carousel-control-next { right: 10px; }
 .details-media .carousel-control-prev:hover,
 .details-media .carousel-control-next:hover {
   background: rgba(0, 0, 0, 0.5);
@@ -170,8 +172,31 @@ body {
   border-radius: .75rem;
   min-height: 280px;
   background:
-    linear-gradient(0deg, rgba(10,15,25,.55), rgba(10,15,25,.55)),
-    url('/img/messi_camistas_coleccion.png') center/cover no-repeat;
+    radial-gradient(1200px 400px at 10% -20%, rgba(13,110,253,.25), transparent 60%),
+    radial-gradient(1000px 300px at 90% -10%, rgba(220,53,69,.22), transparent 60%),
+    linear-gradient(180deg, #0b0f1a, #121826);
+}
+.hero-football::before {
+  content: "";
+  position: absolute;
+  inset: -20%;
+  background:
+    conic-gradient(from 210deg at 70% 40%, rgba(255,255,255,.06), rgba(255,255,255,0) 30%, rgba(255,255,255,0) 60%, rgba(255,255,255,.06) 85%);
+  filter: blur(20px);
+  transform: rotate(-8deg);
+  opacity: .7;
+  pointer-events: none;
+}
+.hero-football::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(transparent 95%, rgba(255,255,255,.04) 95%),
+    linear-gradient(90deg, transparent 95%, rgba(255,255,255,.04) 95%);
+  background-size: 24px 24px;
+  opacity: .18;
+  pointer-events: none;
 }
 .hero-football .hero-content { position: relative; z-index: 1; padding: 2rem; max-width: 720px; }
 .hero-football .hero-content h1 { font-weight:800; letter-spacing:.4px; }
@@ -329,3 +354,12 @@ header { position: sticky; top: 0; z-index: 1050; }
   .wa-fab { bottom: 140px !important; }
   .ig-fab { bottom: 76px !important; }
 }
+
+/* Fixed-size image container for Details (final) */
+.details-media { height: 480px !important; min-height: 300px; max-height: 520px; display:flex; align-items:center; justify-content:center; }
+.details-media .carousel,
+.details-media .carousel-inner,
+.details-media .carousel-item { height: 100% !important; }
+.details-media .carousel-item img,
+.details-media .jersey-detail { height: 100% !important; width: auto !important; max-width: 100% !important; object-fit: contain; }
+@media (max-width: 576px) { .details-media { height: 360px !important; min-height: 260px; max-height: 420px; } }

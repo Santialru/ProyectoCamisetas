@@ -10,32 +10,34 @@
 
 <div class="row g-3">
     <div class="col-md-6">
-        @if (fotos.Count <= 1)
-        {
-            <img src="@fotos.FirstOrDefault()" alt="@Model.Nombre" class="jersey-detail border rounded" />
-        }
-        else
-        {
-            var cid = $"carouselCamiseta_{Model.Id}";
-            <div id="@cid" class="carousel slide">
-                <div class="carousel-inner">
-                    @for (int i = 0; i < fotos.Count; i++)
-                    {
-                        <div class="carousel-item @(i == 0 ? "active" : null)">
-                            <img src="@fotos[i]" class="jersey-detail border rounded" alt="img @i" />
-                        </div>
-                    }
+        <div class="details-media">
+            @if (fotos.Count <= 1)
+            {
+                <img src="@fotos.FirstOrDefault()" alt="@Model.Nombre" class="jersey-detail border rounded" />
+            }
+            else
+            {
+                var cid = $"carouselCamiseta_{Model.Id}";
+                <div id="@cid" class="carousel slide">
+                    <div class="carousel-inner">
+                        @for (int i = 0; i < fotos.Count; i++)
+                        {
+                            <div class="carousel-item @(i == 0 ? "active" : null)">
+                                <img src="@fotos[i]" class="jersey-detail border rounded" alt="img @i" />
+                            </div>
+                        }
+                    </div>
+                    <button class="carousel-control-prev" type="button" data-bs-target="#@cid" data-bs-slide="prev">
+                        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                        <span class="visually-hidden">Anterior</span>
+                    </button>
+                    <button class="carousel-control-next" type="button" data-bs-target="#@cid" data-bs-slide="next">
+                        <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                        <span class="visually-hidden">Siguiente</span>
+                    </button>
                 </div>
-                <button class="carousel-control-prev" type="button" data-bs-target="#@cid" data-bs-slide="prev">
-                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-                    <span class="visually-hidden">Anterior</span>
-                </button>
-                <button class="carousel-control-next" type="button" data-bs-target="#@cid" data-bs-slide="next">
-                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
-                    <span class="visually-hidden">Siguiente</span>
-                </button>
-            </div>
-        }
+            }
+        </div>
     </div>
     <div class="col-md-6">
         <dl class="row">
@@ -45,10 +47,72 @@
             <dt class="col-sm-4">Colores</dt><dd class="col-sm-8">@Model.ColorPrincipal @if(!string.IsNullOrEmpty(Model.ColorSecundario)){<text>/ @Model.ColorSecundario</text>}</dd>
             <dt class="col-sm-4">Material</dt><dd class="col-sm-8">@Model.Material</dd>
             <dt class="col-sm-4">Precio</dt><dd class="col-sm-8">@Model.Precio.ToString("C")</dd>
-            <dt class="col-sm-4">Stock</dt><dd class="col-sm-8">@(Model.EnStock ? "Disponible" : "Encargala!")</dd>
+            <dt class="col-sm-4">Stock</dt>
+            <dd class="col-sm-8">
+                @if ((Model.TallesStock?.Any() ?? false))
+                {
+                    var low = false;
+                    foreach (var s in Model.TallesStock.Where(x => x.Cantidad > 0).OrderBy(x => x.Talla))
+                    {
+                        var cls = s.Cantidad < 3 ? "bg-warning text-dark" : "bg-secondary";
+                        if (s.Cantidad < 3) { low = true; }
+                        <span class="badge @cls me-1">@s.Talla: @s.Cantidad</span>
+                    }
+                    if (low)
+                    {
+                        <small class="text-warning d-block mt-1">Quedan pocas unidades en algunos talles</small>
+                    }
+                }
+                else
+                {
+                    @(Model.EnStock ? "Disponible" : "Encargala Ahora")
+                }
+            </dd>
             <dt class="col-sm-4">SKU</dt><dd class="col-sm-8">@Model.SKU</dd>
         </dl>
         <p>@Model.Descripcion</p>
+        <div class="mt-3 d-flex gap-2">
+            @if (Model.EnStock)
+            {
+                <a class="btn btn-success w-100 d-flex align-items-center justify-content-center gap-2" href="https://wa.me/qr/7YBEDMKJQDICB1" target="_blank" rel="noopener">
+                    <img src="~/img/whatsapp.svg.webp" alt="" class="icon-20" />
+                    <span>Comprala ahora</span>
+                </a>
+            }
+            else
+            {
+                <a class="btn btn-success w-100" href="https://wa.me/qr/7YBEDMKJQDICB1" target="_blank" rel="noopener">Encargala Ahora</a>
+            }
+        </div>
     </div>
 
 <a class="btn btn-secondary mt-3" asp-action="Index">Volver</a>
+
+
+@section Scripts {
+<script>
+document.addEventListener('DOMContentLoaded', function(){
+  function openLightbox(src){
+    const overlay = document.createElement('div');
+    overlay.className = 'lightbox-overlay';
+    const img = document.createElement('img');
+    img.src = src; img.alt = 'zoom';
+    overlay.appendChild(img);
+    document.body.appendChild(overlay);
+
+    let scale = 1;
+    const setScale = (s) => { scale = Math.min(5, Math.max(1, s)); img.style.transform = 'scale(' + scale + ')'; };
+
+    overlay.addEventListener('click', (e)=>{ if (e.target === overlay) overlay.remove(); });
+    document.addEventListener('keydown', function esc(e){ if (e.key === 'Escape'){ overlay.remove(); document.removeEventListener('keydown', esc); } });
+    img.addEventListener('click', (e)=>{ e.stopPropagation(); setScale(scale > 1 ? 1 : 2); });
+    overlay.addEventListener('wheel', (e)=>{ e.preventDefault(); setScale(scale + (e.deltaY < 0 ? 0.15 : -0.15)); }, { passive: false });
+  }
+
+  document.querySelectorAll('.jersey-detail').forEach(function(el){
+    el.style.cursor = 'zoom-in';
+    el.addEventListener('click', function(){ openLightbox(el.src); });
+  });
+});
+</script>
+}

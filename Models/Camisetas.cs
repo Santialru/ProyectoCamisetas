@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using System.Linq;
 
 namespace ProyectoCamisetas.Models
 {
@@ -100,10 +101,13 @@ namespace ProyectoCamisetas.Models
 
         // Propiedad de conveniencia
         [Display(Name = "Disponible")]
-        public bool EnStock => Stock > 0;
+        public bool EnStock => (TallesStock?.Sum(t => (int?)t.Cantidad) ?? Stock) > 0;
 
         // Relación: múltiples imágenes
         public ICollection<CamisetaImagen>? Imagenes { get; set; }
+
+        // Relación: stock por talla
+        public ICollection<CamisetaTalleStock>? TallesStock { get; set; }
     }
 
     public enum TipoKit
@@ -141,6 +145,19 @@ namespace ProyectoCamisetas.Models
 
 namespace ProyectoCamisetas.Models
 {
+    public class CamisetaTalleStock
+    {
+        public int Id { get; set; }
+        public int CamisetaId { get; set; }
+        public Camiseta? Camiseta { get; set; }
+
+        [Required]
+        public Talla Talla { get; set; }
+
+        [Range(0, 100000)]
+        public int Cantidad { get; set; }
+    }
+
     public class CamisetaImagen
     {
         public int Id { get; set; }

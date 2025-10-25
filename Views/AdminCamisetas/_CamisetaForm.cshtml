@@ -29,10 +29,6 @@
         <select asp-for="Tipo" asp-items="ViewBag.Tipos" class="form-select"></select>
     </div>
     <div class="col-md-4">
-        <label asp-for="Talla" class="form-label"></label>
-        <select asp-for="Talla" asp-items="ViewBag.Tallas" class="form-select"></select>
-    </div>
-    <div class="col-md-4">
         <label asp-for="Manga" class="form-label"></label>
         <select asp-for="Manga" asp-items="ViewBag.Mangas" class="form-select"></select>
     </div>
@@ -64,10 +60,59 @@
         <input asp-for="Precio" class="form-control" />
         <span asp-validation-for="Precio" class="text-danger"></span>
     </div>
-    <div class="col-md-3">
-        <label asp-for="Stock" class="form-label"></label>
-        <input asp-for="Stock" class="form-control" />
-        <span asp-validation-for="Stock" class="text-danger"></span>
+    <div class="col-12">
+        <label class="form-label">Talles y stock</label>
+        <div id="tallesContainer" class="row g-2">
+            @if (Model.TallesStock != null && Model.TallesStock.Any())
+            {
+                foreach (var ts in Model.TallesStock)
+                {
+                    <div class="col-md-4 d-flex gap-2 align-items-center talla-row">
+                        <select name="Tallas[]" class="form-select">
+                            @foreach (var t in (IEnumerable<ProyectoCamisetas.Models.Talla>)ViewBag.TallasEnum)
+                            {
+                                if (t == ts.Talla)
+                                {
+                                    <option value="@((int)t)" selected="selected">@t</option>
+                                }
+                                else
+                                {
+                                    <option value="@((int)t)">@t</option>
+                                }
+                            }
+                        </select>
+                        <input name="Cantidades[]" type="number" min="0" class="form-control" value="@ts.Cantidad" placeholder="Cant." />
+                        <button type="button" class="btn btn-outline-danger remove-talla">&times;</button>
+                    </div>
+                }
+            }
+            else
+            {
+                <div class="col-md-4 d-flex gap-2 align-items-center talla-row">
+                    <select name="Tallas[]" class="form-select">
+                        @foreach (var t in (IEnumerable<ProyectoCamisetas.Models.Talla>)ViewBag.TallasEnum)
+                        {
+                            <option value="@((int)t)">@t</option>
+                        }
+                    </select>
+                    <input name="Cantidades[]" type="number" min="0" class="form-control" value="0" placeholder="Cant." />
+                    <button type="button" class="btn btn-outline-danger remove-talla">&times;</button>
+                </div>
+            }
+        </div>
+        <div id="tallaRowTemplate" class="d-none">
+            <div class="col-md-4 d-flex gap-2 align-items-center talla-row">
+                <select name="Tallas[]" class="form-select">
+                    @foreach (var t in (IEnumerable<ProyectoCamisetas.Models.Talla>)ViewBag.TallasEnum)
+                    {
+                        <option value="@((int)t)">@t</option>
+                    }
+                </select>
+                <input name="Cantidades[]" type="number" min="0" class="form-control" value="0" placeholder="Cant." />
+                <button type="button" class="btn btn-outline-danger remove-talla">&times;</button>
+            </div>
+        </div>
+        <button type="button" id="addTalla" class="btn btn-outline-secondary btn-sm mt-2">Agregar talla</button>
     </div>
     <div class="col-md-4">
         <label asp-for="SKU" class="form-label"></label>
@@ -109,3 +154,21 @@
         <input asp-for="CodigoBarras" class="form-control" />
     </div>
 </div>
+<script>
+    (function(){
+        const cont = document.getElementById('tallesContainer');
+        const addBtn = document.getElementById('addTalla');
+        const tpl = document.getElementById('tallaRowTemplate');
+        if (!cont || !addBtn || !tpl) return;
+        addBtn.addEventListener('click', function(){
+            const node = tpl.firstElementChild.cloneNode(true);
+            cont.appendChild(node);
+        });
+        cont.addEventListener('click', function(e){
+            if (e.target && e.target.classList.contains('remove-talla')){
+                const row = e.target.closest('.talla-row');
+                if (row) row.remove();
+            }
+        });
+    })();
+    </script>
