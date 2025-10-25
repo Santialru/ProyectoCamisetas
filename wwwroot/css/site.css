@@ -279,7 +279,9 @@ a:hover { color: #cfe2ff; }
 
 .card, .modal-content, .dropdown-menu { background-color:#151c2c; color:#e9eef7; border-color: rgba(255,255,255,.06); }
 .mega-dropdown { min-width: 760px; }
-.nav-item.dropdown:hover .dropdown-menu { display:block; }
+@media (min-width: 768px) {
+  .nav-item.dropdown:hover .dropdown-menu { display:block; }
+}
 .dropdown-menu .dropdown-header { color:#cfe2ff; font-weight:700; }
 .dropdown-menu .dropdown-item { color:#e9eef7; }
 .dropdown-menu .dropdown-item:hover { background-color:#1b2437; color:#ffffff; }
@@ -303,12 +305,12 @@ a:hover { color: #cfe2ff; }
   /* Mostrar nombres junto a iconos en menú móvil */
   .navbar .nav-link span { display: inline !important; }
   /* Evitar superposición del footer/FABs con el último contenido */
-  main[role="main"] { padding-bottom: 160px; }
+  main[role="main"] { padding-bottom: 200px; }
 }
 
 /* Afinar separación en pantallas muy pequeñas */
 @media (max-width: 439px) {
-  main[role="main"] { padding-bottom: 220px; }
+  main[role="main"] { padding-bottom: 260px; }
   footer.footer { position: relative; z-index: 0; margin-top: 8px; }
 }
 @media (min-width: 577px) {
@@ -363,3 +365,75 @@ header { position: sticky; top: 0; z-index: 1050; }
 .details-media .carousel-item img,
 .details-media .jersey-detail { height: 100% !important; width: auto !important; max-width: 100% !important; object-fit: contain; }
 @media (max-width: 576px) { .details-media { height: 360px !important; min-height: 260px; max-height: 420px; } }
+
+
+
+/* Oculta de forma accesible cuando está cerrado */
+[hidden] { display: none !important; }
+
+/* Contenedor que se desliza (usamos height para animar) */
+.collapse-slide {
+  overflow: hidden;
+  height: 0;
+  transition: height 220ms ease;
+}
+
+/* En pantallas md+ que tu mega menú sea ancho como dropdown */
+.mega-dropdown {
+  /* Alineado con el tema oscuro del dropdown */
+  background-color: #151c2c;
+  border-radius: .5rem;
+  box-shadow: 0 0.25rem 1rem rgba(0,0,0,.35);
+}
+
+/* Respeta usuarios que prefieren menos animaciones */
+@media (prefers-reduced-motion: reduce) {
+  .collapse-slide { transition: none; }
+}
+
+/* Ajustes del mega menú dentro del menú hamburguesa (móvil) */
+@media (max-width: 767.98px) {
+  .navbar-collapse.show { max-height: calc(100vh - 64px); overflow-y: auto; }
+  .navbar .dropdown-menu.mega-dropdown {
+    position: static !important;
+    display: block; /* visible cuando no tenga [hidden] */
+    width: 100%;
+    min-width: 0;
+    margin: .25rem 0 0 0;
+    border: 1px solid rgba(255,255,255,.06);
+    background-color: #151c2c; /* asegura fondo oscuro en móvil */
+    border-radius: .5rem;
+    box-shadow: none;
+  }
+  .navbar .dropdown-menu.mega-dropdown .dropdown-item {
+    padding-left: .5rem;
+    padding-right: .5rem;
+  }
+}
+
+/* Evitar superposición del footer con el último contenido en móvil */
+@media (max-width: 576px) {
+  footer.footer { clear: both; position: relative; z-index: 0; margin-top: 16px; padding-top: 8px; }
+  footer.footer .d-flex { flex-wrap: wrap; row-gap: .4rem; }
+}
+
+/* Separación extra antes del footer para carrusel horizontal en móvil */
+@media (max-width: 576px) {
+  .showcase { margin-bottom: 84px; }
+  .showcase-track { padding-bottom: 16px; }
+}
+
+.text-decoration-none 
+{ text-decoration: none !important; 
+
+  color: inherit;
+  margin: 0px;
+  height: 2%;
+}
+
+.text-muted 
+{ 
+  color: #b8c2d9 !important;
+  height: 2%;
+  
+}

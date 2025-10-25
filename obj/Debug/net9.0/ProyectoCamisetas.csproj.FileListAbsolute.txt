@@ -173,5 +173,5 @@ C:\Users\santi\OneDrive\Desktop\camisetas\ProyectoCamisetas\bin\Debug\net9.0\Swa
 C:\Users\santi\OneDrive\Desktop\camisetas\ProyectoCamisetas\bin\Debug\net9.0\Swashbuckle.AspNetCore.SwaggerUI.dll
 C:\Users\santi\OneDrive\Desktop\camisetas\ProyectoCamisetas\obj\Debug\net9.0\ProyectoCamisetas.MvcApplicationPartsAssemblyInfo.cs
 C:\Users\santi\OneDrive\Desktop\camisetas\ProyectoCamisetas\bin\Debug\net9.0\EFCore.NamingConventions.dll
-C:\Users\santi\OneDrive\Desktop\camisetas\ProyectoCamisetas\obj\Debug\net9.0\compressed\ktisqv1850-8kqw48njpv.gz
-C:\Users\santi\OneDrive\Desktop\camisetas\ProyectoCamisetas\obj\Debug\net9.0\compressed\geiylytxf3-7fu3jzynd9.gz
+C:\Users\santi\OneDrive\Desktop\camisetas\ProyectoCamisetas\obj\Debug\net9.0\compressed\ktisqv1850-ue64x12f34.gz
+C:\Users\santi\OneDrive\Desktop\camisetas\ProyectoCamisetas\obj\Debug\net9.0\compressed\geiylytxf3-pkw3xrmr9p.gz

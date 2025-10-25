@@ -4,9 +4,9 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - Clasico del Gol</title>
-    <meta name="description" content="Clasico del Gol - Cat·logo de camisetas de f˙tbol, ediciones ˙nicas y cl·sicas. SÌguenos en Instagram: &#64;clasicodelgol.tuc" />
+    <meta name="description" content="Clasico del Gol - CatÔøΩlogo de camisetas de fÔøΩtbol, ediciones ÔøΩnicas y clÔøΩsicas. SÔøΩguenos en Instagram: &#64;clasicodelgol.tuc" />
     <meta property="og:title" content="Clasico del Gol" />
-    <meta property="og:description" content="Cat·logo de camisetas de f˙tbol. Descubre ediciones ˙nicas y cl·sicas." />
+    <meta property="og:description" content="CatÔøΩlogo de camisetas de fÔøΩtbol. Descubre ediciones ÔøΩnicas y clÔøΩsicas." />
     <meta property="og:type" content="website" />
     <meta property="og:url" content="/" />
     <meta property="og:image" content="/img/logo.jpg" />
@@ -24,48 +24,57 @@
                     <img src="~/img/logo.jpg" alt="Logo Clasico del Gol" class="brand-logo" />
                     <span class="brand-name">Clasico del Gol</span>
                 </a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
+
+
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
                         aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
                 </button>
-                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
+                <div id="navbarSupportedContent" class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
                     <ul class="navbar-nav flex-grow-1">
                         <li class="nav-item">
                             <a class="nav-link text-light" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
                         </li>
                         
                         <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle text-light" asp-controller="Camisetas" asp-action="Index" id="catalogoDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">Cat·logo</a>
-                            <div class="dropdown-menu p-3 mega-dropdown" aria-labelledby="catalogoDropdown">
+                            <!-- Bot√≥n/trigger de Cat√°logo SIN data-bs-toggle -->
+                            <a id="catalogoDropdown" href="#" class="nav-link dropdown-toggle text-light" role="button" aria-haspopup="true" aria-controls="catalogoPanel" aria-expanded="false">
+                                Cat√°logo
+                            </a>
+
+
+                            <!-- Panel deslizante (antes era .dropdown-menu) -->
+                            <div id="catalogoPanel" class="dropdown-menu mega-dropdown p-3 collapse-slide" hidden>
                                 <div class="row g-3">
-                                    <div class="col-12 col-md-4">
-                                        <h6 class="dropdown-header px-0">Clubes</h6>
-                                        <a class="dropdown-item" asp-controller="Camisetas" asp-action="Index" asp-route-q="River">River</a>
-                                        <a class="dropdown-item" asp-controller="Camisetas" asp-action="Index" asp-route-q="Boca">Boca</a>
-                                        <a class="dropdown-item" asp-controller="Camisetas" asp-action="Index" asp-route-q="Barcelona">Barcelona</a>
-                                        <a class="dropdown-item" asp-controller="Camisetas" asp-action="Index" asp-route-q="Real Madrid">Real Madrid</a>
-                                        <a class="dropdown-item" asp-controller="Camisetas" asp-action="Index" asp-route-q="Chelsea">Chelsea</a>
-                                        <a class="dropdown-item" asp-controller="Camisetas" asp-action="Index" asp-route-q="Manchester United">Manchester United</a>
-                                    </div>
-                                    <div class="col-12 col-md-4">
-                                        <h6 class="dropdown-header px-0">Selecciones</h6>
-                                        <a class="dropdown-item" asp-controller="Camisetas" asp-action="Index" asp-route-q="Argentina">Argentina</a>
-                                        <a class="dropdown-item" asp-controller="Camisetas" asp-action="Index" asp-route-q="Brasil">Brasil</a>
-                                        <a class="dropdown-item" asp-controller="Camisetas" asp-action="Index" asp-route-q="EspaÒa">EspaÒa</a>
-                                        <a class="dropdown-item" asp-controller="Camisetas" asp-action="Index" asp-route-q="Portugal">Portugal</a>
-                                        <a class="dropdown-item" asp-controller="Camisetas" asp-action="Index" asp-route-q="Francia">Francia</a>
-                                    </div>
-                                    <div class="col-12 col-md-4">
-                                        <h6 class="dropdown-header px-0">Ligas</h6>
-                                        <a class="dropdown-item" asp-controller="Camisetas" asp-action="Index" asp-route-q="La Liga">La Liga</a>
-                                        <a class="dropdown-item" asp-controller="Camisetas" asp-action="Index" asp-route-q="Premier League">Premier League</a>
-                                        <a class="dropdown-item" asp-controller="Camisetas" asp-action="Index" asp-route-q="Serie A">Serie A</a>
-                                        <a class="dropdown-item" asp-controller="Camisetas" asp-action="Index" asp-route-q="Bundesliga">Bundesliga</a>
-                                        <a class="dropdown-item" asp-controller="Camisetas" asp-action="Index" asp-route-q="Ligue 1">Ligue 1</a>
-                                    </div>
+                                <div class="col-12 col-md-4">
+                                    <h6 class="dropdown-header px-0">Clubes</h6>
+                                    <a class="dropdown-item" asp-controller="Camisetas" asp-action="Index" asp-route-q="River">River</a>
+                                    <a class="dropdown-item" asp-controller="Camisetas" asp-action="Index" asp-route-q="Boca">Boca</a>
+                                    <a class="dropdown-item" asp-controller="Camisetas" asp-action="Index" asp-route-q="Barcelona">Barcelona</a>
+                                    <a class="dropdown-item" asp-controller="Camisetas" asp-action="Index" asp-route-q="Real Madrid">Real Madrid</a>
+                                    <a class="dropdown-item" asp-controller="Camisetas" asp-action="Index" asp-route-q="Chelsea">Chelsea</a>
+                                    <a class="dropdown-item" asp-controller="Camisetas" asp-action="Index" asp-route-q="Manchester United">Manchester United</a>
+                                </div>
+                                <div class="col-12 col-md-4">
+                                    <h6 class="dropdown-header px-0">Selecciones</h6>
+                                    <a class="dropdown-item" asp-controller="Camisetas" asp-action="Index" asp-route-q="Argentina">Argentina</a>
+                                    <a class="dropdown-item" asp-controller="Camisetas" asp-action="Index" asp-route-q="Brasil">Brasil</a>
+                                    <a class="dropdown-item" asp-controller="Camisetas" asp-action="Index" asp-route-q="Espa√±a">Espa√±a</a>
+                                    <a class="dropdown-item" asp-controller="Camisetas" asp-action="Index" asp-route-q="Portugal">Portugal</a>
+                                    <a class="dropdown-item" asp-controller="Camisetas" asp-action="Index" asp-route-q="Francia">Francia</a>
+                                </div>
+                                <div class="col-12 col-md-4">
+                                    <h6 class="dropdown-header px-0">Ligas</h6>
+                                    <a class="dropdown-item" asp-controller="Camisetas" asp-action="Index" asp-route-q="La Liga">La Liga</a>
+                                    <a class="dropdown-item" asp-controller="Camisetas" asp-action="Index" asp-route-q="Premier League">Premier League</a>
+                                    <a class="dropdown-item" asp-controller="Camisetas" asp-action="Index" asp-route-q="Serie A">Serie A</a>
+                                    <a class="dropdown-item" asp-controller="Camisetas" asp-action="Index" asp-route-q="Bundesliga">Bundesliga</a>
+                                    <a class="dropdown-item" asp-controller="Camisetas" asp-action="Index" asp-route-q="Ligue 1">Ligue 1</a>
+                                </div>
                                 </div>
                             </div>
                         </li>
+    
                         @if (User?.Identity?.IsAuthenticated ?? false)
                         {
                             <li class="nav-item">
@@ -110,6 +119,7 @@
                 </div>
             </div>
         </nav>
+        
     </header>
     <div class="container">
         <main role="main" class="pb-3">
@@ -120,9 +130,9 @@
     <footer class="border-top footer text-muted">
         <div class="container">
             <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
-                <span>&copy; 2025 - Clasico del Gol</span>
+                <span class="text-muted">&copy; 2025 - Clasico del Gol</span>
                 <a href="https://www.instagram.com/clasicodelgol.tuc/" target="_blank" rel="noopener" class="text-decoration-none">
-                    SÌguenos en Instagram &#64;clasicodelgol.tuc
+                    S√≠guenos en Instagram &#64;clasicodelgol.tuc
                 </a>
             </div>
         </div>
@@ -152,6 +162,7 @@
     <a class="wa-fab" href="https://wa.me/qr/7YBEDMKJQDICB1" target="_blank" rel="noopener" title="WhatsApp" aria-label="Abrir WhatsApp">
         <img src="~/img/whatsapp.svg.webp" alt="WhatsApp" class="wa-icon" />
     </a>
+    
+
 </body>
 </html>
-
