@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("ProyectoCamisetas")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Release")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+20e64ef5e3fd8613f4641ff15043e00d9bc24eb4")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+db85e773c811c64f1f8b593f9382c36113b97ddf")]
 [assembly: System.Reflection.AssemblyProductAttribute("ProyectoCamisetas")]
 [assembly: System.Reflection.AssemblyTitleAttribute("ProyectoCamisetas")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
