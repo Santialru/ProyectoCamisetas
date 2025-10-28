@@ -1,8 +1,5 @@
 using Microsoft.EntityFrameworkCore;
 using EFCore.NamingConventions;
-using Microsoft.AspNetCore.HttpOverrides;
-using Microsoft.AspNetCore.Authentication.Cookies;
-
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -103,51 +100,6 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseRouting();
-
-app.Use(async (ctx, next) =>
-{
-    await next();
-
-    // Solo para HTML, evita cache y varía por cookies
-    if ((ctx.Response.ContentType ?? "").StartsWith("text/html", StringComparison.OrdinalIgnoreCase))
-    {
-        ctx.Response.Headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0";
-        ctx.Response.Headers["Pragma"] = "no-cache";
-        ctx.Response.Headers["Expires"] = "0";
-        ctx.Response.Headers["Vary"] = "Cookie";
-    }
-});
-
-
-
-
-app.UseForwardedHeaders(new ForwardedHeadersOptions
-{
-    ForwardedHeaders = ForwardedHeaders.XForwardedProto | ForwardedHeaders.XForwardedFor,
-    // Opcional: fija proxies conocidos para más seguridad:
-    // KnownProxies = { IPAddress.Parse("x.y.z.w") }
-});
-
-// Si forzás HTTPS:
-app.UseHttpsRedirection();
-
-
-
-builder.Services
-    .AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
-    .AddCookie(o =>
-    {
-        o.Cookie.Name = ".AspNetCore.Cookies"; // o el tuyo
-        o.Cookie.HttpOnly = true;
-        o.Cookie.SecurePolicy = CookieSecurePolicy.Always; // importante detrás de HTTPS
-        o.Cookie.SameSite = SameSiteMode.Lax; // suele ser lo más seguro/compatible
-        o.SlidingExpiration = true;
-        o.LoginPath = "/Account/Login";
-        o.LogoutPath = "/Account/Logout";
-        // Opcional: o.Events para depurar
-    });
-
-
 
 
 app.UseAuthentication();
