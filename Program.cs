@@ -47,6 +47,11 @@ builder.Services
         options.AccessDeniedPath = "/"; // catálogo público
         options.SlidingExpiration = true;
         options.ExpireTimeSpan = TimeSpan.FromHours(8);
+        // Cookies seguras en producción y evitar problemas de proxies/CDN
+        options.Cookie.Name = "cdg_auth";
+        options.Cookie.HttpOnly = true;
+        options.Cookie.SameSite = SameSiteMode.Lax;
+        options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
     });
 
 var app = builder.Build();

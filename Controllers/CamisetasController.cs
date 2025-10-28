@@ -8,6 +8,7 @@ using ProyectoCamisetas.Repository;
 namespace ProyectoCamisetas.Controllers
 {
     // Catálogo público de camisetas
+    [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
     public class CamisetasController : Controller
     {
         private readonly ICamisetasRepository _repo;

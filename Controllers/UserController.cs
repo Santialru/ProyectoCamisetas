@@ -8,6 +8,7 @@ using ProyectoCamisetas.ViewModels;
 
 namespace ProyectoCamisetas.Controllers
 {
+    [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
     public class UserController : Controller
     {
         private readonly IUserRepository _users;
@@ -73,4 +74,3 @@ namespace ProyectoCamisetas.Controllers
         }
     }
 }
-

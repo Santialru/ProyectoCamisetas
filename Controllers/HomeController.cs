@@ -5,6 +5,7 @@ using ProyectoCamisetas.Repository;
 
 namespace ProyectoCamisetas.Controllers;
 
+[ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
 public class HomeController : Controller
 {
     private readonly ILogger<HomeController> _logger;

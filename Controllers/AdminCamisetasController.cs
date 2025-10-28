@@ -8,6 +8,7 @@ using ProyectoCamisetas.Repository;
 namespace ProyectoCamisetas.Controllers
 {
     [Authorize(Roles = "Owner")]
+    [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
     public class AdminCamisetasController : Controller
     {
         private readonly ICamisetasRepository _repo;
