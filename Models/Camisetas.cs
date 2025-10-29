@@ -99,6 +99,8 @@ namespace ProyectoCamisetas.Models
         [Display(Name = "Código de barras")]
         public string? CodigoBarras { get; set; }
 
+        public bool DestacadaInicio { get; set; }
+
         // Propiedad de conveniencia
         [Display(Name = "Disponible")]
         public bool EnStock => (TallesStock?.Sum(t => (int?)t.Cantidad) ?? Stock) > 0;

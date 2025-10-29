@@ -19,10 +19,12 @@ public class HomeController : Controller
 
     public async Task<IActionResult> Index(CancellationToken ct)
     {
-        var aleatorias = await _camisetas.GetRandomAsync(12, onlyAvailable: true, ct);
-        return View(aleatorias);
+        var productos = await _camisetas.GetRandomAsync(5, onlyAvailable: false, ct);
+        ViewBag.Destacada = await _camisetas.GetHomeFeaturedAsync(ct);
+        return View(productos);
     }
-
+    
+    [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
     public IActionResult Privacy()
     {
         return View();

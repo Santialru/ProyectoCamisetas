@@ -4,10 +4,44 @@
 }
 
 <section class="hero-football mb-4">
+    <div class="container-fluid py-2">
+        <div class="row align-items-center g-3">
+            <div class="col-12 col-lg-6">
     <div class="hero-content">
         <h1>Descubre nuestras camisetas</h1>
         <p>Clásicas, actuales y ediciones limitadas</p>
         <a class="btn btn-light btn-lg" asp-controller="Camisetas" asp-action="Index">Ver catálogo</a>
+    </div>
+            </div>
+            <div class="col-12 col-lg-6">
+                @{ var dest = ViewBag.Destacada as ProyectoCamisetas.Models.Camiseta; }
+                @if (dest != null)
+                {
+                    <div id="heroCarousel" class="carousel slide" data-bs-ride="carousel" data-bs-interval="3500" data-bs-pause="false" data-bs-touch="true">
+                        <div class="carousel-inner">
+                            @{
+                                var imgs = (dest.Imagenes ?? Enumerable.Empty<ProyectoCamisetas.Models.CamisetaImagen>())
+                                    .OrderBy(i => i.Orden)
+                                    .Select(i => i.Url)
+                                    .ToList();
+                                if (!imgs.Any() && !string.IsNullOrWhiteSpace(dest.ImagenUrl))
+                                {
+                                    imgs = new List<string> { dest.ImagenUrl! };
+                                }
+                            }
+                            @for (int i = 0; i < imgs.Count; i++)
+                            {
+                                var active = i == 0 ? "active" : "";
+                                <div class="carousel-item @active">
+                                    <img src="@imgs[i]" class="d-block w-100 jersey-detail" alt="Camiseta destacada" />
+                                </div>
+                            }
+                        </div>
+                        @* Sin flechas; el carrusel avanza automáticamente *@
+                    </div>
+                }
+            </div>
+        </div>
     </div>
  </section>
 

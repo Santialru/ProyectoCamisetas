@@ -17,10 +17,18 @@ namespace ProyectoCamisetas.Controllers
         { _repo = repo; }
 
         [HttpGet]
-        public async Task<IActionResult> Index(string? q, string? liga, string? equipo, string? temporada, CancellationToken ct)
+        public async Task<IActionResult> Index(string? q, string? liga, string? equipo, string? temporada, bool? enStock, CancellationToken ct)
         {
             var destacadas = await _repo.GetDestacadasAsync(q, liga, equipo, temporada, 12, ct);
             var camisetas = await _repo.GetAllAsync(q, liga, equipo, temporada, ct);
+
+            // Filtro de disponibilidad si se solicita
+            if (enStock == true)
+            {
+                destacadas = destacadas.Where(c => c.EnStock).ToList();
+                camisetas = camisetas.Where(c => c.EnStock).ToList();
+                ViewBag.EnStock = true;
+            }
 
             // Priorizar en stock en memoria usando la propiedad EnStock
             destacadas = destacadas

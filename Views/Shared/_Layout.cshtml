@@ -22,7 +22,7 @@
             <div class="container-fluid">
                 <a class="navbar-brand d-flex align-items-center gap-2" asp-area="" asp-controller="Home" asp-action="Index">
                     <img src="~/img/logo.jpg" alt="Logo Clasico del Gol" class="brand-logo" />
-                    <span class="brand-name">Clasico del Golll</span>
+                    <span class="brand-name">Clasico del Gol</span>
                 </a>
 
 
@@ -70,12 +70,15 @@
                                     <a class="dropdown-item" asp-controller="Camisetas" asp-action="Index" asp-route-q="Serie A">Serie A</a>
                                     <a class="dropdown-item" asp-controller="Camisetas" asp-action="Index" asp-route-q="Bundesliga">Bundesliga</a>
                                     <a class="dropdown-item" asp-controller="Camisetas" asp-action="Index" asp-route-q="Ligue 1">Ligue 1</a>
+                                    <hr class="my-2" />
+                                    <h6 class="dropdown-header px-0">Disponibilidad</h6>
+                                    <a class="dropdown-item" asp-controller="Camisetas" asp-action="Index" asp-route-enStock="true">En stock ahora</a>
                                 </div>
                                 </div>
                             </div>
                         </li>
     
-                        @if (User?.Identity?.IsAuthenticated ?? false)
+                        @if (User?.Identity?.IsAuthenticated == true && User.IsInRole("Owner"))
                         {
                             <li class="nav-item">
                                 <a class="nav-link text-light" asp-controller="AdminCamisetas" asp-action="Index">Admin</a>

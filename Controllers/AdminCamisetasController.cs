@@ -21,7 +21,7 @@ namespace ProyectoCamisetas.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> Index(string? equipo, string? temporada, string? orden, CancellationToken ct)
+        public async Task<IActionResult> Index(string? equipo, string? temporada, string? orden, int page = 1, int pageSize = 10, CancellationToken ct = default)
         {
             var list = await _repo.GetAllAdminAsync(ct);
 
@@ -65,10 +65,49 @@ namespace ProyectoCamisetas.Controllers
                     break;
             }
 
+            // Paginado
+            pageSize = Math.Clamp(pageSize, 1, 100);
+            var total = list.Count;
+            var totalPages = Math.Max(1, (int)Math.Ceiling(total / (double)pageSize));
+            page = Math.Clamp(page, 1, totalPages);
+            var items = list.Skip((page - 1) * pageSize).Take(pageSize).ToList();
+
             ViewBag.SelectedEquipo = equipo;
             ViewBag.SelectedTemporada = temporada;
             ViewBag.Orden = orden;
-            return View(list);
+            ViewBag.Page = page;
+            ViewBag.PageSize = pageSize;
+            ViewBag.TotalPages = totalPages;
+            ViewBag.TotalItems = total;
+            return View(items);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> FeatureHome(int page = 1, int pageSize = 10, CancellationToken ct = default)
+        {
+            var list = await _repo.GetAllAdminAsync(ct);
+            var current = list.FirstOrDefault(c => c.DestacadaInicio)?.Id;
+            pageSize = Math.Clamp(pageSize, 1, 100);
+            var total = list.Count;
+            var totalPages = Math.Max(1, (int)Math.Ceiling(total / (double)pageSize));
+            page = Math.Clamp(page, 1, totalPages);
+            var items = list.Skip((page - 1) * pageSize).Take(pageSize).ToList();
+
+            ViewBag.CurrentFeaturedId = current;
+            ViewBag.Page = page;
+            ViewBag.PageSize = pageSize;
+            ViewBag.TotalPages = totalPages;
+            ViewBag.TotalItems = total;
+            return View(items);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> FeatureHome(int camisetaId, CancellationToken ct)
+        {
+            await _repo.SetHomeFeaturedAsync(camisetaId, ct);
+            TempData["Success"] = "Inicio actualizado.";
+            return RedirectToAction(nameof(Index));
         }
 
         [HttpGet]

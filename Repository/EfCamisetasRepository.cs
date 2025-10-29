@@ -89,12 +89,22 @@ namespace ProyectoCamisetas.Repository
                 .Include(c => c.Imagenes!.OrderBy(i => i.Orden))
                 .Include(c => c.TallesStock);
             if (onlyAvailable)
-                q = q.Where(c => c.Stock > 0);
+            {
+                // Disponible si hay stock global o por talles
+                q = q.Where(c => c.Stock > 0 || c.TallesStock!.Sum(ts => (int?)ts.Cantidad) > 0);
+            }
 
             // PostgreSQL random ordering
             return await q.OrderBy(_ => EF.Functions.Random())
                 .Take(take)
                 .ToListAsync(ct);
+        }
+
+        public async Task<Camiseta?> GetHomeFeaturedAsync(CancellationToken ct = default)
+        {
+            return await _db.Camisetas.AsNoTracking()
+                .Include(c => c.Imagenes!.OrderBy(i => i.Orden))
+                .FirstOrDefaultAsync(c => c.DestacadaInicio, ct);
         }
 
         public async Task<Camiseta> AddAsync(Camiseta entity, CancellationToken ct = default)
@@ -117,6 +127,17 @@ namespace ProyectoCamisetas.Repository
             _db.Camisetas.Remove(entity);
             await _db.SaveChangesAsync(ct);
             return true;
+        }
+
+        public async Task SetHomeFeaturedAsync(int camisetaId, CancellationToken ct = default)
+        {
+            // Limpiar anteriores y marcar la nueva
+            await _db.Camisetas.Where(c => c.DestacadaInicio).ExecuteUpdateAsync(s => s.SetProperty(c => c.DestacadaInicio, false), ct);
+
+            var entity = await _db.Camisetas.FirstOrDefaultAsync(c => c.Id == camisetaId, ct);
+            if (entity is null) return;
+            entity.DestacadaInicio = true;
+            await _db.SaveChangesAsync(ct);
         }
 
         public async Task SetImagesAsync(int camisetaId, IEnumerable<string> urls, CancellationToken ct = default)
