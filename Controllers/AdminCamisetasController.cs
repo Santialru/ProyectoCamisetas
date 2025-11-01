@@ -129,6 +129,9 @@ namespace ProyectoCamisetas.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(Camiseta model, CancellationToken ct)
         {
+            // Normalizar SKU opcional: convertir vacío/espacios a null
+            model.SKU = string.IsNullOrWhiteSpace(model.SKU) ? null : model.SKU!.Trim();
+
             if (!ModelState.IsValid)
             {
                 PopulateSelects();
@@ -170,6 +173,9 @@ namespace ProyectoCamisetas.Controllers
         public async Task<IActionResult> Edit(int id, Camiseta model, CancellationToken ct)
         {
             if (id != model.Id) return BadRequest();
+            // Normalizar SKU opcional: convertir vacío/espacios a null
+            model.SKU = string.IsNullOrWhiteSpace(model.SKU) ? null : model.SKU!.Trim();
+
             if (!ModelState.IsValid)
             {
                 PopulateSelects();
@@ -236,6 +242,19 @@ namespace ProyectoCamisetas.Controllers
                 var precio = (double)ent.Precio;
                 var nuevo = subir ? precio * (1.0 + factor) : precio * (1.0 - factor);
                 if (nuevo < 0) nuevo = 0;
+                // Si es una baja de precio, guardar precio anterior para mostrar descuento
+                if (!subir)
+                {
+                    if (!ent.PrecioAnterior.HasValue || ent.PrecioAnterior.Value <= ent.Precio)
+                    {
+                        ent.PrecioAnterior = ent.Precio;
+                    }
+                }
+                else
+                {
+                    // Si sube precio, limpiamos precio anterior para no mostrar descuento
+                    ent.PrecioAnterior = null;
+                }
                 ent.Precio = (decimal)Math.Round(nuevo, 2, MidpointRounding.AwayFromZero);
                 await _repo.UpdateAsync(ent, ct);
             }

@@ -1,37 +1,31 @@
 using System;
-using System.Collections.Generic;
-using System.Security.Claims;
-using Microsoft.AspNetCore.Authentication;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using EFCore.NamingConventions;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// ---------- Auth por cookies (ajustado para HTTP en ntempurl) ----------
+// ---------- Autenticación por cookies ----------
 builder.Services
-  .AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
-  .AddCookie(o =>
-  {
-      o.Cookie.Name = "cdg_auth";
-      o.Cookie.HttpOnly = true;
+    .AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+    .AddCookie(o =>
+    {
+        o.Cookie.Name = "cdg_auth";
+        o.Cookie.HttpOnly = true;
+        o.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest; // Cambiar a Always cuando tengas SSL real
+        o.Cookie.SameSite = SameSiteMode.Lax;
 
-      // En el subdominio temporal (HTTP) usá SameAsRequest.
-      // Cuando tengas tu dominio con SSL: cambiá a CookieSecurePolicy.Always.
-      o.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
-      o.Cookie.SameSite = SameSiteMode.Lax;
-
-      o.LoginPath = "/User/Login";
-      o.LogoutPath = "/User/Logout";
-      o.AccessDeniedPath = "/";         // catálogo público
-      o.SlidingExpiration = true;
-      o.ExpireTimeSpan = TimeSpan.FromHours(8);
-  });
+        o.LoginPath = "/User/Login";
+        o.LogoutPath = "/User/Logout";
+        o.AccessDeniedPath = "/";
+        o.SlidingExpiration = true;
+        o.ExpireTimeSpan = TimeSpan.FromHours(8);
+    });
 
 builder.Services.AddAntiforgery(o =>
 {
-    o.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest; // idem observación de arriba
+    o.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
     o.Cookie.SameSite = SameSiteMode.Lax;
 });
 
@@ -101,11 +95,10 @@ catch
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
-    // IMPORTANTE: mientras uses el subdominio temporal SIN SSL, NO uses HSTS ni redirección HTTPS.
+    // En smarterasp (HTTP temporal) no usar HSTS ni redirección HTTPS.
     // app.UseHsts();
 }
 
-// Swagger solo en Dev
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -116,40 +109,44 @@ if (app.Environment.IsDevelopment())
     });
 }
 
-// NO forzar HTTPS en ntempurl (rompe cookies Secure y la navegación)
-// app.UseHttpsRedirection();
+// app.UseHttpsRedirection(); // desactivado mientras uses HTTP en ntempurl
 
 app.UseStaticFiles();
-
 app.UseRouting();
 
-// Anti-cache para HTML dinámico (y evitar 304 con ETag viejo)
+// ---------- Middleware anti-cache seguro ----------
 app.Use(async (ctx, next) =>
 {
-    // Nunca devolver de caché del servidor
-    ctx.Response.Headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0, private";
-    ctx.Response.Headers["Pragma"] = "no-cache";
-    ctx.Response.Headers["Expires"] = "0";
-    ctx.Response.Headers["Vary"] = "Cookie";
+    // Evitar interferir con Swagger
+    if (ctx.Request.Path.StartsWithSegments("/swagger"))
+    {
+        await next();
+        return;
+    }
 
-    // No permitir validaciones condicionales que devuelvan 304 sobre HTML
     ctx.Request.Headers.Remove("If-None-Match");
-    ctx.Response.Headers.Remove("ETag");
+
+    ctx.Response.OnStarting(() =>
+    {
+        var ct = ctx.Response.ContentType ?? "";
+        if (ct.StartsWith("text/html", StringComparison.OrdinalIgnoreCase))
+        {
+            var h = ctx.Response.Headers;
+            h["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0, private";
+            h["Pragma"] = "no-cache";
+            h["Expires"] = "0";
+            h["Vary"] = "Cookie";
+            h.Remove("ETag");
+        }
+        return Task.CompletedTask;
+    });
 
     await next();
-
-    if ((ctx.Response.ContentType ?? "").StartsWith("text/html", StringComparison.OrdinalIgnoreCase))
-    {
-        ctx.Response.Headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0, private";
-        ctx.Response.Headers.Remove("ETag");
-    }
 });
-
 
 app.UseAuthentication();
 app.UseAuthorization();
 
-// Rutas MVC
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}"

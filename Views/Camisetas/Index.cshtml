@@ -16,7 +16,10 @@
     var hasFilters = !string.IsNullOrWhiteSpace(Context.Request.Query["q"]) 
         || !string.IsNullOrWhiteSpace(Context.Request.Query["liga"]) 
         || !string.IsNullOrWhiteSpace(Context.Request.Query["equipo"]) 
-        || !string.IsNullOrWhiteSpace(Context.Request.Query["temporada"]);
+        || !string.IsNullOrWhiteSpace(Context.Request.Query["temporada"]) 
+        || !string.IsNullOrWhiteSpace(Context.Request.Query["version"]) 
+        || !string.IsNullOrWhiteSpace(Context.Request.Query["other"]) 
+        || !string.IsNullOrWhiteSpace(Context.Request.Query["enStock"]);
 }
 @if (!hasFilters)
 {
@@ -37,6 +40,11 @@
                     {
                         <span class="photo-badge">@count fotos</span>
                     }
+                    @if (c.PrecioAnterior.HasValue && c.PrecioAnterior.Value > c.Precio)
+                    {
+                        var pct = (int)Math.Round((c.PrecioAnterior.Value - c.Precio) / c.PrecioAnterior.Value * 100m);
+                        <span class="discount-ribbon">-@pct%</span>
+                    }
                 </div>
                 <div class="product-info">
                     <div class="product-top">
@@ -46,7 +54,19 @@
                     <h3>@c.Equipo <small class="text-muted">@c.Temporada</small></h3>
                     <p class="text-truncate m-0">@c.Nombre</p>
                     <div class="product-foot">
-                        <span class="price">@c.Precio.ToString("C")</span>
+                        @if (c.PrecioAnterior.HasValue && c.PrecioAnterior.Value > c.Precio)
+                        {
+                            var pct = (int)Math.Round((c.PrecioAnterior.Value - c.Precio) / c.PrecioAnterior.Value * 100m);
+                            <span>
+                                <span class="price-old me-2">@c.PrecioAnterior.Value.ToString("C")</span>
+                                <span class="price-new">@c.Precio.ToString("C")</span>
+                                <span class="badge bg-danger ms-2 discount-badge">-@pct%</span>
+                            </span>
+                        }
+                        else
+                        {
+                            <span class="price">@c.Precio.ToString("C")</span>
+                        }
                         <span class="cta">Ver</span>
                     </div>
                 </div>
@@ -75,7 +95,7 @@
         var count = c.Imagenes?.Count ?? 0;
         if (count == 0 && !string.IsNullOrWhiteSpace(thumb)) { count = 1; }
         <div class="col">
-            <div class="card h-100">
+            <div class="card h-100 position-relative">
                 @if (!string.IsNullOrWhiteSpace(thumb))
                 {
                     <div class="image-wrap">
@@ -84,12 +104,31 @@
                         {
                             <span class="photo-badge">@count fotos</span>
                         }
+                        @if (c.PrecioAnterior.HasValue && c.PrecioAnterior.Value > c.Precio)
+                        {
+                            var pct = (int)Math.Round((c.PrecioAnterior.Value - c.Precio) / c.PrecioAnterior.Value * 100m);
+                            <span class="discount-ribbon">-@pct%</span>
+                        }
                     </div>
                 }
                 <div class="card-body">
                     <h5 class="card-title">@c.Equipo - @c.Temporada (@c.Tipo)</h5>
                     <p class="card-text">@c.Nombre<br/><small class="text-muted">@c.Liga A� @c.Marca</small></p>
-                    <a class="btn btn-outline-primary btn-sm" asp-action="Details" asp-route-id="@c.Id">Ver detalles</a>
+                    <div class="d-flex align-items-center justify-content-between mb-1">
+                        <div>
+                            @if (c.PrecioAnterior.HasValue && c.PrecioAnterior.Value > c.Precio)
+                            {
+                                <span class="price-old me-2">@c.PrecioAnterior.Value.ToString("C")</span>
+                                <span class="price-new">@c.Precio.ToString("C")</span>
+                            }
+                            else
+                            {
+                                <span class="price-new">@c.Precio.ToString("C")</span>
+                            }
+                        </div>
+                        <a class="btn btn-outline-primary btn-sm" asp-action="Details" asp-route-id="@c.Id">Ver detalles</a>
+                    </div>
+                    <a class="stretched-link" asp-action="Details" asp-route-id="@c.Id" aria-label="Ver detalles de @c.Nombre"></a>
                 </div>
             </div>
         </div>
@@ -107,7 +146,7 @@
         var count = c.Imagenes?.Count ?? 0;
         if (count == 0 && !string.IsNullOrWhiteSpace(thumb)) { count = 1; }
         <div class="col">
-            <div class="card h-100 opacity-90">
+            <div class="card h-100 opacity-90 position-relative">
                 @if (!string.IsNullOrWhiteSpace(thumb))
                 {
                     <div class="image-wrap">
@@ -116,12 +155,31 @@
                         {
                             <span class="photo-badge">@count fotos</span>
                         }
+                        @if (c.PrecioAnterior.HasValue && c.PrecioAnterior.Value > c.Precio)
+                        {
+                            var pct = (int)Math.Round((c.PrecioAnterior.Value - c.Precio) / c.PrecioAnterior.Value * 100m);
+                            <span class="discount-ribbon">-@pct%</span>
+                        }
                     </div>
                 }
                 <div class="card-body">
                     <h5 class="card-title">@c.Equipo - @c.Temporada (@c.Tipo)</h5>
                     <p class="card-text">@c.Nombre<br/><small class="text-muted">@c.Liga A� @c.Marca</small></p>
-                    <a class="btn btn-outline-primary btn-sm" asp-action="Details" asp-route-id="@c.Id">Ver detalles</a>
+                    <div class="d-flex align-items-center justify-content-between mb-1">
+                        <div>
+                            @if (c.PrecioAnterior.HasValue && c.PrecioAnterior.Value > c.Precio)
+                            {
+                                <span class="price-old me-2">@c.PrecioAnterior.Value.ToString("C")</span>
+                                <span class="price-new">@c.Precio.ToString("C")</span>
+                            }
+                            else
+                            {
+                                <span class="price-new">@c.Precio.ToString("C")</span>
+                            }
+                        </div>
+                        <a class="btn btn-outline-primary btn-sm" asp-action="Details" asp-route-id="@c.Id">Ver detalles</a>
+                    </div>
+                    <a class="stretched-link" asp-action="Details" asp-route-id="@c.Id" aria-label="Ver detalles de @c.Nombre"></a>
                 </div>
             </div>
         </div>
@@ -136,7 +194,7 @@
     var count = c.Imagenes?.Count ?? 0;
     if (count == 0 && !string.IsNullOrWhiteSpace(thumb)) { count = 1; }
     <div class="col">
-        <div class="card h-100">
+        <div class="card h-100 position-relative">
             @if (!string.IsNullOrWhiteSpace(thumb))
             {
                 <div class="image-wrap">
@@ -151,6 +209,7 @@
                 <h5 class="card-title">@c.Equipo - @c.Temporada (@c.Tipo)</h5>
                 <p class="card-text">@c.Nombre<br/><small class="text-muted">@c.Liga · @c.Marca</small></p>
                 <a class="btn btn-outline-primary btn-sm" asp-action="Details" asp-route-id="@c.Id">Ver detalles</a>
+                <a class="stretched-link" asp-action="Details" asp-route-id="@c.Id" aria-label="Ver detalles de @c.Nombre"></a>
             </div>
         </div>
     </div>

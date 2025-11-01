@@ -1,5 +1,11 @@
 @model ProyectoCamisetas.Models.Camiseta
 <div class="row g-3">
+@{
+    var __tallasList = ((IEnumerable<ProyectoCamisetas.Models.Talla>)ViewBag.TallasEnum);
+    var __tallaVals = new HashSet<int>(__tallasList.Select(t => (int)t));
+    var __add3XL = !__tallaVals.Contains(7);
+    var __add4XL = !__tallaVals.Contains(8);
+}
     <div class="col-md-6">
         <label asp-for="Nombre" class="form-label"></label>
         <input asp-for="Nombre" class="form-control" />
@@ -69,7 +75,7 @@
                 {
                     <div class="col-md-4 d-flex gap-2 align-items-center talla-row">
                         <select name="Tallas[]" class="form-select">
-                            @foreach (var t in (IEnumerable<ProyectoCamisetas.Models.Talla>)ViewBag.TallasEnum)
+                            @foreach (var t in __tallasList)
                             {
                                 if (t == ts.Talla)
                                 {
@@ -79,6 +85,14 @@
                                 {
                                     <option value="@((int)t)">@t</option>
                                 }
+                            }
+                            @if (__add3XL)
+                            {
+                                <option value="7" selected="@(((int)ts.Talla) == 7 ? "selected" : null)">XXXL</option>
+                            }
+                            @if (__add4XL)
+                            {
+                                <option value="8" selected="@(((int)ts.Talla) == 8 ? "selected" : null)">XXXXL</option>
                             }
                         </select>
                         <input name="Cantidades[]" type="number" min="0" class="form-control" value="@ts.Cantidad" placeholder="Cant." />
@@ -90,9 +104,17 @@
             {
                 <div class="col-md-4 d-flex gap-2 align-items-center talla-row">
                     <select name="Tallas[]" class="form-select">
-                        @foreach (var t in (IEnumerable<ProyectoCamisetas.Models.Talla>)ViewBag.TallasEnum)
+                        @foreach (var t in __tallasList)
                         {
                             <option value="@((int)t)">@t</option>
+                        }
+                        @if (__add3XL)
+                        {
+                            <option value="7">XXXL</option>
+                        }
+                        @if (__add4XL)
+                        {
+                            <option value="8">XXXXL</option>
                         }
                     </select>
                     <input name="Cantidades[]" type="number" min="0" class="form-control" value="0" placeholder="Cant." />
@@ -103,9 +125,17 @@
         <div id="tallaRowTemplate" class="d-none">
             <div class="col-md-4 d-flex gap-2 align-items-center talla-row">
                 <select name="Tallas[]" class="form-select">
-                    @foreach (var t in (IEnumerable<ProyectoCamisetas.Models.Talla>)ViewBag.TallasEnum)
+                    @foreach (var t in __tallasList)
                     {
                         <option value="@((int)t)">@t</option>
+                    }
+                    @if (__add3XL)
+                    {
+                        <option value="7">XXXL</option>
+                    }
+                    @if (__add4XL)
+                    {
+                        <option value="8">XXXXL</option>
                     }
                 </select>
                 <input name="Cantidades[]" type="number" min="0" class="form-control" value="0" placeholder="Cant." />

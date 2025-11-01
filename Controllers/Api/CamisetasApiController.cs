@@ -77,6 +77,8 @@ namespace ProyectoCamisetas.Controllers.Api
         [ProducesResponseType(400)]
         public async Task<IActionResult> Create([FromBody] Camiseta model, CancellationToken ct)
         {
+            // Normalizar SKU opcional: convertir vacío/espacios a null
+            model.SKU = string.IsNullOrWhiteSpace(model.SKU) ? null : model.SKU!.Trim();
             if (!ModelState.IsValid) return ValidationProblem(ModelState);
             _db.Camisetas.Add(model);
             await _db.SaveChangesAsync(ct);
@@ -96,6 +98,8 @@ namespace ProyectoCamisetas.Controllers.Api
             if (id != model.Id) return BadRequest();
             var exists = await _db.Camisetas.AnyAsync(c => c.Id == id, ct);
             if (!exists) return NotFound();
+            // Normalizar SKU opcional: convertir vacío/espacios a null
+            model.SKU = string.IsNullOrWhiteSpace(model.SKU) ? null : model.SKU!.Trim();
             if (!ModelState.IsValid) return ValidationProblem(ModelState);
             _db.Entry(model).State = EntityState.Modified;
             await _db.SaveChangesAsync(ct);

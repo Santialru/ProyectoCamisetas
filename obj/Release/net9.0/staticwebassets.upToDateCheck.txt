@@ -1,4 +1,3 @@
-wwwroot\css\site.css
 wwwroot\favicon.ico
 wwwroot\img\logo.jpg
 wwwroot\img\WhatsApp.svg.webp
@@ -89,6 +88,7 @@ wwwroot\uploads\2025\09\f4a3bd54fc7841258ba7987baea4371a.jpg
 wwwroot\uploads\2025\09\f5853a07463c43d580c7cb334c9e74b7.jpg
 wwwroot\uploads\2025\09\fbfbd8179379445d9259966ec007998b.jpg
 wwwroot\uploads\2025\09\fec15c9cac3a4378951dac665d356a43.jpg
+wwwroot\css\site.css
 C:\Users\santi\OneDrive\Desktop\camisetas\ProyectoCamisetas\wwwroot\css\site.css
 C:\Users\santi\OneDrive\Desktop\camisetas\ProyectoCamisetas\wwwroot\favicon.ico
 C:\Users\santi\OneDrive\Desktop\camisetas\ProyectoCamisetas\wwwroot\js\site.js

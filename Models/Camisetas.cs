@@ -1,4 +1,4 @@
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using System.Linq;
 
 namespace ProyectoCamisetas.Models
@@ -27,7 +27,7 @@ namespace ProyectoCamisetas.Models
         [Display(Name = "Tipo de kit")]
         public TipoKit Tipo { get; set; }
 
-        [Display(Name = "Versión")]
+        [Display(Name = "VersiÃ³n")]
         [Required]
         public VersionCamiseta Version { get; set; } = VersionCamiseta.Aficionado;
 
@@ -39,7 +39,7 @@ namespace ProyectoCamisetas.Models
         [Display(Name = "Patrocinador principal")]
         public string? Patrocinador { get; set; }
 
-        [Required, StringLength(30)]
+        [StringLength(30)]
         [Display(Name = "Color principal")]
         public string ColorPrincipal { get; set; } = string.Empty;
 
@@ -54,20 +54,24 @@ namespace ProyectoCamisetas.Models
         [DataType(DataType.Currency)]
         public decimal Precio { get; set; }
 
+        // Precio anterior (si hay descuento aplicado)
+        [DataType(DataType.Currency)]
+        public decimal? PrecioAnterior { get; set; }
+
         [Range(0, 100000)]
         public int Stock { get; set; }
 
-        [Required, StringLength(30)]
-        [Display(Name = "SKU/Código de producto")]
-        public string SKU { get; set; } = string.Empty;
+        [StringLength(30)]
+        [Display(Name = "SKU/CÃ³digo de producto")]
+        public string? SKU { get; set; }
 
         [Display(Name = "Fecha de lanzamiento")]
         public DateOnly? FechaLanzamiento { get; set; }
 
-        [Display(Name = "Edición limitada")]
+        [Display(Name = "EdiciÃ³n limitada")]
         public bool EsEdicionLimitada { get; set; }
 
-        [Display(Name = "Personalizada con nombre/número")]
+        [Display(Name = "Personalizada con nombre/nÃºmero")]
         public bool EsPersonalizada { get; set; }
 
         [Display(Name = "Talla")]
@@ -85,7 +89,7 @@ namespace ProyectoCamisetas.Models
         public string? Jugador { get; set; }
 
         [Range(0, 99)]
-        [Display(Name = "Número (si aplica)")]
+        [Display(Name = "NÃºmero (si aplica)")]
         public int? Numero { get; set; }
 
         [Url]
@@ -96,7 +100,7 @@ namespace ProyectoCamisetas.Models
         public string? Descripcion { get; set; }
 
         [StringLength(32)]
-        [Display(Name = "Código de barras")]
+        [Display(Name = "CÃ³digo de barras")]
         public string? CodigoBarras { get; set; }
 
         public bool DestacadaInicio { get; set; }
@@ -105,10 +109,10 @@ namespace ProyectoCamisetas.Models
         [Display(Name = "Disponible")]
         public bool EnStock => (TallesStock?.Sum(t => (int?)t.Cantidad) ?? Stock) > 0;
 
-        // Relación: múltiples imágenes
+        // RelaciÃ³n: mÃºltiples imÃ¡genes
         public ICollection<CamisetaImagen>? Imagenes { get; set; }
 
-        // Relación: stock por talla
+        // RelaciÃ³n: stock por talla
         public ICollection<CamisetaTalleStock>? TallesStock { get; set; }
     }
 
@@ -124,7 +128,8 @@ namespace ProyectoCamisetas.Models
     public enum VersionCamiseta
     {
         Aficionado = 0, // Stadium
-        Jugador = 1     // Match/Player Issue
+        Jugador = 1,    // Match/Player Issue
+        Retro = 2
     }
 
     public enum Talla
@@ -135,7 +140,7 @@ namespace ProyectoCamisetas.Models
         L = 3,
         XL = 4,
         XXL = 5,
-        Niños = 6
+        Ninos = 6
     }
 
     public enum Manga
@@ -175,3 +180,6 @@ namespace ProyectoCamisetas.Models
         public short Orden { get; set; }
     }
 }
+
+
+

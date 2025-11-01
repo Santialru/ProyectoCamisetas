@@ -54,6 +54,7 @@
                                     <a class="dropdown-item" asp-controller="Camisetas" asp-action="Index" asp-route-q="Real Madrid">Real Madrid</a>
                                     <a class="dropdown-item" asp-controller="Camisetas" asp-action="Index" asp-route-q="Chelsea">Chelsea</a>
                                     <a class="dropdown-item" asp-controller="Camisetas" asp-action="Index" asp-route-q="Manchester United">Manchester United</a>
+                                    <a class="dropdown-item" asp-controller="Camisetas" asp-action="Index" asp-route-other="club">Otro (otros clubes)</a>
                                 </div>
                                 <div class="col-12 col-md-4">
                                     <h6 class="dropdown-header px-0">Selecciones</h6>
@@ -62,6 +63,7 @@
                                     <a class="dropdown-item" asp-controller="Camisetas" asp-action="Index" asp-route-q="España">España</a>
                                     <a class="dropdown-item" asp-controller="Camisetas" asp-action="Index" asp-route-q="Portugal">Portugal</a>
                                     <a class="dropdown-item" asp-controller="Camisetas" asp-action="Index" asp-route-q="Francia">Francia</a>
+                                    <a class="dropdown-item" asp-controller="Camisetas" asp-action="Index" asp-route-other="seleccion">Otro (otras selecciones)</a>
                                 </div>
                                 <div class="col-12 col-md-4">
                                     <h6 class="dropdown-header px-0">Ligas</h6>
@@ -70,9 +72,15 @@
                                     <a class="dropdown-item" asp-controller="Camisetas" asp-action="Index" asp-route-q="Serie A">Serie A</a>
                                     <a class="dropdown-item" asp-controller="Camisetas" asp-action="Index" asp-route-q="Bundesliga">Bundesliga</a>
                                     <a class="dropdown-item" asp-controller="Camisetas" asp-action="Index" asp-route-q="Ligue 1">Ligue 1</a>
+                                    <a class="dropdown-item" asp-controller="Camisetas" asp-action="Index" asp-route-other="liga">Otro (otras ligas)</a>
                                     <hr class="my-2" />
                                     <h6 class="dropdown-header px-0">Disponibilidad</h6>
                                     <a class="dropdown-item" asp-controller="Camisetas" asp-action="Index" asp-route-enStock="true">En stock ahora</a>
+                                    <hr class="my-2" />
+                                    <h6 class="dropdown-header px-0">Version</h6>
+                                    <a class="dropdown-item" asp-controller="Camisetas" asp-action="Index" asp-route-version="aficionado">Aficionado</a>
+                                    <a class="dropdown-item" asp-controller="Camisetas" asp-action="Index" asp-route-version="jugador">Version jugador</a>
+                                    <a class="dropdown-item" asp-controller="Camisetas" asp-action="Index" asp-route-version="retro">Retro</a>
                                 </div>
                                 </div>
                             </div>
@@ -169,3 +177,4 @@
 
 </body>
 </html>
+
