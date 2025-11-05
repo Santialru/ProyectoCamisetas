@@ -1,8 +1,11 @@
-@model ProyectoCamisetas.Models.Camiseta
+﻿@model ProyectoCamisetas.Models.Camiseta
 @{
     ViewData["Title"] = @Model.Nombre;
     var fotos = (Model.Imagenes?.OrderBy(x => x.Orden).Select(x => x.Url).ToList() ?? new List<string>());
     if (!fotos.Any() && !string.IsNullOrWhiteSpace(Model.ImagenUrl)) { fotos.Add(Model.ImagenUrl!); }
+    var pageUrl = $"{Context.Request.Scheme}://{Context.Request.Host}{Context.Request.Path}{Context.Request.QueryString}";
+    var waText = System.Uri.EscapeDataString($"Hola! Estoy interesado en esta camiseta: {pageUrl}");
+    var waLink = $"https://wa.me/5493816658972?text={waText}";
 }
 
 <h1>@Model.Equipo - @Model.Temporada (@Model.Tipo)</h1>
@@ -18,7 +21,7 @@
             else
             {
                 var cid = $"carouselCamiseta_{Model.Id}";
-                <div id="@cid" class="carousel slide">
+                <div id="@cid" class="carousel slide" data-bs-touch="true">
                     <div class="carousel-inner">
                         @for (int i = 0; i < fotos.Count; i++)
                         {
@@ -54,9 +57,23 @@
                     var low = false;
                     foreach (var s in Model.TallesStock.Where(x => x.Cantidad > 0).OrderBy(x => x.Talla))
                     {
-                        var cls = s.Cantidad < 3 ? "bg-warning text-dark" : "bg-secondary";
+                        var cls = s.Cantidad < 3 ? "bg-warning text-dark" : "bg-success text-white";
                         if (s.Cantidad < 3) { low = true; }
-                        <span class="badge @cls me-1">@s.Talla: @s.Cantidad</span>
+                        var tallaVal = (int)s.Talla;
+                        var tallaLabel = tallaVal switch
+                        {
+                            0 => "XS",
+                            1 => "S",
+                            2 => "M",
+                            3 => "L",
+                            4 => "XL",
+                            5 => "XXL",
+                            6 => "Niños",
+                            7 => "XXXL",
+                            8 => "XXXXL",
+                            _ => s.Talla.ToString()
+                        };
+                        <span class="badge @cls me-1">@tallaLabel</span>
                     }
                     if (low)
                     {
@@ -74,14 +91,17 @@
         <div class="mt-3 d-flex gap-2">
             @if (Model.EnStock)
             {
-                <a class="btn btn-success w-100 d-flex align-items-center justify-content-center gap-2" href="https://wa.me/qr/7YBEDMKJQDICB1" target="_blank" rel="noopener">
+                <a class="btn btn-success w-100 d-flex align-items-center justify-content-center gap-2" href="@waLink" target="_blank" rel="noopener">
                     <img src="~/img/whatsapp.svg.webp" alt="" class="icon-20" />
                     <span>Comprala ahora</span>
                 </a>
             }
             else
             {
-                <a class="btn btn-success w-100" href="https://wa.me/qr/7YBEDMKJQDICB1" target="_blank" rel="noopener">Encargala Ahora</a>
+                <a class="btn btn-success w-100 d-flex align-items-center justify-content-center gap-2" href="@waLink" target="_blank" rel="noopener">
+                    <img src="~/img/whatsapp.svg.webp" alt="" class="icon-20" />
+                    <span>Encargala acá</span>
+                </a>
             }
         </div>
     </div>

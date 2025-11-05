@@ -10,7 +10,10 @@
     <div class="hero-content">
         <h1>Descubre nuestras camisetas</h1>
         <p>Clásicas, actuales y ediciones limitadas</p>
-        <a class="btn btn-light btn-lg" asp-controller="Camisetas" asp-action="Index">Ver catálogo</a>
+        <div class="d-flex gap-2 flex-wrap">
+            <a class="btn btn-primary btn-lg flex-fill" asp-controller="Camisetas" asp-action="Index" asp-route-enStock="true">Ver en stock</a>
+            <a class="btn btn-outline-primary btn-lg flex-fill" asp-controller="Camisetas" asp-action="Index" asp-route-enStock="false">Ver por encargo</a>
+        </div>
     </div>
             </div>
             <div class="col-12 col-lg-6">
@@ -33,8 +36,17 @@
                             {
                                 var active = i == 0 ? "active" : "";
                                 <div class="carousel-item @active">
-                                    <img src="@imgs[i]" class="d-block w-100 jersey-detail" alt="Camiseta destacada" />
+                                    <a asp-controller="Camisetas" asp-action="Details" asp-route-id="@dest.Id" class="d-block">
+                                        <img src="@imgs[i]" class="d-block w-100 jersey-detail" alt="Camiseta destacada" />
+                                    </a>
                                 </div>
+                            }
+                        </div>
+                        <div class="carousel-indicators">
+                            @for (int i = 0; i < imgs.Count; i++)
+                            {
+                                var active = i == 0 ? "active" : "";
+                                <button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="@i" class="@active" aria-label="Slide @(i + 1)" @(i==0?"aria-current=\"true\"":null)></button>
                             }
                         </div>
                         @* Sin flechas; el carrusel avanza automáticamente *@

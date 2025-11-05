@@ -21,10 +21,12 @@
 // Animación suave: abre/cierra un panel con transición de height
 function slideToggle(panel, expand) {
   if (!panel) return;
+  if (panel.dataset.animating === '1') return; // evita estados inconsistentes por clicks rápidos
   const isOpen = !panel.hasAttribute('hidden');
   const willExpand = (typeof expand === 'boolean') ? expand : !isOpen;
 
   if (willExpand) {
+    panel.dataset.animating = '1';
     panel.removeAttribute('hidden');
     panel.style.height = 'auto';
     const target = panel.scrollHeight + 'px';
@@ -36,10 +38,12 @@ function slideToggle(panel, expand) {
 
     const onEnd = () => {
       panel.style.height = 'auto';
+      delete panel.dataset.animating;
       panel.removeEventListener('transitionend', onEnd);
     };
     panel.addEventListener('transitionend', onEnd);
   } else {
+    panel.dataset.animating = '1';
     panel.style.height = panel.scrollHeight + 'px';
     // Forzar reflow
     // eslint-disable-next-line no-unused-expressions
@@ -49,6 +53,7 @@ function slideToggle(panel, expand) {
     const onEnd = () => {
       panel.setAttribute('hidden', '');
       panel.style.height = '0px';
+      delete panel.dataset.animating;
       panel.removeEventListener('transitionend', onEnd);
     };
     panel.addEventListener('transitionend', onEnd);
@@ -67,6 +72,7 @@ document.addEventListener('DOMContentLoaded', function () {
   const trigger = document.getElementById('catalogoDropdown');
   const panel   = document.getElementById('catalogoPanel');
   const navCollapse = document.getElementById('navbarSupportedContent');
+  const isTouch = (window.matchMedia && window.matchMedia('(hover: none)').matches) || ('ontouchstart' in window);
 
   if (!trigger || !panel) return;
 
@@ -75,6 +81,86 @@ document.addEventListener('DOMContentLoaded', function () {
   panel.setAttribute('hidden', '');
   panel.style.height = '0px';
   trigger.setAttribute('aria-expanded', 'false');
+
+  // Hover abre/cierra en desktop
+  if (!isTouch) {
+    let overPanel = false;
+    trigger.addEventListener('mouseenter', () => {
+      if (panel.hasAttribute('hidden')) {
+        slideToggle(panel, true);
+        trigger.setAttribute('aria-expanded', 'true');
+      }
+    });
+    // be more forgiving moving from trigger into panel/flyout
+    trigger.addEventListener('mouseleave', () => {
+      setTimeout(() => {
+        if (!overPanel && !panel.hasAttribute('hidden')) {
+          slideToggle(panel, false);
+          trigger.setAttribute('aria-expanded', 'false');
+        }
+      }, 250);
+    });
+    panel.addEventListener('mouseenter', () => { overPanel = true; });
+    panel.addEventListener('mouseleave', (e) => {
+      overPanel = false;
+      const toEl = e.relatedTarget;
+      // if moving into any element within panel (including flyouts), don't close
+      if (toEl && (panel.contains(toEl) || (trigger && trigger.contains(toEl)))) return;
+      if (!panel.hasAttribute('hidden')) {
+        slideToggle(panel, false);
+        trigger.setAttribute('aria-expanded', 'false');
+      }
+    });
+  }
+
+  // Captura clic para priorizar navegación/tap-intent por encima del listener antiguo
+  trigger.addEventListener('click', (e) => {
+    if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+    if (!isTouch) {
+      // Desktop: cerrar panel y permitir navegar (no preventDefault)
+      if (!panel.hasAttribute('hidden')) {
+        slideToggle(panel, false);
+        trigger.setAttribute('aria-expanded', 'false');
+      }
+      e.stopImmediatePropagation();
+      return; // dejar que el enlace navegue
+    }
+    // Touch: primer toque abre, segundo navega
+    if (panel.hasAttribute('hidden')) {
+      e.preventDefault();
+      e.stopImmediatePropagation();
+      slideToggle(panel, true);
+      trigger.setAttribute('aria-expanded', 'true');
+      trigger.dataset.tapOnce = '1';
+      setTimeout(() => { delete trigger.dataset.tapOnce; }, 1500);
+    } else if (trigger.dataset.tapOnce === '1') {
+      // segundo toque: permitir navegación
+      delete trigger.dataset.tapOnce;
+      e.stopImmediatePropagation(); // cancelar el viejo handler que haría preventDefault
+      // no hacemos preventDefault para que el enlace navegue
+    }
+  }, true);
+
+  // Captura teclado: Space abre/cierra; Enter navega
+  trigger.addEventListener('keydown', (e) => {
+    if (e.key === ' ') {
+      e.preventDefault();
+      e.stopImmediatePropagation();
+      const willExpand = panel.hasAttribute('hidden');
+      slideToggle(panel, willExpand);
+      trigger.setAttribute('aria-expanded', String(willExpand));
+    } else if (e.key === 'Enter') {
+      e.preventDefault();
+      e.stopImmediatePropagation();
+      // cerrar panel si estaba abierto y navegar
+      if (!panel.hasAttribute('hidden')) {
+        slideToggle(panel, false);
+        trigger.setAttribute('aria-expanded', 'false');
+      }
+      const href = trigger.getAttribute('href');
+      if (href) window.location.assign(href);
+    }
+  }, true);
 
   // Toggle: primer clic abre, segundo clic cierra
   trigger.addEventListener('click', (e) => {
@@ -140,6 +226,8 @@ document.addEventListener('DOMContentLoaded', function () {
   });
 });
 
+// (removed) Catalog infinite scroll
+
 
 
 // Inject a global mobile search form into main when navbar is collapsed
@@ -193,4 +281,67 @@ document.addEventListener('DOMContentLoaded', function () {
 
     main.insertBefore(form, main.firstChild);
   } catch (e) { /* no-op */ }
+});
+
+// (removed) hero arrows; use dot indicators only
+
+// Position carousel arrows at the image/container edges (no inset)
+document.addEventListener('DOMContentLoaded', function () {
+  function positionArrows(carousel) {
+    if (!carousel) return;
+    var prev = carousel.querySelector('.carousel-control-prev');
+    var next = carousel.querySelector('.carousel-control-next');
+    if (!prev || !next) return;
+    // Reset any JS-set inline styles and pin to container edges
+    prev.style.left = '0px';
+    prev.style.right = '';
+    next.style.right = '0px';
+    next.style.left = '';
+  }
+
+  function wireCarousel(carousel) {
+    if (!carousel) return;
+    positionArrows(carousel);
+    window.addEventListener('resize', function () { positionArrows(carousel); });
+    try {
+      carousel.addEventListener('slid.bs.carousel', function () { positionArrows(carousel); });
+    } catch (_) { /* ignore */ }
+  }
+
+  // Details carousels and hero carousel
+  document.querySelectorAll('.details-media .carousel, #heroCarousel').forEach(wireCarousel);
+});
+
+// Enable touch swipe on carousels for mobile
+document.addEventListener('DOMContentLoaded', function () {
+  try {
+    function wireSwipe(carousel) {
+      if (!carousel) return;
+      var startX = 0, startY = 0, dx = 0, dy = 0, moved = false;
+      function onStart(e) {
+        var t = e.touches && e.touches[0];
+        if (!t) return;
+        startX = t.clientX; startY = t.clientY; dx = 0; dy = 0; moved = false;
+      }
+      function onMove(e) {
+        var t = e.touches && e.touches[0];
+        if (!t) return;
+        dx = t.clientX - startX; dy = t.clientY - startY;
+        if (!moved && Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 20) {
+          moved = true;
+        }
+      }
+      function onEnd() {
+        if (!moved) return;
+        var inst = null;
+        try { inst = window.bootstrap && window.bootstrap.Carousel ? window.bootstrap.Carousel.getOrCreateInstance(carousel) : null; } catch (_) {}
+        if (!inst) return;
+        if (dx < 0) { inst.next(); } else { inst.prev(); }
+      }
+      carousel.addEventListener('touchstart', onStart, { passive: true });
+      carousel.addEventListener('touchmove', onMove, { passive: true });
+      carousel.addEventListener('touchend', onEnd, { passive: true });
+    }
+    document.querySelectorAll('#heroCarousel, .details-media .carousel').forEach(wireSwipe);
+  } catch (_) { /* ignore */ }
 });

@@ -23,20 +23,31 @@ namespace ProyectoCamisetas.Repository
                 var tokens = BuildSearchTokens(q);
                 var predicate = BuildSearchPredicate(tokens);
                 query = query.Where(predicate);
+
+                var s = q.Trim();
+                query = query
+                    .OrderByDescending(c => EF.Functions.ILike(c.Equipo!, "%" + s + "%"))
+                    .ThenByDescending(c => EF.Functions.ILike(c.Nombre!, "%" + s + "%"))
+                    .ThenByDescending(c => EF.Functions.ILike(c.Liga!, "%" + s + "%"))
+                    .ThenByDescending(c => c.Stock > 0)
+                    .ThenBy(c => c.Equipo)
+                    .ThenBy(c => c.Temporada)
+                    .ThenBy(c => c.Tipo);
             }
             else
             {
                 if (!string.IsNullOrWhiteSpace(liga)) query = query.Where(c => c.Liga == liga);
                 if (!string.IsNullOrWhiteSpace(equipo)) query = query.Where(c => c.Equipo == equipo);
                 if (!string.IsNullOrWhiteSpace(temporada)) query = query.Where(c => c.Temporada == temporada);
+
+                query = query
+                    .OrderByDescending(c => c.Stock > 0)
+                    .ThenBy(c => c.Equipo)
+                    .ThenBy(c => c.Temporada)
+                    .ThenBy(c => c.Tipo);
             }
 
-            return await query
-                .OrderByDescending(c => c.Stock > 0)
-                .ThenBy(c => c.Equipo)
-                .ThenBy(c => c.Temporada)
-                .ThenBy(c => c.Tipo)
-                .ToListAsync(ct);
+            return await query.ToListAsync(ct);
         }
 
         public async Task<IReadOnlyList<Camiseta>> GetDestacadasAsync(string? q, string? liga, string? equipo, string? temporada, int take = 12, CancellationToken ct = default)
@@ -50,17 +61,27 @@ namespace ProyectoCamisetas.Repository
                 var tokens = BuildSearchTokens(q);
                 var predicate = BuildSearchPredicate(tokens);
                 query = query.Where(predicate);
+
+                var s = q.Trim();
+                query = query
+                    .OrderByDescending(c => EF.Functions.ILike(c.Equipo!, "%" + s + "%"))
+                    .ThenByDescending(c => EF.Functions.ILike(c.Nombre!, "%" + s + "%"))
+                    .ThenByDescending(c => EF.Functions.ILike(c.Liga!, "%" + s + "%"))
+                    .ThenByDescending(c => c.EsEdicionLimitada)
+                    .ThenByDescending(c => c.Precio);
             }
             else
             {
                 if (!string.IsNullOrWhiteSpace(liga)) query = query.Where(c => c.Liga == liga);
                 if (!string.IsNullOrWhiteSpace(equipo)) query = query.Where(c => c.Equipo == equipo);
                 if (!string.IsNullOrWhiteSpace(temporada)) query = query.Where(c => c.Temporada == temporada);
+
+                query = query
+                    .OrderByDescending(c => c.EsEdicionLimitada)
+                    .ThenByDescending(c => c.Precio);
             }
 
             return await query
-                .OrderByDescending(c => c.EsEdicionLimitada)
-                .ThenByDescending(c => c.Precio)
                 .Take(take)
                 .ToListAsync(ct);
         }

@@ -27,7 +27,7 @@ namespace ProyectoCamisetas.Models
         [Display(Name = "Tipo de kit")]
         public TipoKit Tipo { get; set; }
 
-        [Display(Name = "VersiÃ³n")]
+        [Display(Name = "Version")]
         [Required]
         public VersionCamiseta Version { get; set; } = VersionCamiseta.Aficionado;
 
@@ -62,16 +62,16 @@ namespace ProyectoCamisetas.Models
         public int Stock { get; set; }
 
         [StringLength(30)]
-        [Display(Name = "SKU/CÃ³digo de producto")]
+        [Display(Name = "SKU/Código de producto")]
         public string? SKU { get; set; }
 
         [Display(Name = "Fecha de lanzamiento")]
         public DateOnly? FechaLanzamiento { get; set; }
 
-        [Display(Name = "EdiciÃ³n limitada")]
+        [Display(Name = "Edición limitada")]
         public bool EsEdicionLimitada { get; set; }
 
-        [Display(Name = "Personalizada con nombre/nÃºmero")]
+        [Display(Name = "Personalizada con nombre/número")]
         public bool EsPersonalizada { get; set; }
 
         [Display(Name = "Talla")]
@@ -89,7 +89,7 @@ namespace ProyectoCamisetas.Models
         public string? Jugador { get; set; }
 
         [Range(0, 99)]
-        [Display(Name = "NÃºmero (si aplica)")]
+        [Display(Name = "Número (si aplica)")]
         public int? Numero { get; set; }
 
         [Url]
@@ -100,7 +100,7 @@ namespace ProyectoCamisetas.Models
         public string? Descripcion { get; set; }
 
         [StringLength(32)]
-        [Display(Name = "CÃ³digo de barras")]
+        [Display(Name = "Código de barras")]
         public string? CodigoBarras { get; set; }
 
         public bool DestacadaInicio { get; set; }
@@ -180,6 +180,7 @@ namespace ProyectoCamisetas.Models
         public short Orden { get; set; }
     }
 }
+
 
 
 

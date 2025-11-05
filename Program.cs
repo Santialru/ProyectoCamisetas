@@ -1,4 +1,6 @@
 using System;
+using System.IO;
+using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
@@ -107,6 +109,49 @@ if (app.Environment.IsDevelopment())
         c.SwaggerEndpoint("/swagger/v1/swagger.json", "ProyectoCamisetas API v1");
         c.RoutePrefix = "swagger";
     });
+
+    // Dev-only: mirror missing /uploads files from a remote base URL and cache locally
+    var remoteBase = builder.Configuration["Uploads:RemoteBaseUrl"];
+    var enableMirror = (builder.Configuration["Uploads:EnableDevMirror"] ?? "true").Equals("true", StringComparison.OrdinalIgnoreCase);
+    if (!string.IsNullOrWhiteSpace(remoteBase) && enableMirror)
+    {
+        var webRoot = app.Environment.WebRootPath ?? string.Empty;
+        if (!webRoot.EndsWith(Path.DirectorySeparatorChar) && !webRoot.EndsWith(Path.AltDirectorySeparatorChar))
+            webRoot += Path.DirectorySeparatorChar;
+        var http = new HttpClient();
+
+        app.Use(async (ctx, next) =>
+        {
+            if (ctx.Request.Path.HasValue && ctx.Request.Path.Value!.StartsWith("/uploads", StringComparison.OrdinalIgnoreCase))
+            {
+                try
+                {
+                    var rel = ctx.Request.Path.Value!.TrimStart('/').Replace('/', Path.DirectorySeparatorChar);
+                    var localPath = Path.Combine(webRoot, rel);
+                    if (!System.IO.File.Exists(localPath))
+                    {
+                        var remoteUrl = remoteBase!.TrimEnd('/') + ctx.Request.Path.Value;
+                        using var resp = await http.GetAsync(remoteUrl, ctx.RequestAborted);
+                        if (resp.IsSuccessStatusCode)
+                        {
+                            Directory.CreateDirectory(Path.GetDirectoryName(localPath)!);
+                            await using var fs = System.IO.File.Create(localPath);
+                            await resp.Content.CopyToAsync(fs, ctx.RequestAborted);
+                            // fall through so StaticFiles serves the newly cached file
+                        }
+                        else
+                        {
+                            // as a fallback, redirect so at least it displays in dev
+                            ctx.Response.Redirect(remoteUrl, permanent: false);
+                            return;
+                        }
+                    }
+                }
+                catch { /* ignore and let pipeline continue */ }
+            }
+            await next();
+        });
+    }
 }
 
 // app.UseHttpsRedirection(); // desactivado mientras uses HTTP en ntempurl

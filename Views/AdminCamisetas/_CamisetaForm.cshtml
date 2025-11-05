@@ -79,11 +79,11 @@
                             {
                                 if (t == ts.Talla)
                                 {
-                                    <option value="@((int)t)" selected="selected">@t</option>
+                                    <option value="@((int)t)" selected="selected">@((t == ProyectoCamisetas.Models.Talla.Ninos) ? "Niños" : t.ToString())</option>
                                 }
                                 else
                                 {
-                                    <option value="@((int)t)">@t</option>
+                                    <option value="@((int)t)">@((t == ProyectoCamisetas.Models.Talla.Ninos) ? "Niños" : t.ToString())</option>
                                 }
                             }
                             @if (__add3XL)
@@ -106,7 +106,7 @@
                     <select name="Tallas[]" class="form-select">
                         @foreach (var t in __tallasList)
                         {
-                            <option value="@((int)t)">@t</option>
+                            <option value="@((int)t)">@((t == ProyectoCamisetas.Models.Talla.Ninos) ? "Niños" : t.ToString())</option>
                         }
                         @if (__add3XL)
                         {
@@ -127,7 +127,7 @@
                 <select name="Tallas[]" class="form-select">
                     @foreach (var t in __tallasList)
                     {
-                        <option value="@((int)t)">@t</option>
+                        <option value="@((int)t)">@((t == ProyectoCamisetas.Models.Talla.Ninos) ? "Niños" : t.ToString())</option>
                     }
                     @if (__add3XL)
                     {

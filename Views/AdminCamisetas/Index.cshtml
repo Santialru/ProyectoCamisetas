@@ -5,19 +5,19 @@
 
 <h1>Administración de Camisetas</h1>
 
-<p>
+<div class="d-grid gap-2 d-md-flex align-items-center mb-3">
     <a class="btn btn-primary" asp-action="Create">Nueva Camiseta</a>
     <a class="btn btn-outline-secondary" asp-controller="Camisetas" asp-action="Index">Ver Catálogo</a>
-  <button type="button" id="toggleBulkPrices" class="btn btn-outline-warning ms-2">Modificar precios</button>
-  <a class="btn btn-outline-info ms-2" asp-action="FeatureHome">Modificar inicio</a>
-  </p>
+    <button type="button" id="toggleBulkPrices" class="btn btn-outline-warning">Modificar precios</button>
+    <a class="btn btn-outline-info" asp-action="FeatureHome">Modificar inicio</a>
+  </div>
 
 <style>
   /* Oculta botones flotantes globales en admin */
   .ig-fab, .wa-fab { display: none !important; }
 </style>
 
-<form method="get" class="row g-2 align-items-end mb-3">
+<form method="get" class="row g-2 align-items-end mb-3" hidden>
     <div class="col-sm-4">
         <label class="form-label">Equipo</label>
         <select name="equipo" class="form-select">
@@ -56,6 +56,85 @@
     <div class="col-12 d-flex gap-2 mt-1">
         <button type="submit" class="btn btn-primary">Aplicar</button>
         <a class="btn btn-secondary" asp-action="Index">Limpiar</a>
+    </div>
+</form>
+
+@{
+    var verSel = (string)Context.Request.Query["version"]; 
+    var estSel = (string)Context.Request.Query["enStock"]; 
+    var tallaSel = (string)Context.Request.Query["talla"]; 
+    var sortSel = (string)Context.Request.Query["sort"]; 
+    var prodSel = (string)Context.Request.Query["producto"]; 
+}
+<form method="get" class="row g-2 mb-3 align-items-stretch">
+    <div class="col-12 col-lg">
+        <input type="text" name="q" value="@Context.Request.Query["q"]" class="form-control" placeholder="Buscar por equipo, liga, nombre, temporada, marca, jugador..." />
+    </div>
+    <div class="col-auto d-grid">
+        <button class="btn btn-primary" type="submit">Buscar</button>
+    </div>
+    <div class="col-auto">
+        <div class="dropdown" data-bs-auto-close="outside">
+            <button class="btn btn-outline-primary dropdown-toggle" type="button" id="filtersDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                Filtros
+            </button>
+            <div class="dropdown-menu dropdown-menu-end p-3" aria-labelledby="filtersDropdown" style="min-width: 320px;">
+                <div class="row g-2">
+                    <div class="col-12">
+                        <label class="form-label small mb-1">Versión</label>
+                        <select class="form-select" name="version">
+                            <option value="">Todas</option>
+                            @if (verSel == "aficionado") { <option value="aficionado" selected>Aficionado</option> } else { <option value="aficionado">Aficionado</option> }
+                            @if (verSel == "jugador") { <option value="jugador" selected>Jugador</option> } else { <option value="jugador">Jugador</option> }
+                            @if (verSel == "retro") { <option value="retro" selected>Retro</option> } else { <option value="retro">Retro</option> }
+                        </select>
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label small mb-1">Producto</label>
+                        <select class="form-select" name="producto">
+                            <option value="">Todos</option>
+                            @if (prodSel == "camiseta") { <option value="camiseta" selected>Camiseta</option> } else { <option value="camiseta">Camiseta</option> }
+                            @if (prodSel == "campera") { <option value="campera" selected>Campera</option> } else { <option value="campera">Campera</option> }
+                            @if (prodSel == "short") { <option value="short" selected>Short</option> } else { <option value="short">Short</option> }
+                            @if (prodSel == "conjunto") { <option value="conjunto" selected>Conjunto</option> } else { <option value="conjunto">Conjunto</option> }
+                        </select>
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label small mb-1">Disponibilidad</label>
+                        <select class="form-select" name="enStock">
+                            <option value="">Todas</option>
+                            @if (estSel == "true") { <option value="true" selected>En stock</option> } else { <option value="true">En stock</option> }
+                            @if (estSel == "false") { <option value="false" selected>Por encargo</option> } else { <option value="false">Por encargo</option> }
+                        </select>
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label small mb-1">Talle</label>
+                        <select class="form-select" name="talla">
+                            <option value="">Todos</option>
+                            <option value="Ninos" selected="@(tallaSel=="Ninos" ? "selected" : null)">Niños</option>
+                            <option value="XS" selected="@(tallaSel=="XS" ? "selected" : null)">XS</option>
+                            <option value="S" selected="@(tallaSel=="S" ? "selected" : null)">S</option>
+                            <option value="M" selected="@(tallaSel=="M" ? "selected" : null)">M</option>
+                            <option value="L" selected="@(tallaSel=="L" ? "selected" : null)">L</option>
+                            <option value="XL" selected="@(tallaSel=="XL" ? "selected" : null)">XL</option>
+                            <option value="XXL" selected="@(tallaSel=="XXL" ? "selected" : null)">XXL</option>
+                        </select>
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label small mb-1">Ordenar</label>
+                        <select class="form-select" name="sort">
+                            <option value="">Relevancia</option>
+                            @if (sortSel == "price_asc") { <option value="price_asc" selected>Precio: menor a mayor</option> } else { <option value="price_asc">Precio: menor a mayor</option> }
+                            @if (sortSel == "price_desc") { <option value="price_desc" selected>Precio: mayor a menor</option> } else { <option value="price_desc">Precio: mayor a menor</option> }
+                        </select>
+                    </div>
+                </div>
+                <div class="d-flex justify-content-end gap-2 mt-3">
+                    <button type="submit" class="btn btn-primary btn-sm">Aplicar filtros</button>
+                    <a class="btn btn-secondary btn-sm" asp-action="Index">Limpiar</a>
+                </div>
+            </div>
+        </div>
     </div>
 </form>
 
@@ -189,24 +268,28 @@
     int page = ViewBag.Page ?? 1;
     int totalPages = ViewBag.TotalPages ?? 1;
     int pageSize = ViewBag.PageSize ?? 10;
-    string equipoSel = ViewBag.SelectedEquipo as string ?? string.Empty;
-    string temporadaSel = ViewBag.SelectedTemporada as string ?? string.Empty;
+    string q = (string)Context.Request.Query["q"];
+    string version = (string)Context.Request.Query["version"];
+    string enStock = (string)Context.Request.Query["enStock"];
+    string talla = (string)Context.Request.Query["talla"];
+    string sort = (string)Context.Request.Query["sort"];
+    string producto = (string)Context.Request.Query["producto"];
     string ordenSel = ViewBag.Orden as string ?? string.Empty;
 }
 
 <nav aria-label="Paginación" class="mt-3">
   <ul class="pagination pagination-sm">
     <li class="page-item @(page <= 1 ? "disabled" : null)">
-      <a class="page-link" asp-action="Index" asp-route-equipo="@equipoSel" asp-route-temporada="@temporadaSel" asp-route-orden="@ordenSel" asp-route-page="@(page-1)" asp-route-pageSize="@pageSize">Anterior</a>
+      <a class="page-link" asp-action="Index" asp-route-q="@q" asp-route-version="@version" asp-route-enStock="@enStock" asp-route-talla="@talla" asp-route-sort="@sort" asp-route-producto="@producto" asp-route-page="@(page-1)" asp-route-pageSize="@pageSize">Anterior</a>
     </li>
     @for (int p = 1; p <= totalPages; p++)
     {
         <li class="page-item @(p == page ? "active" : null)">
-            <a class="page-link" asp-action="Index" asp-route-equipo="@equipoSel" asp-route-temporada="@temporadaSel" asp-route-orden="@ordenSel" asp-route-page="@p" asp-route-pageSize="@pageSize">@p</a>
+            <a class="page-link" asp-action="Index" asp-route-q="@q" asp-route-version="@version" asp-route-enStock="@enStock" asp-route-talla="@talla" asp-route-sort="@sort" asp-route-producto="@producto" asp-route-page="@p" asp-route-pageSize="@pageSize">@p</a>
         </li>
     }
     <li class="page-item @(page >= totalPages ? "disabled" : null)">
-      <a class="page-link" asp-action="Index" asp-route-equipo="@equipoSel" asp-route-temporada="@temporadaSel" asp-route-orden="@ordenSel" asp-route-page="@(page+1)" asp-route-pageSize="@pageSize">Siguiente</a>
+      <a class="page-link" asp-action="Index" asp-route-q="@q" asp-route-version="@version" asp-route-enStock="@enStock" asp-route-talla="@talla" asp-route-sort="@sort" asp-route-producto="@producto" asp-route-page="@(page+1)" asp-route-pageSize="@pageSize">Siguiente</a>
     </li>
   </ul>
   <div class="small text-muted">Página @(page) de @(totalPages)</div>

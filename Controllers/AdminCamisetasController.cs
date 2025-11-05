@@ -21,13 +21,22 @@ namespace ProyectoCamisetas.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> Index(string? equipo, string? temporada, string? orden, int page = 1, int pageSize = 10, CancellationToken ct = default)
+        public async Task<IActionResult> Index(string? q, string? version, string? equipo, string? temporada, bool? enStock, string? talla, string? sort, string? producto, string? orden, int page = 1, int pageSize = 10, CancellationToken ct = default)
         {
             var list = await _repo.GetAllAdminAsync(ct);
 
-            // Opciones para filtros
-            ViewBag.Equipos = list.Select(c => c.Equipo).Distinct().OrderBy(x => x).ToList();
-            ViewBag.Temporadas = list.Select(c => c.Temporada).Distinct().OrderByDescending(x => x).ToList();
+            // Búsqueda libre
+            if (!string.IsNullOrWhiteSpace(q))
+            {
+                var tokens = q.Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+                              .Select(t => t.ToLowerInvariant()).ToList();
+                bool MatchAny(ProyectoCamisetas.Models.Camiseta c)
+                {
+                    var pool = string.Join(' ', new[] { c.Nombre, c.Equipo, c.Liga, c.Temporada, c.Marca, c.Descripcion }.Where(s => !string.IsNullOrWhiteSpace(s))).ToLowerInvariant();
+                    return tokens.All(t => pool.Contains(t));
+                }
+                list = list.Where(MatchAny).ToList();
+            }
 
             // Filtros
             if (!string.IsNullOrWhiteSpace(equipo))
@@ -38,9 +47,43 @@ namespace ProyectoCamisetas.Controllers
             {
                 list = list.Where(c => c.Temporada == temporada).ToList();
             }
+            // Version
+            if (!string.IsNullOrWhiteSpace(version))
+            {
+                var v = version.Trim().ToLowerInvariant();
+                if (v is "aficionado" or "stadium") list = list.Where(c => c.Version == ProyectoCamisetas.Models.VersionCamiseta.Aficionado).ToList();
+                else if (v is "jugador" or "player" or "match") list = list.Where(c => c.Version == ProyectoCamisetas.Models.VersionCamiseta.Jugador).ToList();
+                else if (v is "retro" or "clasica" or "clásica") list = list.Where(c => c.Version == ProyectoCamisetas.Models.VersionCamiseta.Retro).ToList();
+            }
+            // Disponibilidad
+            if (enStock.HasValue)
+            {
+                if (enStock.Value) list = list.Where(c => c.EnStock).ToList(); else list = list.Where(c => !c.EnStock).ToList();
+            }
+            // Talla
+            if (!string.IsNullOrWhiteSpace(talla))
+            {
+                if (Enum.TryParse<ProyectoCamisetas.Models.Talla>(talla, ignoreCase: true, out var tParsed))
+                {
+                    list = list.Where(c => c.TallesStock != null && c.TallesStock.Any(ts => ts.Talla == tParsed && ts.Cantidad > 0)).ToList();
+                }
+            }
+            // Producto
+            var prod = NormalizeProductoAlias(producto);
+            if (!string.IsNullOrWhiteSpace(prod))
+            {
+                bool ProdMatch(ProyectoCamisetas.Models.Camiseta c)
+                {
+                    var name = (c.Nombre ?? string.Empty).ToLowerInvariant();
+                    var desc = (c.Descripcion ?? string.Empty).ToLowerInvariant();
+                    return ProductoMatches(prod!, name, desc);
+                }
+                list = list.Where(ProdMatch).ToList();
+            }
 
             // Orden
-            switch ((orden ?? string.Empty).ToLowerInvariant())
+            var ord = string.IsNullOrWhiteSpace(sort) ? (orden ?? string.Empty).ToLowerInvariant() : sort.ToLowerInvariant().Replace("price_", "precio_");
+            switch (ord)
             {
                 case "equipo_asc":
                     list = list.OrderBy(c => c.Equipo).ThenBy(c => c.Temporada).ThenBy(c => c.Tipo).ToList();
@@ -74,7 +117,12 @@ namespace ProyectoCamisetas.Controllers
 
             ViewBag.SelectedEquipo = equipo;
             ViewBag.SelectedTemporada = temporada;
-            ViewBag.Orden = orden;
+            ViewBag.Orden = ord;
+            ViewBag.Q = q;
+            ViewBag.Version = version;
+            ViewBag.Talla = talla;
+            ViewBag.EnStock = enStock;
+            ViewBag.Producto = prod;
             ViewBag.Page = page;
             ViewBag.PageSize = pageSize;
             ViewBag.TotalPages = totalPages;
@@ -330,6 +378,29 @@ namespace ProyectoCamisetas.Controllers
             }
             var url = "/" + Path.Combine(relDir, fileName).Replace("\\", "/");
             return Ok(new { url });
+        }
+        private static string? NormalizeProductoAlias(string? raw)
+        {
+            if (string.IsNullOrWhiteSpace(raw)) return null;
+            var key = raw.Trim().ToLowerInvariant();
+            if (key is "camiseta" or "remera" or "jersey") return "camiseta";
+            if (key is "campera" or "chaqueta" or "buzo" or "abrigo" or "hoodie" or "jacket") return "campera";
+            if (key is "short" or "pantalon corto" or "pantaloncorto" or "pantalon-corto") return "short";
+            if (key is "conjunto" or "set" or "kit") return "conjunto";
+            return null;
+        }
+
+        private static bool ProductoMatches(string prodCanon, string nameKey, string descKey)
+        {
+            bool Has(params string[] tokens) => tokens.Any(t => (nameKey?.Contains(t) ?? false) || (descKey?.Contains(t) ?? false));
+            return prodCanon switch
+            {
+                "camiseta" => Has("camiseta", "remera", "jersey"),
+                "campera"  => Has("campera", "chaqueta", "buzo", "abrigo", "hoodie", "jacket"),
+                "short"    => Has("short", "pantalon corto", "pantaloncorto", "pantalon-corto"),
+                "conjunto" => Has("conjunto", "set", "kit"),
+                _ => true
+            };
         }
     }
 }
