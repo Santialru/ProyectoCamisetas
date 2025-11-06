@@ -11,6 +11,7 @@ namespace ProyectoCamisetas.Data
         public DbSet<Camiseta> Camisetas => Set<Camiseta>();
         public DbSet<CamisetaImagen> CamisetaImagenes => Set<CamisetaImagen>();
         public DbSet<CamisetaTalleStock> CamisetaTalles => Set<CamisetaTalleStock>();
+        public DbSet<HomeFeaturedCard> HomeFeatured => Set<HomeFeaturedCard>();
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -41,6 +42,19 @@ namespace ProyectoCamisetas.Data
                  .WithOne(ts => ts.Camiseta!)
                  .HasForeignKey(ts => ts.CamisetaId)
                  .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            // Home featured grid -> 'home_featured'
+            modelBuilder.Entity<HomeFeaturedCard>(e =>
+            {
+                e.ToTable("home_featured");
+                e.Property(h => h.Orden).HasColumnType("smallint");
+                e.HasIndex(h => h.Orden).IsUnique();
+                e.HasIndex(h => h.CamisetaId).IsUnique();
+                e.HasOne(h => h.Camiseta!)
+                    .WithMany()
+                    .HasForeignKey(h => h.CamisetaId)
+                    .OnDelete(DeleteBehavior.Cascade);
             });
 
             // CamisetaImagenes -> 'camiseta_imagenes'

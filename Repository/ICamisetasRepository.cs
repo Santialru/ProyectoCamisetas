@@ -10,6 +10,7 @@ namespace ProyectoCamisetas.Repository
         Task<Camiseta?> GetByIdAsync(int id, CancellationToken ct = default);
         Task<IReadOnlyList<Camiseta>> GetRandomAsync(int take = 12, bool onlyAvailable = true, CancellationToken ct = default);
         Task<Camiseta?> GetHomeFeaturedAsync(CancellationToken ct = default);
+        Task<IReadOnlyList<Camiseta>> GetHomeFeaturedGridAsync(CancellationToken ct = default);
 
         Task<Camiseta> AddAsync(Camiseta entity, CancellationToken ct = default);
         Task UpdateAsync(Camiseta entity, CancellationToken ct = default);
@@ -19,5 +20,6 @@ namespace ProyectoCamisetas.Repository
         Task<bool> RegisterSaleAsync(int camisetaId, Talla talla, CancellationToken ct = default);
 
         Task SetHomeFeaturedAsync(int camisetaId, CancellationToken ct = default);
+        Task SetHomeFeaturedGridAsync(IEnumerable<(int camisetaId, short orden)> featured, CancellationToken ct = default);
     }
 }

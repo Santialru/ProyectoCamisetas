@@ -128,6 +128,19 @@ namespace ProyectoCamisetas.Repository
                 .FirstOrDefaultAsync(c => c.DestacadaInicio, ct);
         }
 
+        public async Task<IReadOnlyList<Camiseta>> GetHomeFeaturedGridAsync(CancellationToken ct = default)
+        {
+            var query = _db.HomeFeatured
+                .AsNoTracking()
+                .Include(h => h.Camiseta)!
+                    .ThenInclude(c => c!.Imagenes)
+                .OrderBy(h => h.Orden)
+                .Take(3);
+
+            var list = await query.ToListAsync(ct);
+            return list.Select(h => h.Camiseta!).Where(c => c != null).ToList();
+        }
+
         public async Task<Camiseta> AddAsync(Camiseta entity, CancellationToken ct = default)
         {
             _db.Camisetas.Add(entity);
@@ -158,6 +171,35 @@ namespace ProyectoCamisetas.Repository
             var entity = await _db.Camisetas.FirstOrDefaultAsync(c => c.Id == camisetaId, ct);
             if (entity is null) return;
             entity.DestacadaInicio = true;
+            await _db.SaveChangesAsync(ct);
+        }
+
+        public async Task SetHomeFeaturedGridAsync(IEnumerable<(int camisetaId, short orden)> featured, CancellationToken ct = default)
+        {
+            var normalized = featured
+                .Where(f => f.camisetaId > 0 && f.orden >= 1 && f.orden <= 3)
+                .GroupBy(f => f.orden)
+                .Select(g => g.First())
+                .OrderBy(f => f.orden)
+                .Take(3)
+                .ToList();
+
+            // Limpiar y reinsertar
+            var existing = await _db.HomeFeatured.ToListAsync(ct);
+            if (existing.Count > 0)
+            {
+                _db.HomeFeatured.RemoveRange(existing);
+            }
+
+            foreach (var it in normalized)
+            {
+                _db.HomeFeatured.Add(new HomeFeaturedCard
+                {
+                    CamisetaId = it.camisetaId,
+                    Orden = it.orden
+                });
+            }
+
             await _db.SaveChangesAsync(ct);
         }
 

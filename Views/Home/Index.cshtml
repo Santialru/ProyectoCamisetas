@@ -3,59 +3,88 @@
     ViewData["Title"] = "Camisetas";
 }
 
-<section class="hero-football mb-4">
-    <div class="container-fluid py-2">
-        <div class="row align-items-center g-3">
-            <div class="col-12 col-lg-6">
-    <div class="hero-content">
-        <h1>Descubre nuestras camisetas</h1>
-        <p>Clásicas, actuales y ediciones limitadas</p>
-        <div class="d-flex gap-2 flex-wrap">
-            <a class="btn btn-primary btn-lg flex-fill" asp-controller="Camisetas" asp-action="Index" asp-route-enStock="true">Ver en stock</a>
-            <a class="btn btn-outline-primary btn-lg flex-fill" asp-controller="Camisetas" asp-action="Index" asp-route-enStock="false">Ver por encargo</a>
+@section Styles {
+    <link rel="stylesheet" href="~/css/carousel.css" asp-append-version="true" />
+}
+
+<main>
+    <div id="myCarousel" class="carousel slide mb-4" data-bs-ride="carousel" data-bs-interval="3500" data-bs-pause="false" data-bs-touch="true">
+        @{ var imgs = new List<string> {
+                Url.Content("~/img/Nuevas-camisetas-de-River-Plate-e1749660046412.webp"),
+                Url.Content("~/img/WAKLJXTSYFHY7KSZK7G7DVPJO4.avif"),
+                Url.Content("~/img/2JJ5MTLEW5EIHPDWUNEO23OVEQ.avif")
+            }; }
+        <div class="carousel-indicators">
+            @for (int i = 0; i < imgs.Count; i++)
+            {
+                <button type="button" data-bs-target="#myCarousel" data-bs-slide-to="@i" class="@(i==0?"active":null)" aria-label="Slide @(i + 1)" @(i==0?"aria-current=\"true\"":null)></button>
+            }
         </div>
+        <div class="carousel-inner">
+            @for (int i = 0; i < imgs.Count; i++)
+            {
+                var active = i == 0 ? "active" : "";
+                <div class="carousel-item @active">
+                    <img src="@imgs[i]" class="d-block w-100" alt="Slide @(i+1)" asp-append-version="true" />
+                </div>
+            }
+        </div>
+        <button class="carousel-control-prev" type="button" data-bs-target="#myCarousel" data-bs-slide="prev">
+            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+            <span class="visually-hidden">Anterior</span>
+        </button>
+        <button class="carousel-control-next" type="button" data-bs-target="#myCarousel" data-bs-slide="next">
+            <span class="carousel-control-next-icon" aria-hidden="true"></span>
+            <span class="visually-hidden">Siguiente</span>
+        </button>
     </div>
-            </div>
-            <div class="col-12 col-lg-6">
-                @{ var dest = ViewBag.Destacada as ProyectoCamisetas.Models.Camiseta; }
-                @if (dest != null)
-                {
-                    <div id="heroCarousel" class="carousel slide" data-bs-ride="carousel" data-bs-interval="3500" data-bs-pause="false" data-bs-touch="true">
-                        <div class="carousel-inner">
-                            @{
-                                var imgs = (dest.Imagenes ?? Enumerable.Empty<ProyectoCamisetas.Models.CamisetaImagen>())
-                                    .OrderBy(i => i.Orden)
-                                    .Select(i => i.Url)
-                                    .ToList();
-                                if (!imgs.Any() && !string.IsNullOrWhiteSpace(dest.ImagenUrl))
-                                {
-                                    imgs = new List<string> { dest.ImagenUrl! };
-                                }
-                            }
-                            @for (int i = 0; i < imgs.Count; i++)
+</main>
+
+@{
+    var featuredThree = ViewBag.DestacadasGrid as IReadOnlyList<ProyectoCamisetas.Models.Camiseta>;
+    var cards = (featuredThree != null && featuredThree.Any())
+        ? featuredThree.ToList()
+        : (Model ?? Enumerable.Empty<ProyectoCamisetas.Models.Camiseta>())
+            .OrderBy(_ => Guid.NewGuid())
+            .Take(3)
+            .ToList();
+}
+
+@if (cards.Any())
+{
+    <section class="container mb-5 home-featured-grid">
+        <div class="row g-3 justify-content-center">
+            @foreach (var c in cards)
+            {
+                var thumb = c.Imagenes?.OrderBy(x => x.Orden).FirstOrDefault()?.Url ?? c.ImagenUrl;
+                var count = c.Imagenes?.Count ?? 0;
+                if (count == 0 && !string.IsNullOrWhiteSpace(thumb)) { count = 1; }
+                <div class="col-12 col-md-6 col-lg-4">
+                    <a class="product-card" asp-controller="Camisetas" asp-action="Details" asp-route-id="@c.Id">
+                        <div class="product-image" style="background-image:url('@thumb')">
+                            @if (count > 0)
                             {
-                                var active = i == 0 ? "active" : "";
-                                <div class="carousel-item @active">
-                                    <a asp-controller="Camisetas" asp-action="Details" asp-route-id="@dest.Id" class="d-block">
-                                        <img src="@imgs[i]" class="d-block w-100 jersey-detail" alt="Camiseta destacada" />
-                                    </a>
-                                </div>
+                                <span class="photo-badge">@count fotos</span>
                             }
                         </div>
-                        <div class="carousel-indicators">
-                            @for (int i = 0; i < imgs.Count; i++)
-                            {
-                                var active = i == 0 ? "active" : "";
-                                <button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="@i" class="@active" aria-label="Slide @(i + 1)" @(i==0?"aria-current=\"true\"":null)></button>
-                            }
+                        <div class="product-info">
+                            <div class="product-top">
+                                <span class="badge @(c.EsEdicionLimitada ? "bg-warning text-dark" : "bg-success")">@(c.EnStock ? "En stock" : "Encargala Ahora")</span>
+                                @if (c.EsEdicionLimitada) { <span class="badge bg-danger ms-1">Edición limitada</span> }
+                            </div>
+                            <h3>@c.Equipo <small class="text-muted">@c.Temporada</small></h3>
+                            <p class="text-truncate m-0">@c.Nombre</p>
+                            <div class="product-foot">
+                                <span class="price">@c.Precio.ToString("C")</span>
+                                <span class="cta">Ver</span>
+                            </div>
                         </div>
-                        @* Sin flechas; el carrusel avanza automáticamente *@
-                    </div>
-                }
-            </div>
+                    </a>
+                </div>
+            }
         </div>
-    </div>
- </section>
+    </section>
+}
 
 <section class="showcase mb-4">
     <div class="d-flex justify-content-between align-items-end mb-2">

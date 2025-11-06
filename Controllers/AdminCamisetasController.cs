@@ -135,6 +135,8 @@ namespace ProyectoCamisetas.Controllers
         {
             var list = await _repo.GetAllAdminAsync(ct);
             var current = list.FirstOrDefault(c => c.DestacadaInicio)?.Id;
+            var gridList = await _repo.GetHomeFeaturedGridAsync(ct);
+            var grid = gridList.Select((c, idx) => new { c.Id, Orden = (short)(idx + 1) }).ToList();
             pageSize = Math.Clamp(pageSize, 1, 100);
             var total = list.Count;
             var totalPages = Math.Max(1, (int)Math.Ceiling(total / (double)pageSize));
@@ -142,6 +144,8 @@ namespace ProyectoCamisetas.Controllers
             var items = list.Skip((page - 1) * pageSize).Take(pageSize).ToList();
 
             ViewBag.CurrentFeaturedId = current;
+            ViewBag.CurrentGrid = grid;
+            ViewBag.CurrentGridMap = grid.ToDictionary(x => x.Id, x => x.Orden);
             ViewBag.Page = page;
             ViewBag.PageSize = pageSize;
             ViewBag.TotalPages = totalPages;
@@ -156,6 +160,29 @@ namespace ProyectoCamisetas.Controllers
             await _repo.SetHomeFeaturedAsync(camisetaId, ct);
             TempData["Success"] = "Inicio actualizado.";
             return RedirectToAction(nameof(Index));
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> UpdateHomeGrid(CancellationToken ct)
+        {
+            var ids = Request.Form["SelectedIds"].ToArray();
+            var picks = new List<(int camisetaId, short orden)>();
+            foreach (var s in ids)
+            {
+                if (int.TryParse(s, out var id))
+                {
+                    var ordStr = Request.Form[$"Order_{id}"].FirstOrDefault();
+                    if (short.TryParse(ordStr, out var ord) && ord >= 1 && ord <= 3)
+                    {
+                        picks.Add((id, ord));
+                    }
+                }
+            }
+
+            await _repo.SetHomeFeaturedGridAsync(picks, ct);
+            TempData["Success"] = "Tarjetas de inicio actualizadas.";
+            return RedirectToAction(nameof(FeatureHome));
         }
 
         [HttpGet]

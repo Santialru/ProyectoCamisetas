@@ -111,6 +111,13 @@ body > .container { flex: 1 0 auto; }
   border-top-right-radius: .75rem;
   position: relative;
 }
+/* Aumentar altura de tarjetas destacadas en Home (desktop) */
+@media (min-width: 992px) {
+  .home-featured-grid .product-image { height: 320px; }
+}
+@media (min-width: 1200px) {
+  .home-featured-grid .product-image { height: 360px; }
+}
 .photo-badge { position:absolute; top:8px; right:8px; background: rgba(0,0,0,.55); color:#fff; padding:2px 8px; border-radius:999px; font-size:.8rem; }
 .image-wrap { position: relative; }
 .jersey-thumb {
