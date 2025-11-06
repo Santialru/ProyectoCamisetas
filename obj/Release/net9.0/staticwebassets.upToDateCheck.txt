@@ -1,7 +1,7 @@
 wwwroot\favicon.ico
 wwwroot\img\logo.jpg
 wwwroot\img\WhatsApp.svg.webp
-wwwroot\js\site.js
+wwwroot\css\site.css
 wwwroot\lib\bootstrap\dist\css\bootstrap-grid.css
 wwwroot\lib\bootstrap\dist\css\bootstrap-grid.css.map
 wwwroot\lib\bootstrap\dist\css\bootstrap-grid.min.css
@@ -88,7 +88,7 @@ wwwroot\uploads\2025\09\f4a3bd54fc7841258ba7987baea4371a.jpg
 wwwroot\uploads\2025\09\f5853a07463c43d580c7cb334c9e74b7.jpg
 wwwroot\uploads\2025\09\fbfbd8179379445d9259966ec007998b.jpg
 wwwroot\uploads\2025\09\fec15c9cac3a4378951dac665d356a43.jpg
-wwwroot\css\site.css
+wwwroot\js\site.js
 wwwroot\uploads\2025\10\2224bb4b92b44234a9cae55ec8bb82d9.jpg
 wwwroot\uploads\2025\10\29bd723393ae4144801e224e2295d4ed.jpg
 wwwroot\uploads\2025\10\368048675dd44f1d9b8b9b584a6557fe.jpg
@@ -156,9 +156,9 @@ wwwroot\uploads\2025\11\8da44dc8c3724ff6ab8e17fb11fc38da.jpg
 wwwroot\uploads\2025\11\bfa217f901ca4abb85c1451b657bbf28.jpg
 wwwroot\uploads\2025\11\d232ce3859774005a57e9596e13255fe.jpeg
 wwwroot\uploads\2025\11\dae30584007d4cf492508898976153fe.jpg
-C:\Users\santi\OneDrive\Desktop\camisetas\ProyectoCamisetas\wwwroot\css\site.css
-C:\Users\santi\OneDrive\Desktop\camisetas\ProyectoCamisetas\wwwroot\favicon.ico
 C:\Users\santi\OneDrive\Desktop\camisetas\ProyectoCamisetas\wwwroot\js\site.js
+C:\Users\santi\OneDrive\Desktop\camisetas\ProyectoCamisetas\wwwroot\favicon.ico
+C:\Users\santi\OneDrive\Desktop\camisetas\ProyectoCamisetas\wwwroot\css\site.css
 C:\Users\santi\OneDrive\Desktop\camisetas\ProyectoCamisetas\wwwroot\lib\bootstrap\dist\css\bootstrap-grid.css
 C:\Users\santi\OneDrive\Desktop\camisetas\ProyectoCamisetas\wwwroot\lib\bootstrap\dist\css\bootstrap-grid.css.map
 C:\Users\santi\OneDrive\Desktop\camisetas\ProyectoCamisetas\wwwroot\lib\bootstrap\dist\css\bootstrap-grid.min.css

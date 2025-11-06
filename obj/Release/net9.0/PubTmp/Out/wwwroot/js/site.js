@@ -345,3 +345,112 @@ document.addEventListener('DOMContentLoaded', function () {
     document.querySelectorAll('#heroCarousel, .details-media .carousel').forEach(wireSwipe);
   } catch (_) { /* ignore */ }
 });
+
+// Autocomplete for search inputs (name="q")
+document.addEventListener('DOMContentLoaded', function () {
+  try {
+    var inputs = document.querySelectorAll('input[name="q"]');
+    inputs.forEach(function (input) { wireAutocomplete(input); });
+
+    // If a mobile search form is dynamically injected later, re-scan
+    setTimeout(function(){
+      var more = document.querySelectorAll('input[name="q"]');
+      more.forEach(function (el) { if (!el.dataset.autoWired) wireAutocomplete(el); });
+    }, 800);
+
+    function wireAutocomplete(input) {
+      if (!input || input.dataset.autoWired) return;
+      input.dataset.autoWired = '1';
+      var form = input.closest('form');
+      var parent = input.parentElement;
+      if (getComputedStyle(parent).position === 'static') { parent.style.position = 'relative'; }
+      // Avoid native browser autocomplete interfering
+      try { input.setAttribute('autocomplete', 'off'); } catch(_) {}
+
+      var menu = document.createElement('div');
+      menu.className = 'autocomplete-menu';
+      menu.setAttribute('role', 'listbox');
+      menu.hidden = true;
+      parent.appendChild(menu);
+      // Place menu right under the input
+      try { menu.style.top = (input.offsetHeight + 4) + 'px'; } catch(_) {}
+
+      var timer = null;
+      var aborter = null;
+      var activeIndex = -1;
+      var items = [];
+
+      input.addEventListener('input', function () {
+        var q = input.value.trim();
+        clearTimeout(timer);
+        if (q.length < 2) { hide(); return; }
+        timer = setTimeout(function () { fetchSuggestions(q); }, 160);
+        // recalc position in case of layout changes
+        try { menu.style.top = (input.offsetHeight + 4) + 'px'; } catch(_) {}
+      });
+      window.addEventListener('resize', function(){ try { menu.style.top = (input.offsetHeight + 4) + 'px'; } catch(_) {} });
+      input.addEventListener('keydown', function (e) {
+        if (menu.hidden) return;
+        if (e.key === 'ArrowDown') { e.preventDefault(); setActive(activeIndex + 1); }
+        else if (e.key === 'ArrowUp') { e.preventDefault(); setActive(activeIndex - 1); }
+        else if (e.key === 'Enter') { if (activeIndex >= 0) { e.preventDefault(); choose(items[activeIndex]); } }
+        else if (e.key === 'Escape') { hide(); }
+      });
+      input.addEventListener('blur', function(){ setTimeout(hide, 150); });
+
+      menu.addEventListener('mousedown', function (e) {
+        var el = e.target.closest('[data-value]');
+        if (!el) return;
+        choose({ value: el.dataset.value });
+      });
+
+      function fetchSuggestions(q) {
+        try { if (aborter) aborter.abort(); } catch (_) {}
+        aborter = new AbortController();
+        fetch('/api/camisetas/suggest?q=' + encodeURIComponent(q), { signal: aborter.signal })
+          .then(function (r) { return r.ok ? r.json() : []; })
+          .then(function (data) { render(data || []); })
+          .catch(function () { /* ignore */ });
+      }
+
+      function render(list) {
+        items = list;
+        if (!items.length) { hide(); return; }
+        activeIndex = -1;
+        menu.innerHTML = items.map(function (i, idx) {
+          return '<div class="autocomplete-item" role="option" data-index="' + idx + '" data-value="' + escapeHtml(i.value) + '">' +
+                   '<span class="pill pill-' + i.type + '">' + i.type + '</span> ' + escapeHtml(i.value) +
+                 '</div>';
+        }).join('');
+        menu.hidden = false;
+      }
+
+      function setActive(idx) {
+        var els = menu.querySelectorAll('.autocomplete-item');
+        if (!els.length) return;
+        if (idx < 0) idx = els.length - 1;
+        if (idx >= els.length) idx = 0;
+        els.forEach(function (el) { el.classList.remove('active'); });
+        els[idx].classList.add('active');
+        activeIndex = idx;
+      }
+
+      function choose(item) {
+        if (!item) return;
+        input.value = item.value;
+        hide();
+        if (form) form.submit();
+      }
+
+      function hide() {
+        menu.hidden = true; menu.innerHTML = ''; items = []; activeIndex = -1;
+      }
+    }
+
+    function escapeHtml(s) {
+      return String(s).replace(/[&<>"']/g, function (c) {
+        return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c] || c;
+      });
+    }
+  } catch (_) { /* ignore */ }
+});

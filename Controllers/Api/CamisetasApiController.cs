@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
 using ProyectoCamisetas.Data;
 using ProyectoCamisetas.Models;
 
@@ -11,10 +12,12 @@ namespace ProyectoCamisetas.Controllers.Api
     public class CamisetasController : ControllerBase
     {
         private readonly AppDbContext _db;
+        private readonly IMemoryCache _cache;
 
-        public CamisetasController(AppDbContext db)
+        public CamisetasController(AppDbContext db, IMemoryCache cache)
         {
             _db = db;
+            _cache = cache;
         }
 
         /// <summary>
@@ -36,6 +39,78 @@ namespace ProyectoCamisetas.Controllers.Api
             if (!string.IsNullOrWhiteSpace(temporada)) query = query.Where(c => c.Temporada == temporada);
 
             var result = await query.OrderBy(c => c.Equipo).ThenBy(c => c.Temporada).ThenBy(c => c.Tipo).ToListAsync(ct);
+            return Ok(result);
+        }
+
+        // Autocomplete suggestions for search
+        [HttpGet("suggest")]
+        [ProducesResponseType(typeof(IEnumerable<object>), 200)]
+        public async Task<IActionResult> Suggest([FromQuery] string? q, CancellationToken ct)
+        {
+            if (string.IsNullOrWhiteSpace(q)) return Ok(Array.Empty<object>());
+            var term = q.Trim();
+            if (term.Length < 2) return Ok(Array.Empty<object>());
+
+            var like = $"%{term}%";
+
+            var cacheKey = $"suggest:{term.ToLowerInvariant()}";
+            if (_cache.TryGetValue(cacheKey, out List<object>? cached) && cached is not null)
+                return Ok(cached);
+
+            var result = new List<object>(25);
+
+            // Run sequentially on the same DbContext to avoid concurrency issues
+            var equipos = await _db.Camisetas.AsNoTracking()
+                .Where(c => EF.Functions.ILike(c.Equipo, like))
+                .Select(c => c.Equipo)
+                .Distinct()
+                .OrderBy(s => s)
+                .Take(5)
+                .ToListAsync(ct);
+            result.AddRange(equipos.Select(s => new { type = "equipo", value = s }));
+
+            var ligas = await _db.Camisetas.AsNoTracking()
+                .Where(c => EF.Functions.ILike(c.Liga, like))
+                .Select(c => c.Liga)
+                .Distinct()
+                .OrderBy(s => s)
+                .Take(5)
+                .ToListAsync(ct);
+            result.AddRange(ligas.Select(s => new { type = "liga", value = s }));
+
+            var temporadas = await _db.Camisetas.AsNoTracking()
+                .Where(c => EF.Functions.ILike(c.Temporada, like))
+                .Select(c => c.Temporada)
+                .Distinct()
+                .OrderBy(s => s)
+                .Take(5)
+                .ToListAsync(ct);
+            result.AddRange(temporadas.Select(s => new { type = "temporada", value = s }));
+
+            var nombres = await _db.Camisetas.AsNoTracking()
+                .Where(c => EF.Functions.ILike(c.Nombre, like))
+                .Select(c => c.Nombre)
+                .Distinct()
+                .OrderBy(s => s)
+                .Take(5)
+                .ToListAsync(ct);
+            result.AddRange(nombres.Select(s => new { type = "nombre", value = s }));
+
+            var skus = await _db.Camisetas.AsNoTracking()
+                .Where(c => c.SKU != null && EF.Functions.ILike(c.SKU!, like))
+                .Select(c => c.SKU!)
+                .Distinct()
+                .OrderBy(s => s)
+                .Take(5)
+                .ToListAsync(ct);
+            result.AddRange(skus.Select(s => new { type = "sku", value = s }));
+
+            _cache.Set(cacheKey, result, new MemoryCacheEntryOptions
+            {
+                AbsoluteExpirationRelativeToNow = TimeSpan.FromSeconds(45),
+                Size = 1
+            });
+
             return Ok(result);
         }
 

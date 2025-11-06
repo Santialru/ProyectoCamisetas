@@ -45,6 +45,7 @@ builder.Services.AddSwaggerGen(options =>
 });
 
 // ---------- DbContext (PostgreSQL) ----------
+builder.Services.AddMemoryCache(options => { options.SizeLimit = 1024; });
 builder.Services.AddDbContext<ProyectoCamisetas.Data.AppDbContext>(options =>
 {
     var cs = builder.Configuration.GetConnectionString("DefaultConnection");

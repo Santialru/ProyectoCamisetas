@@ -174,5 +174,5 @@ C:\Users\santi\OneDrive\Desktop\camisetas\ProyectoCamisetas\obj\Release\net9.0\P
 C:\Users\santi\OneDrive\Desktop\camisetas\ProyectoCamisetas\obj\Release\net9.0\ProyectoCamisetas.genruntimeconfig.cache
 C:\Users\santi\OneDrive\Desktop\camisetas\ProyectoCamisetas\obj\Release\net9.0\ref\ProyectoCamisetas.dll
 C:\Users\santi\OneDrive\Desktop\camisetas\ProyectoCamisetas\obj\Release\net9.0\staticwebassets.upToDateCheck.txt
-C:\Users\santi\OneDrive\Desktop\camisetas\ProyectoCamisetas\obj\Release\net9.0\compressed\geiylytxf3-gi2zz0qpia.gz
-C:\Users\santi\OneDrive\Desktop\camisetas\ProyectoCamisetas\obj\Release\net9.0\compressed\ktisqv1850-96gi4u8e3i.gz
+C:\Users\santi\OneDrive\Desktop\camisetas\ProyectoCamisetas\obj\Release\net9.0\compressed\geiylytxf3-oeuy2iur6q.gz
+C:\Users\santi\OneDrive\Desktop\camisetas\ProyectoCamisetas\obj\Release\net9.0\compressed\ktisqv1850-raw744cegi.gz
