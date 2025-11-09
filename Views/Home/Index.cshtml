@@ -8,36 +8,91 @@
 }
 
 <main>
-    <div id="myCarousel" class="carousel slide mb-4" data-bs-ride="carousel" data-bs-interval="3500" data-bs-pause="false" data-bs-touch="true">
-        @{ var imgs = new List<string> {
-                Url.Content("~/img/Nuevas-camisetas-de-River-Plate-e1749660046412.webp"),
-                Url.Content("~/img/WAKLJXTSYFHY7KSZK7G7DVPJO4.avif"),
-                Url.Content("~/img/2JJ5MTLEW5EIHPDWUNEO23OVEQ.avif")
-            }; }
-        <div class="carousel-indicators">
-            @for (int i = 0; i < imgs.Count; i++)
-            {
-                <button type="button" data-bs-target="#myCarousel" data-bs-slide-to="@i" class="@(i==0?"active":null)" aria-label="Slide @(i + 1)" @(i==0?"aria-current=\"true\"":null)></button>
-            }
+    @{ var slides = ViewBag.HeroSlides as IReadOnlyList<ProyectoCamisetas.Models.HomeCarouselSlide>; }
+    @{ var dest = ViewBag.Destacada as ProyectoCamisetas.Models.Camiseta; }
+    @{ var imgs = (dest?.Imagenes?.OrderBy(i => i.Orden).Select(i => i.Url).ToList() ?? new List<string>());
+       if (imgs.Count == 0)
+       {
+           imgs = new List<string>
+           {
+               Url.Content("~/img/Nuevas-camisetas-de-River-Plate-e1749660046412.webp"),
+               Url.Content("~/img/WAKLJXTSYFHY7KSZK7G7DVPJO4.avif"),
+               Url.Content("~/img/2JJ5MTLEW5EIHPDWUNEO23OVEQ.avif")
+           };
+       }
+    }
+    @if (slides != null && slides.Any())
+    {
+        <div id="heroCarousel" class="carousel slide mb-4" data-bs-ride="carousel" data-bs-interval="3500" data-bs-pause="false" data-bs-touch="true">
+            <div class="carousel-indicators">
+                @for (int i = 0; i < slides.Count; i++)
+                {
+                    <button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="@i" class="@(i==0?"active":null)" aria-label="Slide @(i + 1)" @(i==0?"aria-current=\"true\"":null)></button>
+                }
+            </div>
+            <div class="carousel-inner">
+                @for (int i = 0; i < slides.Count; i++)
+                {
+                    var s = slides[i];
+                    var active = i == 0 ? "active" : "";
+                    var align = i == 0 ? "text-start" : (i == 2 ? "text-end" : "");
+                    <div class="carousel-item @active">
+                        <img src="@s.ImageUrl" class="d-block w-100" alt="Slide @(i+1)" />
+                        @if (!string.IsNullOrWhiteSpace(s.Title) || !string.IsNullOrWhiteSpace(s.Description) || !string.IsNullOrWhiteSpace(s.ButtonText))
+                        {
+                            <div class="container">
+                                <div class="carousel-caption @align">
+                                    @if (!string.IsNullOrWhiteSpace(s.Title)) { <h1 class="display-5 fw-bold">@s.Title</h1> }
+                                    @if (!string.IsNullOrWhiteSpace(s.Description)) { <p class="lead">@s.Description</p> }
+                                    @if (!string.IsNullOrWhiteSpace(s.ButtonText))
+                                    {
+                                        var href = string.IsNullOrWhiteSpace(s.ButtonUrl) ? "#" : s.ButtonUrl;
+                                        <p><a class="btn btn-lg btn-primary" href="@href">@s.ButtonText</a></p>
+                                    }
+                                </div>
+                            </div>
+                        }
+                    </div>
+                }
+            </div>
+            <button class="carousel-control-prev" type="button" data-bs-target="#heroCarousel" data-bs-slide="prev">
+                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                <span class="visually-hidden">Anterior</span>
+            </button>
+            <button class="carousel-control-next" type="button" data-bs-target="#heroCarousel" data-bs-slide="next">
+                <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                <span class="visually-hidden">Siguiente</span>
+            </button>
         </div>
-        <div class="carousel-inner">
-            @for (int i = 0; i < imgs.Count; i++)
-            {
-                var active = i == 0 ? "active" : "";
-                <div class="carousel-item @active">
-                    <img src="@imgs[i]" class="d-block w-100" alt="Slide @(i+1)" asp-append-version="true" />
-                </div>
-            }
+    }
+    else
+    {
+        <div id="heroCarousel" class="carousel slide mb-4" data-bs-ride="carousel" data-bs-interval="3500" data-bs-pause="false" data-bs-touch="true">
+            <div class="carousel-indicators">
+                @for (int i = 0; i < imgs.Count; i++)
+                {
+                    <button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="@i" class="@(i==0?"active":null)" aria-label="Slide @(i + 1)" @(i==0?"aria-current=\"true\"":null)></button>
+                }
+            </div>
+            <div class="carousel-inner">
+                @for (int i = 0; i < imgs.Count; i++)
+                {
+                    var active = i == 0 ? "active" : "";
+                    <div class="carousel-item @active">
+                        <img src="@imgs[i]" class="d-block w-100" alt="Slide @(i+1)" asp-append-version="true" />
+                    </div>
+                }
+            </div>
+            <button class="carousel-control-prev" type="button" data-bs-target="#heroCarousel" data-bs-slide="prev">
+                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                <span class="visually-hidden">Anterior</span>
+            </button>
+            <button class="carousel-control-next" type="button" data-bs-target="#heroCarousel" data-bs-slide="next">
+                <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                <span class="visually-hidden">Siguiente</span>
+            </button>
         </div>
-        <button class="carousel-control-prev" type="button" data-bs-target="#myCarousel" data-bs-slide="prev">
-            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-            <span class="visually-hidden">Anterior</span>
-        </button>
-        <button class="carousel-control-next" type="button" data-bs-target="#myCarousel" data-bs-slide="next">
-            <span class="carousel-control-next-icon" aria-hidden="true"></span>
-            <span class="visually-hidden">Siguiente</span>
-        </button>
-    </div>
+    }
 </main>
 
 @{

@@ -1,0 +1,26 @@
+[
+  {
+    "Orden": 1,
+    "ImageUrl": "/uploads/2025/11/371eedf1d1a04a98939c49b1aa856fd7.png",
+    "Title": "Seleccion 2026",
+    "Description": "esta es la casaca nueva",
+    "ButtonText": "seleccion",
+    "ButtonUrl": "http://localhost:5295/"
+  },
+  {
+    "Orden": 2,
+    "ImageUrl": "/uploads/2025/11/5460e5da37474c888f01568ee14942d3.png",
+    "Title": "BOCA",
+    "Description": "boca boca boca boca",
+    "ButtonText": "boca",
+    "ButtonUrl": "http://localhost:5295/"
+  },
+  {
+    "Orden": 3,
+    "ImageUrl": "/uploads/2025/11/e67a81d893a947a9b4985a99e0e70a81.png",
+    "Title": "RIVER PLATE 2025/26",
+    "Description": "RIVERRIVERRIVERRIVERRIVER",
+    "ButtonText": "RIVER",
+    "ButtonUrl": "http://localhost:5295/"
+  }
+]

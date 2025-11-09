@@ -28,6 +28,12 @@ body {
   display: flex;
   flex-direction: column;
 }
+/* Elimina cualquier relleno/margen superior inesperado (fixed/sticky nav compat) */
+html, body, header, header .navbar {
+  padding-top: 0 !important;
+  margin-top: 0 !important;
+}
+body > *:first-child { margin-top: 0 !important; }
 /* Let content area grow and push footer to bottom */
 body > .container { flex: 1 0 auto; }
 
@@ -165,15 +171,12 @@ body > .container { flex: 1 0 auto; }
 .details-media .carousel-control-next,
 #heroCarousel .carousel-control-prev,
 #heroCarousel .carousel-control-next {
-  width: 44px;
-  height: 44px;
-  top: 50%;
-  transform: translateY(-50%);
-  background: rgba(0, 0, 0, 0.38);
-  border-radius: 0;
-  box-shadow: 0 8px 20px rgba(0,0,0,.35);
-  border: 1px solid rgba(255,255,255,.2);
-  transition: opacity .15s ease, background-color .15s ease, box-shadow .15s ease;
+  /* Match Bootstrap demo: 15% wide overlay controls spanning full height */
+  width: 15% !important;
+  height: 100% !important;
+  top: 0 !important;
+  transform: none !important;
+  transition: opacity .15s ease !important;
 }
 .details-media .carousel-control-prev,
 #heroCarousel .carousel-control-prev { left: 0; }
@@ -206,42 +209,143 @@ body > .container { flex: 1 0 auto; }
   outline: none;
   box-shadow: 0 0 0 2px rgba(13,110,253,.35), 0 10px 24px rgba(0,0,0,.45);
 }
+
+/* Override for hero: use default-like controls (no bg/border, always visible) */
+#heroCarousel .carousel-control-prev,
+#heroCarousel .carousel-control-next {
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+}
+/* Make detail carousel controls like the Bootstrap demo (no bg/border/shadow) */
+.details-media .carousel-control-prev,
+.details-media .carousel-control-next {
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+}
+.details-media .carousel-control-prev:hover,
+.details-media .carousel-control-next:hover,
+.details-media .carousel-control-prev:focus,
+.details-media .carousel-control-next:focus {
+  background: transparent !important;
+  box-shadow: none !important;
+}
+@media (hover: hover) {
+  #heroCarousel .carousel-control-prev,
+  #heroCarousel .carousel-control-next {
+    opacity: 1 !important;
+    pointer-events: auto !important;
+  }
+}
 .details-media .carousel-control-prev-icon,
 .details-media .carousel-control-next-icon,
 #heroCarousel .carousel-control-prev-icon,
 #heroCarousel .carousel-control-next-icon {
-  filter: drop-shadow(0 1px 2px rgba(0,0,0,.6)) invert(1);
-  background-size: 65% 65%;
+  /* Match Bootstrap example arrows (use default icon color/size) */
+  filter: none;
+  background-size: 100% 100%;
 }
-/* Hero carousel dot indicators */
+/* Hero carousel indicators like Bootstrap example (bars) */
 #heroCarousel .carousel-indicators {
   bottom: 10px;
   margin: 0;
 }
 #heroCarousel .carousel-indicators [data-bs-target] {
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  background-color: rgba(255,255,255,.55);
-  opacity: 1; /* manage via color instead */
+  width: 30px;
+  height: 3px;
+  border-radius: 0;
+  background-color: #fff;
+  opacity: .5;
   border: none;
-  margin: 0 6px;
+  margin: 0 3px;
 }
 #heroCarousel .carousel-indicators .active {
-  background-color: #fff;
+  opacity: 1;
 }
 @media (max-width: 768px) {
   .carousel-item img,
   .jersey-detail { max-height: 320px; }
 }
 
-/* Reduce carousel width on desktop and center it */
-@media (min-width: 768px) {
-  #heroCarousel {
-    max-width: 80%;
-    margin-left: auto;
-    margin-right: auto;
+/* Bootstrap example-like hero carousel sizing */
+#heroCarousel { margin-bottom: 4rem; }
+#heroCarousel .carousel-caption { bottom: 3rem; z-index: 10; }
+#heroCarousel .carousel-item {
+  /* Altura adaptativa al viewport para mantener presencia visual */
+  height: clamp(24rem, 65vh, 42rem);
+}
+#heroCarousel .carousel-item > img {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%;
+  min-width: 100%;
+  height: clamp(24rem, 65vh, 42rem);
+  max-height: none !important; /* no limitar en ma */
+  object-fit: cover;
+  object-position: center center; /* centra el recorte cuando el ancho es menor */
+}
+
+/* Versión escritorio: mayor presencia del hero */
+@media (min-width: 992px) {
+  #heroCarousel .carousel-item {
+    height: clamp(40rem, 80vh, 64rem);
   }
+  #heroCarousel .carousel-item > img {
+    height: clamp(40rem, 80vh, 64rem);
+  }
+  #heroCarousel .carousel-caption { bottom: 5rem; }
+}
+
+/* Mejora de contraste en hero: overlay y caption con fondo suave */
+#heroCarousel .carousel-item { position: relative; }
+#heroCarousel .carousel-item::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(0,0,0,.25) 0%, rgba(0,0,0,.55) 100%);
+  z-index: 1;
+}
+#heroCarousel .carousel-caption { 
+  position: absolute;
+  z-index: 2;
+  text-shadow: 0 2px 8px rgba(0,0,0,.85);
+}
+#heroCarousel .carousel-caption h1,
+#heroCarousel .carousel-caption h5,
+#heroCarousel .carousel-caption p { color: #fff; }
+#heroCarousel .carousel-caption .btn { box-shadow: 0 8px 20px rgba(0,0,0,.35); }
+#heroCarousel .carousel-caption .btn:hover { box-shadow: 0 12px 28px rgba(0,0,0,.45); }
+
+/* En pantallas pequeñas, agrega background suave a la caja del caption para legibilidad */
+@media (max-width: 576px) {
+  /* Mostrar caption centrado en móvil con caja legible */
+  #heroCarousel .carousel-caption {
+    display: block !important;
+    text-align: center !important;
+    left: 50% !important;
+    right: auto !important;
+    transform: translateX(-50%);
+    width: calc(100% - 2rem);
+    bottom: 1rem;
+    background: rgba(0,0,0,.44);
+    border-radius: .5rem;
+    padding: .75rem .875rem;
+  }
+  #heroCarousel .carousel-caption h1 { font-size: 1.35rem; line-height: 1.2; margin-bottom: .35rem; }
+  #heroCarousel .carousel-caption p { font-size: .95rem; margin-bottom: .5rem; }
+  #heroCarousel .carousel-caption .btn { padding: .375rem .75rem; font-size: .9rem; }
+  #heroCarousel .carousel-indicators { bottom: .5rem; }
+}
+
+/* Full-bleed hero: span entire viewport width */
+#heroCarousel {
+  width: 100vw;
+  position: relative;
+  left: 50%;
+  right: 50%;
+  margin-left: -50vw;
+  margin-right: -50vw;
 }
 @media (max-width: 576px) {
   .carousel-item img,
@@ -532,6 +636,8 @@ footer.site-footer {
 
 /* Sticky support for header and mobile search (fallback overrides) */
 header { position: sticky; top: 0; z-index: 1050; }
+/* Quita separación inferior del navbar para pegar el carrusel */
+header .navbar { margin-bottom: 0 !important; }
 @media (max-width: 576px) {
   .mobile-site-search { position: sticky; top: 56px; z-index: 1045; background:#0f1625; border-bottom:1px solid #2b3448; padding:8px 0; margin-bottom:8px; }
   .wa-fab { bottom: 120px !important; }

@@ -22,6 +22,7 @@ public class HomeController : Controller
         var productos = await _camisetas.GetRandomAsync(5, onlyAvailable: false, ct);
         ViewBag.Destacada = await _camisetas.GetHomeFeaturedAsync(ct);
         ViewBag.DestacadasGrid = await _camisetas.GetHomeFeaturedGridAsync(ct);
+        ViewBag.HeroSlides = await _camisetas.GetHomeCarouselSlidesAsync(ct);
         return View(productos);
     }
     

@@ -21,5 +21,10 @@ namespace ProyectoCamisetas.Repository
 
         Task SetHomeFeaturedAsync(int camisetaId, CancellationToken ct = default);
         Task SetHomeFeaturedGridAsync(IEnumerable<(int camisetaId, short orden)> featured, CancellationToken ct = default);
+
+        // Home carousel (slides + overlay config)
+        Task<IReadOnlyList<ProyectoCamisetas.Models.HomeCarouselSlide>> GetHomeCarouselSlidesAsync(CancellationToken ct = default);
+        Task SaveHomeCarouselSlidesAsync(IEnumerable<ProyectoCamisetas.Models.HomeCarouselSlide> slides, CancellationToken ct = default);
+        Task SaveHomeCarouselAsync(ProyectoCamisetas.Models.HomeCarouselConfig config, CancellationToken ct = default);
     }
 }

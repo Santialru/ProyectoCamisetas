@@ -1,16 +1,24 @@
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
 using ProyectoCamisetas.Data;
 using ProyectoCamisetas.Models;
 using System.Linq.Expressions;
 using Npgsql.EntityFrameworkCore.PostgreSQL;
 using System.Collections.Generic;
+using System.Text.Json;
 
 namespace ProyectoCamisetas.Repository
 {
     public class EfCamisetasRepository : ICamisetasRepository
     {
         private readonly AppDbContext _db;
-        public EfCamisetasRepository(AppDbContext db) { _db = db; }
+        private readonly IWebHostEnvironment _env;
+
+        public EfCamisetasRepository(AppDbContext db, IWebHostEnvironment env)
+        {
+            _db = db;
+            _env = env;
+        }
 
         public async Task<IReadOnlyList<Camiseta>> GetAllAsync(string? q, string? liga, string? equipo, string? temporada, CancellationToken ct = default)
         {
@@ -201,6 +209,81 @@ namespace ProyectoCamisetas.Repository
             }
 
             await _db.SaveChangesAsync(ct);
+        }
+
+        // ---------------- Home carousel (file-backed JSON) ----------------
+
+        private string GetWebRoot()
+        {
+            if (!string.IsNullOrWhiteSpace(_env.WebRootPath)) return _env.WebRootPath!;
+            return Path.Combine(_env.ContentRootPath ?? Directory.GetCurrentDirectory(), "wwwroot");
+        }
+
+        private string GetHeroDir()
+        {
+            var dir = Path.Combine(GetWebRoot(), "uploads", "hero");
+            Directory.CreateDirectory(dir);
+            return dir;
+        }
+
+        public async Task<IReadOnlyList<HomeCarouselSlide>> GetHomeCarouselSlidesAsync(CancellationToken ct = default)
+        {
+            var file = Path.Combine(GetHeroDir(), "slides.json");
+            if (!System.IO.File.Exists(file)) return new List<HomeCarouselSlide>();
+            try
+            {
+                await using var fs = System.IO.File.OpenRead(file);
+                var slides = await JsonSerializer.DeserializeAsync<List<HomeCarouselSlide>>(fs, cancellationToken: ct) ?? new List<HomeCarouselSlide>();
+                return slides.OrderBy(s => s.Orden).Take(3).ToList();
+            }
+            catch
+            {
+                return new List<HomeCarouselSlide>();
+            }
+        }
+
+        public async Task SaveHomeCarouselSlidesAsync(IEnumerable<HomeCarouselSlide> slides, CancellationToken ct = default)
+        {
+            var file = Path.Combine(GetHeroDir(), "slides.json");
+            var norm = slides
+                .Where(s => !string.IsNullOrWhiteSpace(s.ImageUrl))
+                .Select(s => new HomeCarouselSlide
+                {
+                    Orden = (short)(s.Orden < 1 ? 1 : (s.Orden > 3 ? 3 : s.Orden)),
+                    ImageUrl = s.ImageUrl!.Trim(),
+                    Title = string.IsNullOrWhiteSpace(s.Title) ? null : s.Title!.Trim(),
+                    Description = string.IsNullOrWhiteSpace(s.Description) ? null : s.Description!.Trim(),
+                    ButtonText = string.IsNullOrWhiteSpace(s.ButtonText) ? null : s.ButtonText!.Trim(),
+                    ButtonUrl = string.IsNullOrWhiteSpace(s.ButtonUrl) ? null : s.ButtonUrl!.Trim()
+                })
+                .GroupBy(s => s.Orden)
+                .Select(g => g.First())
+                .OrderBy(s => s.Orden)
+                .Take(3)
+                .ToList();
+
+            var opts = new JsonSerializerOptions { WriteIndented = true };
+            await using var fs = System.IO.File.Create(file);
+            await JsonSerializer.SerializeAsync(fs, norm, opts, ct);
+        }
+
+        public async Task SaveHomeCarouselAsync(HomeCarouselConfig config, CancellationToken ct = default)
+        {
+            var file = Path.Combine(GetHeroDir(), "config.json");
+            var norm = new HomeCarouselConfig
+            {
+                Slide1Url = string.IsNullOrWhiteSpace(config.Slide1Url) ? null : config.Slide1Url!.Trim(),
+                Slide2Url = string.IsNullOrWhiteSpace(config.Slide2Url) ? null : config.Slide2Url!.Trim(),
+                Slide3Url = string.IsNullOrWhiteSpace(config.Slide3Url) ? null : config.Slide3Url!.Trim(),
+                Title = string.IsNullOrWhiteSpace(config.Title) ? null : config.Title!.Trim(),
+                Description = string.IsNullOrWhiteSpace(config.Description) ? null : config.Description!.Trim(),
+                ButtonText = string.IsNullOrWhiteSpace(config.ButtonText) ? null : config.ButtonText!.Trim(),
+                ButtonUrl = string.IsNullOrWhiteSpace(config.ButtonUrl) ? null : config.ButtonUrl!.Trim()
+            };
+
+            var opts = new JsonSerializerOptions { WriteIndented = true };
+            await using var fs = System.IO.File.Create(file);
+            await JsonSerializer.SerializeAsync(fs, norm, opts, ct);
         }
 
         public async Task SetImagesAsync(int camisetaId, IEnumerable<string> urls, CancellationToken ct = default)

@@ -9,6 +9,162 @@
 
 <h1>Seleccionar contenido de inicio</h1>
 
+<h2 class="h5 mt-3">Carrusel de inicio</h2>
+@{
+    var slides = (IReadOnlyList<ProyectoCamisetas.Models.HomeCarouselSlide>) (ViewBag.CarouselSlides ?? new List<ProyectoCamisetas.Models.HomeCarouselSlide>());
+    var s1 = slides.FirstOrDefault(x => x.Orden == 1);
+    var s2 = slides.FirstOrDefault(x => x.Orden == 2);
+    var s3 = slides.FirstOrDefault(x => x.Orden == 3);
+}
+<form asp-action="SaveHomeCarousel" method="post" enctype="multipart/form-data" class="border rounded p-3 mb-4">
+    @Html.AntiForgeryToken()
+    <div class="row g-3">
+        <div class="col-12 col-md-4">
+            <div class="card bg-dark text-white h-100">
+                <img id="s1-preview" src="@s1?.ImageUrl" class="card-img-top @(string.IsNullOrWhiteSpace(s1?.ImageUrl)?"d-none":"")" alt="Slide 1" />
+                <div class="card-body">
+                    <h5 class="card-title">Slide 1</h5>
+                    <div class="d-grid gap-2 mb-2">
+                        <button type="button" class="btn btn-outline-primary btn-sm" id="btnS1">Agregar imágenes</button>
+                        <input type="file" id="s1-file" name="Slide1File" accept="image/*" hidden />
+                        <input type="hidden" id="s1-url" name="Slide1Url" value="@s1?.ImageUrl" />
+                    </div>
+                    <div class="mb-2">
+                        <label class="form-label small">Título</label>
+                        <input type="text" class="form-control form-control-sm" name="Slide1Title" value="@s1?.Title" />
+                    </div>
+                    <div class="mb-2">
+                        <label class="form-label small">Descripción</label>
+                        <textarea class="form-control form-control-sm" name="Slide1Desc" rows="2">@s1?.Description</textarea>
+                    </div>
+                    <div class="row g-2">
+                        <div class="col-6">
+                            <label class="form-label small">Texto botón</label>
+                            <input type="text" class="form-control form-control-sm" name="Slide1BtnText" value="@s1?.ButtonText" />
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label small">URL botón</label>
+                            <input type="text" class="form-control form-control-sm" name="Slide1BtnUrl" value="@s1?.ButtonUrl" />
+                        </div>
+                    </div>
+                    <div class="form-check mt-2">
+                        <input class="form-check-input" type="checkbox" name="Slide1Delete" id="s1-del" />
+                        <label class="form-check-label small" for="s1-del">Eliminar slide</label>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-md-4">
+            <div class="card bg-dark text-white h-100">
+                <img id="s2-preview" src="@s2?.ImageUrl" class="card-img-top @(string.IsNullOrWhiteSpace(s2?.ImageUrl)?"d-none":"")" alt="Slide 2" />
+                <div class="card-body">
+                    <h5 class="card-title">Slide 2</h5>
+                    <div class="d-grid gap-2 mb-2">
+                        <button type="button" class="btn btn-outline-primary btn-sm" id="btnS2">Agregar imágenes</button>
+                        <input type="file" id="s2-file" name="Slide2File" accept="image/*" hidden />
+                        <input type="hidden" id="s2-url" name="Slide2Url" value="@s2?.ImageUrl" />
+                    </div>
+                    <div class="mb-2">
+                        <label class="form-label small">Título</label>
+                        <input type="text" class="form-control form-control-sm" name="Slide2Title" value="@s2?.Title" />
+                    </div>
+                    <div class="mb-2">
+                        <label class="form-label small">Descripción</label>
+                        <textarea class="form-control form-control-sm" name="Slide2Desc" rows="2">@s2?.Description</textarea>
+                    </div>
+                    <div class="row g-2">
+                        <div class="col-6">
+                            <label class="form-label small">Texto botón</label>
+                            <input type="text" class="form-control form-control-sm" name="Slide2BtnText" value="@s2?.ButtonText" />
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label small">URL botón</label>
+                            <input type="text" class="form-control form-control-sm" name="Slide2BtnUrl" value="@s2?.ButtonUrl" />
+                        </div>
+                    </div>
+                    <div class="form-check mt-2">
+                        <input class="form-check-input" type="checkbox" name="Slide2Delete" id="s2-del" />
+                        <label class="form-check-label small" for="s2-del">Eliminar slide</label>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-md-4">
+            <div class="card bg-dark text-white h-100">
+                <img id="s3-preview" src="@s3?.ImageUrl" class="card-img-top @(string.IsNullOrWhiteSpace(s3?.ImageUrl)?"d-none":"")" alt="Slide 3" />
+                <div class="card-body">
+                    <h5 class="card-title">Slide 3</h5>
+                    <div class="d-grid gap-2 mb-2">
+                        <button type="button" class="btn btn-outline-primary btn-sm" id="btnS3">Agregar imágenes</button>
+                        <input type="file" id="s3-file" name="Slide3File" accept="image/*" hidden />
+                        <input type="hidden" id="s3-url" name="Slide3Url" value="@s3?.ImageUrl" />
+                    </div>
+                    <div class="mb-2">
+                        <label class="form-label small">Título</label>
+                        <input type="text" class="form-control form-control-sm" name="Slide3Title" value="@s3?.Title" />
+                    </div>
+                    <div class="mb-2">
+                        <label class="form-label small">Descripción</label>
+                        <textarea class="form-control form-control-sm" name="Slide3Desc" rows="2">@s3?.Description</textarea>
+                    </div>
+                    <div class="row g-2">
+                        <div class="col-6">
+                            <label class="form-label small">Texto botón</label>
+                            <input type="text" class="form-control form-control-sm" name="Slide3BtnText" value="@s3?.ButtonText" />
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label small">URL botón</label>
+                            <input type="text" class="form-control form-control-sm" name="Slide3BtnUrl" value="@s3?.ButtonUrl" />
+                        </div>
+                    </div>
+                    <div class="form-check mt-2">
+                        <input class="form-check-input" type="checkbox" name="Slide3Delete" id="s3-del" />
+                        <label class="form-check-label small" for="s3-del">Eliminar slide</label>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 d-flex justify-content-end mt-2">
+            <button type="submit" class="btn btn-success">Guardar carrusel</button>
+        </div>
+    </div>
+</form>
+
+<script>
+(() => {
+  const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+  const upload = async (file) => {
+    const fd = new FormData();
+    fd.append('file', file);
+    const resp = await fetch('@Url.Action("UploadImage","AdminCamisetas")', {
+      method: 'POST', headers: { 'RequestVerificationToken': token }, body: fd, credentials: 'same-origin'
+    });
+    if (!resp.ok) throw new Error('Error subiendo');
+    return resp.json();
+  };
+
+  const wire = (btnId, fileId, urlId, prevId) => {
+    const btn = document.getElementById(btnId);
+    const file = document.getElementById(fileId);
+    const url = document.getElementById(urlId);
+    const prev = document.getElementById(prevId);
+    btn?.addEventListener('click', () => file.click());
+    file?.addEventListener('change', async () => {
+      if (!file.files?.length) return;
+      try {
+        const { url: u } = await upload(file.files[0]);
+        url.value = u;
+        if (prev) { prev.src = u; prev.classList.remove('d-none'); }
+      } catch (e) { console.error(e); }
+      file.value = '';
+    });
+  };
+  wire('btnS1','s1-file','s1-url','s1-preview');
+  wire('btnS2','s2-file','s2-url','s2-preview');
+  wire('btnS3','s3-file','s3-url','s3-preview');
+})();
+</script>
+
 <p class="text-muted">Elige la camiseta cuyas imágenes se mostrarán en la portada. En móviles, esas imágenes aparecen debajo del texto.</p>
 
 <div class="table-responsive">
