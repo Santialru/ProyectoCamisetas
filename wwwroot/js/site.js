@@ -69,6 +69,16 @@ function clickOutside(targets, cb) {
 }
 
 document.addEventListener('DOMContentLoaded', function () {
+  // Set CSS var --nav-h to navbar height so hero can fill viewport minus navbar
+  try {
+    var nav = document.querySelector('header .navbar');
+    function setNavH(){
+      var h = nav ? nav.offsetHeight : 0;
+      document.documentElement.style.setProperty('--nav-h', h + 'px');
+    }
+    setNavH();
+    window.addEventListener('resize', setNavH);
+  } catch (_) { /* ignore */ }
   const trigger = document.getElementById('catalogoDropdown');
   const panel   = document.getElementById('catalogoPanel');
   const navCollapse = document.getElementById('navbarSupportedContent');

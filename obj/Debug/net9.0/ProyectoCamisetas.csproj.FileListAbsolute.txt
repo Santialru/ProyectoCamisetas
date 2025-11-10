@@ -173,8 +173,8 @@ C:\Users\santi\OneDrive\Desktop\camisetas\ProyectoCamisetas\obj\Debug\net9.0\ref
 C:\Users\santi\OneDrive\Desktop\camisetas\ProyectoCamisetas\obj\Debug\net9.0\ProyectoCamisetas.pdb
 C:\Users\santi\OneDrive\Desktop\camisetas\ProyectoCamisetas\obj\Debug\net9.0\ProyectoCamisetas.genruntimeconfig.cache
 C:\Users\santi\OneDrive\Desktop\camisetas\ProyectoCamisetas\obj\Debug\net9.0\ref\ProyectoCamisetas.dll
-C:\Users\santi\OneDrive\Desktop\camisetas\ProyectoCamisetas\obj\Debug\net9.0\compressed\ktisqv1850-yrk7t6xrbh.gz
 C:\Users\santi\OneDrive\Desktop\camisetas\ProyectoCamisetas\obj\Debug\net9.0\compressed\jg9mpj19bw-xjjrqtq3c3.gz
-C:\Users\santi\OneDrive\Desktop\camisetas\ProyectoCamisetas\obj\Debug\net9.0\compressed\eh9hgz1ks3-qoqw546xwt.gz
-C:\Users\santi\OneDrive\Desktop\camisetas\ProyectoCamisetas\obj\Debug\net9.0\compressed\okyzwyo8ko-wd4lqyz4bl.gz
-C:\Users\santi\OneDrive\Desktop\camisetas\ProyectoCamisetas\obj\Debug\net9.0\compressed\geiylytxf3-4wurno8q2e.gz
+C:\Users\santi\OneDrive\Desktop\camisetas\ProyectoCamisetas\obj\Debug\net9.0\compressed\eh9hgz1ks3-mf6wj0sy8u.gz
+C:\Users\santi\OneDrive\Desktop\camisetas\ProyectoCamisetas\obj\Debug\net9.0\compressed\okyzwyo8ko-zf206k72ff.gz
+C:\Users\santi\OneDrive\Desktop\camisetas\ProyectoCamisetas\obj\Debug\net9.0\compressed\ktisqv1850-cqgl3yq9fd.gz
+C:\Users\santi\OneDrive\Desktop\camisetas\ProyectoCamisetas\obj\Debug\net9.0\compressed\geiylytxf3-qacvcby25e.gz

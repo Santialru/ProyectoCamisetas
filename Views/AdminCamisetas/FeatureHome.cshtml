@@ -47,9 +47,10 @@
                             <input type="text" class="form-control form-control-sm" name="Slide1BtnUrl" value="@s1?.ButtonUrl" />
                         </div>
                     </div>
-                    <div class="form-check mt-2">
-                        <input class="form-check-input" type="checkbox" name="Slide1Delete" id="s1-del" />
-                        <label class="form-check-label small" for="s1-del">Eliminar slide</label>
+                    <!-- Estado de eliminación (oculto) -->
+                    <input type="hidden" name="Slide1Delete" id="s1-del" value="false" />
+                    <div class="mt-2">
+                        <button type="button" class="btn btn-outline-danger btn-sm" id="clearS1">Borrar slide</button>
                     </div>
                 </div>
             </div>
@@ -82,9 +83,10 @@
                             <input type="text" class="form-control form-control-sm" name="Slide2BtnUrl" value="@s2?.ButtonUrl" />
                         </div>
                     </div>
-                    <div class="form-check mt-2">
-                        <input class="form-check-input" type="checkbox" name="Slide2Delete" id="s2-del" />
-                        <label class="form-check-label small" for="s2-del">Eliminar slide</label>
+                    <!-- Estado de eliminación (oculto) -->
+                    <input type="hidden" name="Slide2Delete" id="s2-del" value="false" />
+                    <div class="mt-2">
+                        <button type="button" class="btn btn-outline-danger btn-sm" id="clearS2">Borrar slide</button>
                     </div>
                 </div>
             </div>
@@ -117,9 +119,10 @@
                             <input type="text" class="form-control form-control-sm" name="Slide3BtnUrl" value="@s3?.ButtonUrl" />
                         </div>
                     </div>
-                    <div class="form-check mt-2">
-                        <input class="form-check-input" type="checkbox" name="Slide3Delete" id="s3-del" />
-                        <label class="form-check-label small" for="s3-del">Eliminar slide</label>
+                    <!-- Estado de eliminación (oculto) -->
+                    <input type="hidden" name="Slide3Delete" id="s3-del" value="false" />
+                    <div class="mt-2">
+                        <button type="button" class="btn btn-outline-danger btn-sm" id="clearS3">Borrar slide</button>
                     </div>
                 </div>
             </div>
@@ -143,7 +146,7 @@
     return resp.json();
   };
 
-  const wire = (btnId, fileId, urlId, prevId) => {
+  const wire = (btnId, fileId, urlId, prevId, delId) => {
     const btn = document.getElementById(btnId);
     const file = document.getElementById(fileId);
     const url = document.getElementById(urlId);
@@ -155,20 +158,60 @@
         const { url: u } = await upload(file.files[0]);
         url.value = u;
         if (prev) { prev.src = u; prev.classList.remove('d-none'); }
+        const del = delId ? document.getElementById(delId) : null;
+        if (del && del instanceof HTMLInputElement) del.value = 'false';
       } catch (e) { console.error(e); }
       file.value = '';
     });
   };
-  wire('btnS1','s1-file','s1-url','s1-preview');
-  wire('btnS2','s2-file','s2-url','s2-preview');
-  wire('btnS3','s3-file','s3-url','s3-preview');
+  wire('btnS1','s1-file','s1-url','s1-preview','s1-del');
+  wire('btnS2','s2-file','s2-url','s2-preview','s2-del');
+  wire('btnS3','s3-file','s3-url','s3-preview','s3-del');
+  
+  // Limpiar contenido de slide manteniendo al menos 1
+  const remainingAfter = (targetDelId) => {
+    const ids = ['s1-del','s2-del','s3-del'];
+    let delCount = 0;
+    ids.forEach(id => { const el = document.getElementById(id); if (el && el.value === 'true') delCount++; });
+    const target = document.getElementById(targetDelId);
+    const willCheck = target && target.value !== 'true';
+    return 3 - (delCount + (willCheck ? 1 : 0));
+  };
+  const clearSlide = (prefix, urlId, prevId, delId) => {
+    if (remainingAfter(delId) <= 0) { alert('Debe quedar al menos un slide.'); return; }
+    const fields = [`${prefix}Title`, `${prefix}Desc`, `${prefix}BtnText`, `${prefix}BtnUrl`];
+    fields.forEach(n => {
+      const el = document.querySelector(`[name="${n}"]`);
+      if (el) el.value = '';
+    });
+    const url = document.getElementById(urlId);
+    if (url) url.value = '';
+    const prev = document.getElementById(prevId);
+    if (prev) { prev.src = ''; prev.classList.add('d-none'); }
+    const del = document.getElementById(delId);
+    if (del) del.value = 'true';
+  };
+  document.getElementById('clearS1')?.addEventListener('click', () => clearSlide('Slide1','s1-url','s1-preview','s1-del'));
+  document.getElementById('clearS2')?.addEventListener('click', () => clearSlide('Slide2','s2-url','s2-preview','s2-del'));
+  document.getElementById('clearS3')?.addEventListener('click', () => clearSlide('Slide3','s3-url','s3-preview','s3-del'));
 })();
 </script>
 
 <p class="text-muted">Elige la camiseta cuyas imágenes se mostrarán en la portada. En móviles, esas imágenes aparecen debajo del texto.</p>
 
+<div id="admin-grid" class="d-flex align-items-center justify-content-between mt-3 mb-2">
+    <form method="get" class="d-flex align-items-center gap-2 flex-grow-1" style="max-width: 620px;">
+        <label for="q" class="form-label m-0 me-2 small text-muted">Buscar camisetas</label>
+        <input type="search" id="q" name="q" value="@Context.Request.Query["q"]" class="form-control form-control-sm" placeholder="Equipo, temporada, nombre o ID" aria-label="Buscar camisetas" />
+        <button type="submit" class="btn btn-primary btn-sm">Buscar</button>
+        <a class="btn btn-outline-secondary btn-sm" asp-action="FeatureHome">Limpiar</a>
+        <input type="hidden" name="pageSize" value="@pageSize" />
+    </form>
+    <span class="small text-muted ms-2 d-none d-md-inline">@((int)ViewBag.TotalItems) resultados</span>
+    </div>
+
 <div class="table-responsive">
-<table class="table table-dark table-hover table-sm align-middle">
+<table id="adminCamisetasTable" class="table table-dark table-hover table-sm align-middle">
     <thead>
         <tr>
             <th>ID</th>
@@ -223,6 +266,8 @@
 </table>
 </div>
 
+@* Búsqueda server-side *@
+
 <form id="gridForm" method="post" asp-action="UpdateHomeGrid" class="mt-3">
     @Html.AntiForgeryToken()
     <div class="d-flex align-items-center gap-2">
@@ -233,16 +278,51 @@
 <nav aria-label="Paginación" class="mt-3">
   <ul class="pagination pagination-sm">
     <li class="page-item @(page <= 1 ? "disabled" : null)">
-      <a class="page-link" asp-action="FeatureHome" asp-route-page="@(page-1)" asp-route-pageSize="@pageSize">Anterior</a>
+      <a class="page-link" asp-action="FeatureHome" asp-route-q="@Context.Request.Query["q"]" asp-route-page="@(page-1)" asp-route-pageSize="@pageSize" asp-fragment="admin-grid" aria-label="Anterior">&lsaquo;</a>
     </li>
-    @for (int p = 1; p <= totalPages; p++)
+    @{
+        var pages = new List<int>();
+        var currPage = page;
+        var lastPage = totalPages;
+        if (currPage > 1) pages.Add(currPage - 1);
+        pages.Add(currPage);
+        if (currPage + 1 <= lastPage) pages.Add(currPage + 1);
+        if (currPage + 2 <= lastPage) pages.Add(currPage + 2);
+        pages = pages.Distinct().ToList();
+        pages.Sort();
+        var showFirst = !pages.Contains(1) && lastPage > 0;
+        var leftEllipsis = showFirst && pages.Any() && (pages.First() - 1) > 1;
+        var showLast = !pages.Contains(lastPage) && lastPage > 0;
+        var rightEllipsis = showLast && pages.Any() && (lastPage - pages.Last()) > 1;
+    }
+    @if (showFirst)
+    {
+        <li class="page-item @(1 == page ? "active" : null)">
+          <a class="page-link" asp-action="FeatureHome" asp-route-q="@Context.Request.Query["q"]" asp-route-page="1" asp-route-pageSize="@pageSize" asp-fragment="admin-grid">1</a>
+        </li>
+    }
+    @if (leftEllipsis)
+    {
+        <li class="page-item disabled"><span class="page-link">&hellip;</span></li>
+    }
+    @foreach (var p in pages)
     {
         <li class="page-item @(p == page ? "active" : null)">
-            <a class="page-link" asp-action="FeatureHome" asp-route-page="@p" asp-route-pageSize="@pageSize">@p</a>
+          <a class="page-link" asp-action="FeatureHome" asp-route-q="@Context.Request.Query["q"]" asp-route-page="@p" asp-route-pageSize="@pageSize" asp-fragment="admin-grid">@p</a>
+        </li>
+    }
+    @if (rightEllipsis)
+    {
+        <li class="page-item disabled"><span class="page-link">&hellip;</span></li>
+    }
+    @if (showLast)
+    {
+        <li class="page-item @(lastPage == page ? "active" : null)">
+          <a class="page-link" asp-action="FeatureHome" asp-route-q="@Context.Request.Query["q"]" asp-route-page="@lastPage" asp-route-pageSize="@pageSize" asp-fragment="admin-grid">@lastPage</a>
         </li>
     }
     <li class="page-item @(page >= totalPages ? "disabled" : null)">
-      <a class="page-link" asp-action="FeatureHome" asp-route-page="@(page+1)" asp-route-pageSize="@pageSize">Siguiente</a>
+      <a class="page-link" asp-action="FeatureHome" asp-route-q="@Context.Request.Query["q"]" asp-route-page="@(page+1)" asp-route-pageSize="@pageSize" asp-fragment="admin-grid" aria-label="Siguiente">&rsaquo;</a>
     </li>
   </ul>
   <div class="small text-muted">Página @(page) de @(totalPages)</div>

@@ -173,9 +173,27 @@ namespace ProyectoCamisetas.Controllers
         // ---------------------- FEATURE HOME (GET) -------------------
 
         [HttpGet]
-        public async Task<IActionResult> FeatureHome(int page = 1, int pageSize = 10, CancellationToken ct = default)
+        public async Task<IActionResult> FeatureHome(string? q, int page = 1, int pageSize = 10, CancellationToken ct = default)
         {
             var list = await _repo.GetAllAdminAsync(ct);
+            // Búsqueda libre similar a Index
+            if (!string.IsNullOrWhiteSpace(q))
+            {
+                var tokens = q.Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+                              .Select(t => t.ToLowerInvariant())
+                              .ToList();
+
+                bool MatchAll(Camiseta c)
+                {
+                    var pool = string.Join(' ',
+                                  new[] { c.Nombre, c.Equipo, c.Liga, c.Temporada, c.Marca, c.Descripcion }
+                                  .Where(s => !string.IsNullOrWhiteSpace(s)))
+                                  .ToLowerInvariant();
+                    return tokens.All(t => pool.Contains(t));
+                }
+
+                list = list.Where(MatchAll).ToList();
+            }
             var current = list.FirstOrDefault(c => c.DestacadaInicio)?.Id;
             var gridList = await _repo.GetHomeFeaturedGridAsync(ct);
             var grid = gridList.Select((c, idx) => new { c.Id, Orden = (short)(idx + 1) }).ToList();
@@ -193,6 +211,7 @@ namespace ProyectoCamisetas.Controllers
             ViewBag.PageSize = pageSize;
             ViewBag.TotalPages = totalPages;
             ViewBag.TotalItems = total;
+            ViewBag.Q = q;
             ViewBag.CarouselSlides = await _repo.GetHomeCarouselSlidesAsync(ct);
 
             return View(items);

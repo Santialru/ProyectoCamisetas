@@ -19,6 +19,7 @@ html {
 
 /* Ensure full-height layout for sticky footer */
 html, body { height: 100%; }
+:root { --nav-h: 0px; }
 
 body {
   margin: 0;
@@ -27,6 +28,7 @@ body {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+  overflow-x: hidden; /* evita scroll horizontal global */
 }
 /* Elimina cualquier relleno/margen superior inesperado (fixed/sticky nav compat) */
 html, body, header, header .navbar {
@@ -34,6 +36,8 @@ html, body, header, header .navbar {
   margin-top: 0 !important;
 }
 body > *:first-child { margin-top: 0 !important; }
+/* Navbar sizing: slightly taller without separar del borde */
+header .navbar { padding-top: 10px; padding-bottom: 10px; }
 /* Let content area grow and push footer to bottom */
 body > .container { flex: 1 0 auto; }
 
@@ -269,30 +273,46 @@ body > .container { flex: 1 0 auto; }
 }
 
 /* Bootstrap example-like hero carousel sizing */
-#heroCarousel { margin-bottom: 4rem; }
+#heroCarousel { margin-bottom: 0; }
+#heroCarousel,
+#heroCarousel .carousel-inner {
+  overflow: hidden; /* prevent horizontal scroll if children overflow */
+}
 #heroCarousel .carousel-caption { bottom: 3rem; z-index: 10; }
 #heroCarousel .carousel-item {
   /* Altura adaptativa al viewport para mantener presencia visual */
-  height: clamp(24rem, 65vh, 42rem);
+  height: calc(100vh - var(--nav-h)) !important;
 }
 #heroCarousel .carousel-item > img {
   position: absolute;
   top: 0; left: 0;
   width: 100%;
   min-width: 100%;
-  height: clamp(24rem, 65vh, 42rem);
-  max-height: none !important; /* no limitar en ma */
+  height: calc(100vh - var(--nav-h)) !important;
+  max-height: none !important; /* no limitar en m
+a */
   object-fit: cover;
   object-position: center center; /* centra el recorte cuando el ancho es menor */
+}
+
+/* Make hero carousel span exactly full viewport width (edge-to-edge) */
+#heroCarousel {
+  position: relative;
+  left: 50%;
+  right: 50%;
+  margin-left: -50vw;
+  margin-right: -50vw;
+  width: 100vw;
+  max-width: 100vw;
 }
 
 /* Versión escritorio: mayor presencia del hero */
 @media (min-width: 992px) {
   #heroCarousel .carousel-item {
-    height: clamp(40rem, 80vh, 64rem);
+    height: calc(100vh - var(--nav-h)) !important;
   }
   #heroCarousel .carousel-item > img {
-    height: clamp(40rem, 80vh, 64rem);
+    height: calc(100vh - var(--nav-h)) !important;
   }
   #heroCarousel .carousel-caption { bottom: 5rem; }
 }
@@ -317,6 +337,21 @@ body > .container { flex: 1 0 auto; }
 #heroCarousel .carousel-caption .btn { box-shadow: 0 8px 20px rgba(0,0,0,.35); }
 #heroCarousel .carousel-caption .btn:hover { box-shadow: 0 12px 28px rgba(0,0,0,.45); }
 
+/* Make hero CTA transparent with white border and readable text */
+#heroCarousel .carousel-caption .btn,
+#heroCarousel .carousel-caption .btn.btn-primary {
+  background: transparent !important;
+  color: #fff !important;
+  border: 2px solid #fff !important;
+  text-shadow: 0 2px 6px rgba(0,0,0,.65);
+}
+#heroCarousel .carousel-caption .btn:hover,
+#heroCarousel .carousel-caption .btn:focus {
+  background: rgba(255,255,255,.12) !important;
+  color: #fff !important;
+  border-color: #fff !important;
+}
+
 /* En pantallas pequeñas, agrega background suave a la caja del caption para legibilidad */
 @media (max-width: 576px) {
   /* Mostrar caption centrado en móvil con caja legible */
@@ -332,9 +367,10 @@ body > .container { flex: 1 0 auto; }
     border-radius: .5rem;
     padding: .75rem .875rem;
   }
-  #heroCarousel .carousel-caption h1 { font-size: 1.35rem; line-height: 1.2; margin-bottom: .35rem; }
-  #heroCarousel .carousel-caption p { font-size: .95rem; margin-bottom: .5rem; }
-  #heroCarousel .carousel-caption .btn { padding: .375rem .75rem; font-size: .9rem; }
+  /* Slightly larger type and CTA on mobile for readability */
+  #heroCarousel .carousel-caption h1 { font-size: 1.65rem; line-height: 1.2; margin-bottom: .5rem; }
+  #heroCarousel .carousel-caption p { font-size: 1.05rem; margin-bottom: .65rem; }
+  #heroCarousel .carousel-caption .btn { padding: .5rem 1rem; font-size: 1rem; }
   #heroCarousel .carousel-indicators { bottom: .5rem; }
 }
 
@@ -653,6 +689,7 @@ header .navbar { margin-bottom: 0 !important; }
 .details-media .carousel,
 .details-media .carousel-inner,
 .details-media .carousel-item { height: 100% !important; }
+.details-media .carousel-inner { overflow: hidden; }
 .details-media .carousel-item img,
 .details-media .jersey-detail { height: 100% !important; width: auto !important; max-width: 100% !important; object-fit: contain; }
 @media (max-width: 576px) { .details-media { height: 360px !important; min-height: 260px; max-height: 420px; } }
@@ -733,3 +770,4 @@ header .navbar { margin-bottom: 0 !important; }
   height: 2%;
   
 }
+
