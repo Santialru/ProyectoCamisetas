@@ -377,16 +377,29 @@ document.addEventListener('DOMContentLoaded', function () {
 
       var timer = null;
       var aborter = null;
+      var lastTerm = '';
       var activeIndex = -1;
       var items = [];
 
       input.addEventListener('input', function () {
         var q = input.value.trim();
         clearTimeout(timer);
-        if (q.length < 2) { hide(); return; }
-        timer = setTimeout(function () { fetchSuggestions(q); }, 160);
+        if (q.length < 2) {
+          try { if (aborter) aborter.abort(); } catch (_) {}
+          hide();
+          return;
+        }
+        timer = setTimeout(function () { lastTerm = q; fetchSuggestions(q); }, 160);
         // recalc position in case of layout changes
         try { menu.style.top = (input.offsetHeight + 4) + 'px'; } catch(_) {}
+      });
+      // For type="search": native clear (x) triggers 'search'
+      input.addEventListener('search', function(){
+        var q = (input.value || '').trim();
+        if (q.length < 2) {
+          try { if (aborter) aborter.abort(); } catch (_) {}
+          hide();
+        }
       });
       window.addEventListener('resize', function(){ try { menu.style.top = (input.offsetHeight + 4) + 'px'; } catch(_) {} });
       input.addEventListener('keydown', function (e) {
@@ -409,11 +422,16 @@ document.addEventListener('DOMContentLoaded', function () {
         aborter = new AbortController();
         fetch('/api/camisetas/suggest?q=' + encodeURIComponent(q), { signal: aborter.signal })
           .then(function (r) { return r.ok ? r.json() : []; })
-          .then(function (data) { render(data || []); })
+          .then(function (data) { render(data || [], q); })
           .catch(function () { /* ignore */ });
       }
 
-      function render(list) {
+      function render(list, requestedTerm) {
+        var current = (input.value || '').trim();
+        if (current.length < 2 || (requestedTerm && requestedTerm !== current)) {
+          hide();
+          return;
+        }
         items = list;
         if (!items.length) { hide(); return; }
         activeIndex = -1;

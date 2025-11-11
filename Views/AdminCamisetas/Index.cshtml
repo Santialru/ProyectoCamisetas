@@ -157,8 +157,10 @@
                 <label class="form-check-label" for="modoDown">Disminuir</label>
             </div>
         </div>
-        <div class="col-sm-5 text-end">
+        <div class="col-sm-5 text-end d-flex gap-2 justify-content-end flex-wrap">
             <button type="submit" class="btn btn-warning">Aplicar a seleccionadas</button>
+            <button type="submit" formaction="@Url.Action("BulkRemoveDiscounts", "AdminCamisetas")" formnovalidate class="btn btn-danger">Quitar descuentos seleccionados</button>
+            <button type="submit" formaction="@Url.Action("RemoveAllDiscounts", "AdminCamisetas")" formnovalidate class="btn btn-outline-danger" onclick="return confirm('¿Estás seguro que quieres quitar todos los descuentos?');">Quitar todos los descuentos</button>
         </div>
     </div>
     @Html.AntiForgeryToken()
@@ -192,7 +194,21 @@
             <td class="d-none d-lg-table-cell">@item.Tipo</td>
             <td>@item.Nombre</td>
             <td class="d-none d-lg-table-cell">@item.SKU</td>
-            <td>@item.Precio.ToString("C")</td>
+            <td>
+                @if (item.PrecioAnterior.HasValue && item.PrecioAnterior.Value > item.Precio)
+                {
+                    var oldPrice = item.PrecioAnterior.Value;
+                    var newPrice = item.Precio;
+                    var pct = oldPrice > 0 ? Math.Round((1 - (double)newPrice / (double)oldPrice) * 100) : 0;
+                    <span class="text-muted text-decoration-line-through me-1">@oldPrice.ToString("C")</span>
+                    <span class="fw-bold">@newPrice.ToString("C")</span>
+                    <span class="badge bg-danger ms-1">-@pct%</span>
+                }
+                else
+                {
+                    @item.Precio.ToString("C")
+                }
+            </td>
             <td>
                 <!-- Acciones en pantallas medianas y grandes -->
                 <div class="d-none d-md-flex flex-wrap gap-1">

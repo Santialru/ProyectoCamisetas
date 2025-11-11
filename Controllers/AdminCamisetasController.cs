@@ -313,6 +313,44 @@ namespace ProyectoCamisetas.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
+        public async Task<IActionResult> BulkRemoveDiscounts(int[] ids, CancellationToken ct)
+        {
+            if (ids == null || ids.Length == 0)
+            {
+                TempData["Error"] = "Selecciona al menos una camiseta.";
+                return RedirectToAction(nameof(Index));
+            }
+
+            var affected = await _repo.RestoreDiscountsAsync(ids, ct);
+            if (affected <= 0)
+            {
+                TempData["Error"] = "No había descuentos para restaurar en la selección.";
+            }
+            else
+            {
+                TempData["Success"] = $"Descuentos quitados en {affected} producto(s).";
+            }
+            return RedirectToAction(nameof(Index));
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> RemoveAllDiscounts(CancellationToken ct)
+        {
+            var affected = await _repo.RestoreAllDiscountsAsync(ct);
+            if (affected <= 0)
+            {
+                TempData["Error"] = "No hay descuentos activos para quitar.";
+            }
+            else
+            {
+                TempData["Success"] = $"Se quitaron todos los descuentos en {affected} producto(s).";
+            }
+            return RedirectToAction(nameof(Index));
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Venta(int id, Talla? talla, CancellationToken ct)
         {
             var entity = await _repo.GetByIdAsync(id, ct);

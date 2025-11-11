@@ -19,5 +19,9 @@ namespace ProyectoCamisetas.Repository
         Task<bool> RegisterSaleAsync(int camisetaId, Talla talla, CancellationToken ct = default);
 
         Task SetHomeFeaturedAsync(int camisetaId, CancellationToken ct = default);
+
+        // Restaurar precios previos eliminando descuentos
+        Task<int> RestoreDiscountsAsync(IEnumerable<int> ids, CancellationToken ct = default);
+        Task<int> RestoreAllDiscountsAsync(CancellationToken ct = default);
     }
 }

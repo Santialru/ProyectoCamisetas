@@ -161,6 +161,31 @@ namespace ProyectoCamisetas.Repository
             await _db.SaveChangesAsync(ct);
         }
 
+        public async Task<int> RestoreDiscountsAsync(IEnumerable<int> ids, CancellationToken ct = default)
+        {
+            var idList = ids?.Distinct().ToList() ?? new List<int>();
+            if (idList.Count == 0) return 0;
+
+            // Restaura Precio = PrecioAnterior y limpia PrecioAnterior para los seleccionados
+            var affected = await _db.Camisetas
+                .Where(c => idList.Contains(c.Id) && c.PrecioAnterior != null)
+                .ExecuteUpdateAsync(s => s
+                    .SetProperty(c => c.Precio, c => c.PrecioAnterior!.Value)
+                    .SetProperty(c => c.PrecioAnterior, c => null), ct);
+            return affected;
+        }
+
+        public async Task<int> RestoreAllDiscountsAsync(CancellationToken ct = default)
+        {
+            // Restaura Precio = PrecioAnterior y limpia PrecioAnterior para todos los que tengan descuento
+            var affected = await _db.Camisetas
+                .Where(c => c.PrecioAnterior != null)
+                .ExecuteUpdateAsync(s => s
+                    .SetProperty(c => c.Precio, c => c.PrecioAnterior!.Value)
+                    .SetProperty(c => c.PrecioAnterior, c => null), ct);
+            return affected;
+        }
+
         public async Task SetImagesAsync(int camisetaId, IEnumerable<string> urls, CancellationToken ct = default)
         {
             var list = urls
