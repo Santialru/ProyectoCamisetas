@@ -278,12 +278,11 @@ document.addEventListener('DOMContentLoaded', function () {
     form.appendChild(colBtn);
 
 
-    // Sticky placement just under navbar
+    // Anchor at top (non-sticky in mobile)
     var nav = document.querySelector('header .navbar');
-    var top = nav ? nav.getBoundingClientRect().height : 56;
-    form.style.position = 'sticky';
-    form.style.top = top + 'px';
-    form.style.zIndex = 1045;
+    form.style.position = 'static';
+    form.style.top = '';
+    form.style.zIndex = '';
     form.style.background = '#0f1625';
     form.style.borderBottom = '1px solid #2b3448';
     form.style.padding = '8px 0';

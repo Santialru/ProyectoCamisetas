@@ -1,4 +1,4 @@
-@model IEnumerable<ProyectoCamisetas.Models.Camiseta>
+﻿@model IEnumerable<ProyectoCamisetas.Models.Camiseta>
 @{
     ViewData["Title"] = "Administrar Camisetas";
 }
@@ -10,11 +10,11 @@
     <a class="btn btn-outline-secondary" asp-controller="Camisetas" asp-action="Index">Ver Catálogo</a>
     <button type="button" id="toggleBulkPrices" class="btn btn-outline-warning">Modificar precios</button>
     <a class="btn btn-outline-info" asp-action="FeatureHome">Modificar inicio</a>
+    <a class="btn btn-outline-success" asp-action="Ventas">Ventas</a>
   </div>
 
 <style>
-  /* Oculta botones flotantes globales en admin */
-  .ig-fab, .wa-fab { display: none !important; }
+  .admin-bulk .bulk-actions .btn { width: 100%; }
 </style>
 
 <form method="get" class="row g-2 align-items-end mb-3" hidden>
@@ -45,12 +45,12 @@
         <select name="orden" class="form-select">
             @{ var current = (string?)ViewBag.Orden ?? string.Empty; }
             <option value="">Recientes</option>
-            <option value="equipo_asc" selected="@(current=="equipo_asc" ? "selected" : null)">Equipo (A→Z)</option>
-            <option value="equipo_desc" selected="@(current=="equipo_desc" ? "selected" : null)">Equipo (Z→A)</option>
+            <option value="equipo_asc" selected="@(current=="equipo_asc" ? "selected" : null)">Equipo (Aâ†’Z)</option>
+            <option value="equipo_desc" selected="@(current=="equipo_desc" ? "selected" : null)">Equipo (Zâ†’A)</option>
             <option value="temporada_asc" selected="@(current=="temporada_asc" ? "selected" : null)">Temporada (asc)</option>
             <option value="temporada_desc" selected="@(current=="temporada_desc" ? "selected" : null)">Temporada (desc)</option>
-            <option value="precio_asc" selected="@(current=="precio_asc" ? "selected" : null)">Precio (menor→mayor)</option>
-            <option value="precio_desc" selected="@(current=="precio_desc" ? "selected" : null)">Precio (mayor→menor)</option>
+            <option value="precio_asc" selected="@(current=="precio_asc" ? "selected" : null)">Precio (menorâ†’mayor)</option>
+            <option value="precio_desc" selected="@(current=="precio_desc" ? "selected" : null)">Precio (mayorâ†’menor)</option>
         </select>
     </div>
     <div class="col-12 d-flex gap-2 mt-1">
@@ -111,7 +111,7 @@
                         <label class="form-label small mb-1">Talle</label>
                         <select class="form-select" name="talla">
                             <option value="">Todos</option>
-                            <option value="Ninos" selected="@(tallaSel=="Ninos" ? "selected" : null)">Niños</option>
+                            <option value="Ninos" selected="@(tallaSel=="Ninos" ? "selected" : null)">NiÃ±os</option>
                             <option value="XS" selected="@(tallaSel=="XS" ? "selected" : null)">XS</option>
                             <option value="S" selected="@(tallaSel=="S" ? "selected" : null)">S</option>
                             <option value="M" selected="@(tallaSel=="M" ? "selected" : null)">M</option>
@@ -138,16 +138,22 @@
     </div>
 </form>
 
-<form asp-action="BulkPriceAdjust" method="post" id="bulkForm" class="border rounded p-2 mb-3 d-none">
-    <div class="row g-2 align-items-end">
-        <div class="col-sm-3">
+<form asp-action="BulkPriceAdjust" method="post" id="bulkForm" class="card border-warning mb-3 d-none admin-bulk">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <span class="fw-semibold">Modificar precios</span>
+        <small class="text-muted">Selecciona productos en la tabla</small>
+    </div>
+    <div class="card-body">
+    <div class="row g-3 align-items-end">
+        <div class="col-12 col-md-4">
             <label for="porcentaje" class="form-label">Porcentaje</label>
             <div class="input-group">
                 <input type="number" step="0.1" min="0.1" class="form-control" id="porcentaje" name="porcentaje" placeholder="10" required>
                 <span class="input-group-text">%</span>
             </div>
+            <div class="form-text">Ej.: 10 sube/baja un 10% según el modo</div>
         </div>
-        <div class="col-sm-4 d-flex gap-2">
+        <div class="col-12 col-md-4 d-flex gap-3">
             <div class="form-check">
                 <input class="form-check-input" type="radio" name="modo" id="modoUp" value="up" checked>
                 <label class="form-check-label" for="modoUp">Aumentar</label>
@@ -157,11 +163,21 @@
                 <label class="form-check-label" for="modoDown">Disminuir</label>
             </div>
         </div>
-        <div class="col-sm-5 text-end">
-            <button type="submit" class="btn btn-warning">Aplicar a seleccionadas</button>
-        </div>
-    </div>
+                <div class="col-12">
+            <div class="row g-2 bulk-actions">
+                <div class="col-12 col-md-4 d-grid">
+                    <button type="submit" class="btn btn-warning w-100">Aplicar a seleccionadas</button>
+                </div>
+                <div class="col-12 col-md-4 d-grid">
+                    <button type="submit" formaction="@Url.Action("BulkRemoveDiscounts", "AdminCamisetas")" formnovalidate class="btn btn-danger w-100">Quitar descuentos seleccionados</button>
+                </div>
+                <div class="col-12 col-md-4 d-grid">
+                    <button type="submit" formaction="@Url.Action("RemoveAllDiscounts", "AdminCamisetas")" formnovalidate class="btn btn-outline-danger w-100" onclick="return confirm('¿Estás seguro que quieres quitar todos los descuentos?');">Quitar todos los descuentos</button>
+                </div>
+            </div>
+        </div>    </div>
     @Html.AntiForgeryToken()
+    </div>
 </form>
 
 <div class="table-responsive">
@@ -192,7 +208,21 @@
             <td class="d-none d-lg-table-cell">@item.Tipo</td>
             <td>@item.Nombre</td>
             <td class="d-none d-lg-table-cell">@item.SKU</td>
-            <td>@item.Precio.ToString("C")</td>
+            <td>
+                @if (item.PrecioAnterior.HasValue && item.PrecioAnterior.Value > item.Precio)
+                {
+                    var oldPrice = item.PrecioAnterior.Value;
+                    var newPrice = item.Precio;
+                    var pct = oldPrice > 0 ? Math.Round((1 - (double)newPrice / (double)oldPrice) * 100) : 0;
+                    <span class="text-muted text-decoration-line-through me-1">@oldPrice.ToString("C")</span>
+                    <span class="fw-bold">@newPrice.ToString("C")</span>
+                    <span class="badge bg-danger ms-1">-@pct%</span>
+                }
+                else
+                {
+                    @item.Precio.ToString("C")
+                }
+            </td>
             <td>
                 <!-- Acciones en pantallas medianas y grandes -->
                 <div class="d-none d-md-flex flex-wrap gap-1">
@@ -220,11 +250,13 @@
                                         </form>
                                     </li>
                                 }
+                                <li><hr class="dropdown-divider" /></li>
+                                <li><a class="dropdown-item" asp-action="VentaForm" asp-route-id="@item.Id">Registrar venta...</a></li>
                             }
                         </ul>
                     </div>
                 </div>
-                <!-- Menú desplegable en móviles -->
+                <!-- MenÃº desplegable en mÃ³viles -->
                 <div class="dropdown d-md-none">
                     <button class="btn btn-sm btn-outline-light dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
                         Acciones
@@ -277,7 +309,7 @@
     string ordenSel = ViewBag.Orden as string ?? string.Empty;
 }
 
-<nav aria-label="Paginación" class="mt-3">
+<nav aria-label="PaginaciÃ³n" class="mt-3">
   <ul class="pagination pagination-sm">
     <li class="page-item @(page <= 1 ? "disabled" : null)">
       <a class="page-link" asp-action="Index" asp-route-q="@q" asp-route-version="@version" asp-route-enStock="@enStock" asp-route-talla="@talla" asp-route-sort="@sort" asp-route-producto="@producto" asp-route-page="@(page-1)" asp-route-pageSize="@pageSize">Anterior</a>
@@ -292,7 +324,7 @@
       <a class="page-link" asp-action="Index" asp-route-q="@q" asp-route-version="@version" asp-route-enStock="@enStock" asp-route-talla="@talla" asp-route-sort="@sort" asp-route-producto="@producto" asp-route-page="@(page+1)" asp-route-pageSize="@pageSize">Siguiente</a>
     </li>
   </ul>
-  <div class="small text-muted">Página @(page) de @(totalPages)</div>
+  <div class="small text-muted">PÃ¡gina @(page) de @(totalPages)</div>
 </nav>
 
 <script>
@@ -315,4 +347,9 @@
   });
 })();
 </script>
+<style>
+  .admin-bulk .bulk-actions .btn { width: 100%; }
+</style>
+
+
 

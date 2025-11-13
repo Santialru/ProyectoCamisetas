@@ -1,4 +1,4 @@
-@model ProyectoCamisetas.Models.Camiseta
+﻿@model ProyectoCamisetas.Models.Camiseta
 <div class="row g-3">
 @{
     var __tallasList = ((IEnumerable<ProyectoCamisetas.Models.Talla>)ViewBag.TallasEnum);
@@ -6,12 +6,12 @@
     var __add3XL = !__tallaVals.Contains(7);
     var __add4XL = !__tallaVals.Contains(8);
 }
-    <div class="col-md-6">
+    <div class="col-md-4">
         <label asp-for="Nombre" class="form-label"></label>
         <input asp-for="Nombre" class="form-control" />
         <span asp-validation-for="Nombre" class="text-danger"></span>
     </div>
-    <div class="col-md-6">
+    <div class="col-md-4">
         <label asp-for="Equipo" class="form-label"></label>
         <input asp-for="Equipo" class="form-control" />
         <span asp-validation-for="Equipo" class="text-danger"></span>
@@ -52,19 +52,14 @@
         <input asp-for="Material" class="form-control" />
         <span asp-validation-for="Material" class="text-danger"></span>
     </div>
-    <div class="col-md-3">
+    <div class="col-md-4">
         <label asp-for="ColorPrincipal" class="form-label"></label>
         <input asp-for="ColorPrincipal" class="form-control" />
         <span asp-validation-for="ColorPrincipal" class="text-danger"></span>
     </div>
-    <div class="col-md-3">
+    <div class="col-md-4">
         <label asp-for="ColorSecundario" class="form-label"></label>
         <input asp-for="ColorSecundario" class="form-control" />
-    </div>
-    <div class="col-md-3">
-        <label asp-for="Precio" class="form-label"></label>
-        <input asp-for="Precio" class="form-control" />
-        <span asp-validation-for="Precio" class="text-danger"></span>
     </div>
     <div class="col-12">
         <label class="form-label">Talles y stock</label>
@@ -79,11 +74,11 @@
                             {
                                 if (t == ts.Talla)
                                 {
-                                    <option value="@((int)t)" selected="selected">@((t == ProyectoCamisetas.Models.Talla.Ninos) ? "Niños" : t.ToString())</option>
+                                    <option value="@((int)t)" selected="selected">@((t == ProyectoCamisetas.Models.Talla.Ninos) ? "NiÃ±os" : t.ToString())</option>
                                 }
                                 else
                                 {
-                                    <option value="@((int)t)">@((t == ProyectoCamisetas.Models.Talla.Ninos) ? "Niños" : t.ToString())</option>
+                                    <option value="@((int)t)">@((t == ProyectoCamisetas.Models.Talla.Ninos) ? "NiÃ±os" : t.ToString())</option>
                                 }
                             }
                             @if (__add3XL)
@@ -106,7 +101,7 @@
                     <select name="Tallas[]" class="form-select">
                         @foreach (var t in __tallasList)
                         {
-                            <option value="@((int)t)">@((t == ProyectoCamisetas.Models.Talla.Ninos) ? "Niños" : t.ToString())</option>
+                            <option value="@((int)t)">@((t == ProyectoCamisetas.Models.Talla.Ninos) ? "NiÃ±os" : t.ToString())</option>
                         }
                         @if (__add3XL)
                         {
@@ -127,7 +122,7 @@
                 <select name="Tallas[]" class="form-select">
                     @foreach (var t in __tallasList)
                     {
-                        <option value="@((int)t)">@((t == ProyectoCamisetas.Models.Talla.Ninos) ? "Niños" : t.ToString())</option>
+                        <option value="@((int)t)">@((t == ProyectoCamisetas.Models.Talla.Ninos) ? "NiÃ±os" : t.ToString())</option>
                     }
                     @if (__add3XL)
                     {
@@ -161,9 +156,13 @@
         <label asp-for="Jugador" class="form-label"></label>
         <input asp-for="Jugador" class="form-control" />
     </div>
-    <div class="col-md-2">
-        <label asp-for="Numero" class="form-label"></label>
+    <div class="col-md-4"><label asp-for="Numero" class="form-label"></label>
         <input asp-for="Numero" class="form-control" />
+    </div>
+    <div class="col-md-4">
+        <label asp-for="Precio" class="form-label"></label>
+        <input asp-for="Precio" class="form-control" />
+        <span asp-validation-for="Precio" class="text-danger"></span>
     </div>
     <!-- Imagen principal ya no se ingresa por URL -->
     <input type="hidden" asp-for="ImagenUrl" />
@@ -202,3 +201,4 @@
         });
     })();
     </script>
+

@@ -1,0 +1,50 @@
+@model ProyectoCamisetas.Models.Camiseta
+@{
+    ViewData["Title"] = "Registrar venta";
+    var tallas = (IEnumerable<ProyectoCamisetas.Models.Talla>) (ViewBag.TallasDisp ?? Array.Empty<ProyectoCamisetas.Models.Talla>());
+    var selected = (ProyectoCamisetas.Models.Talla?)ViewBag.SelectedTalla;
+}
+
+<h1>Registrar venta</h1>
+
+<div class="card">
+  <div class="card-body">
+    <h5 class="card-title">@Model.Equipo - @Model.Nombre (@Model.Temporada)</h5>
+    <form asp-action="Venta" asp-route-id="@Model.Id" method="post" class="row g-3">
+      @Html.AntiForgeryToken()
+
+      <div class="col-md-4">
+        <label class="form-label">Talle</label>
+        <select name="talla" class="form-select" required>
+          @foreach (var t in tallas)
+          {
+              if (selected.HasValue && selected.Value == t)
+              {
+                  <option selected value="@t">@t</option>
+              }
+              else
+              {
+                  <option value="@t">@t</option>
+              }
+          }
+        </select>
+      </div>
+
+      <div class="col-md-4">
+        <label class="form-label">Comprador</label>
+        <input type="text" name="comprador" class="form-control" placeholder="Nombre del comprador (opcional)" />
+      </div>
+
+      <div class="col-12">
+        <label class="form-label">Observaciones</label>
+        <textarea name="observaciones" class="form-control" rows="2" placeholder="Observaciones (opcional)"></textarea>
+      </div>
+
+      <div class="col-12 d-flex gap-2">
+        <button type="submit" class="btn btn-success">Registrar venta</button>
+        <a asp-action="Index" class="btn btn-secondary">Cancelar</a>
+      </div>
+    </form>
+  </div>
+ </div>
+

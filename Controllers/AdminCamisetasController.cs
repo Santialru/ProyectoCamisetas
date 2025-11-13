@@ -228,6 +228,8 @@ namespace ProyectoCamisetas.Controllers
             return RedirectToAction(nameof(Index));
         }
 
+        
+
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> UpdateHomeGrid(CancellationToken ct = default)
@@ -533,7 +535,37 @@ namespace ProyectoCamisetas.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Venta(int id, Talla? talla, CancellationToken ct = default)
+        public async Task<IActionResult> BulkRemoveDiscounts(int[] ids, CancellationToken ct = default)
+        {
+            if (ids == null || ids.Length == 0)
+            {
+                TempData["Error"] = "Selecciona al menos una camiseta.";
+                return RedirectToAction(nameof(Index));
+            }
+
+            var affected = await _repo.RestoreDiscountsAsync(ids, ct);
+            if (affected <= 0)
+                TempData["Error"] = "No había descuentos para restaurar en la selección.";
+            else
+                TempData["Success"] = $"Descuentos quitados en {affected} producto(s).";
+            return RedirectToAction(nameof(Index));
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> RemoveAllDiscounts(CancellationToken ct = default)
+        {
+            var affected = await _repo.RestoreAllDiscountsAsync(ct);
+            if (affected <= 0)
+                TempData["Error"] = "No hay descuentos activos para quitar.";
+            else
+                TempData["Success"] = $"Se quitaron todos los descuentos en {affected} producto(s).";
+            return RedirectToAction(nameof(Index));
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Venta(int id, Talla? talla, string? comprador, string? observaciones, CancellationToken ct = default)
         {
             var entity = await _repo.GetByIdAsync(id, ct);
             if (entity is null) return NotFound();
@@ -550,7 +582,7 @@ namespace ProyectoCamisetas.Controllers
                 return RedirectToAction(nameof(Index));
             }
 
-            var ok = await _repo.RegisterSaleAsync(entity.Id, talla.Value, ct);
+            var ok = await _repo.RegisterSaleAsync(entity.Id, talla.Value, comprador, observaciones, ct);
             if (!ok)
             {
                 TempData["Error"] = "No hay stock en el talle seleccionado.";
@@ -559,6 +591,184 @@ namespace ProyectoCamisetas.Controllers
 
             TempData["Success"] = $"Venta registrada (talle {talla.Value}).";
             return RedirectToAction(nameof(Index));
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> VentaForm(int id, Talla? talla, CancellationToken ct = default)
+        {
+            var entity = await _repo.GetByIdAsync(id, ct);
+            if (entity is null) return NotFound();
+            ViewBag.TallasDisp = (entity.TallesStock ?? Enumerable.Empty<CamisetaTalleStock>()).Where(t => t.Cantidad > 0).Select(t => t.Talla).ToList();
+            ViewBag.SelectedTalla = talla;
+            return View(entity);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> Ventas(
+            DateOnly? desde,
+            DateOnly? hasta,
+            string? equipo,
+            string? temporada,
+            Talla? talla,
+            string? comprador,
+            string? sort,
+            int page = 1,
+            int pageSize = 20,
+            CancellationToken ct = default)
+        {
+            var (items, total) = await _repo.GetVentasAsync(desde, hasta, equipo, temporada, talla, comprador, sort, page, pageSize, ct);
+            var summary = await _repo.GetVentasSummaryAsync(desde, hasta, equipo, temporada, talla, comprador, ct);
+
+            var totalPages = Math.Max(1, (int)Math.Ceiling(total / (double)pageSize));
+            page = Math.Clamp(page, 1, totalPages);
+
+            ViewBag.Page = page;
+            ViewBag.PageSize = pageSize;
+            ViewBag.TotalPages = totalPages;
+            ViewBag.TotalItems = total;
+            ViewBag.Desde = desde;
+            ViewBag.Hasta = hasta;
+            ViewBag.Equipo = equipo;
+            ViewBag.Temporada = temporada;
+            ViewBag.Talla = talla;
+            ViewBag.Comprador = comprador;
+            ViewBag.Sort = string.IsNullOrWhiteSpace(sort) ? "fecha_desc" : sort;
+            ViewBag.Summary = summary;
+            return View(items);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> EliminarVenta(
+            int id,
+            DateOnly? desde,
+            DateOnly? hasta,
+            string? equipo,
+            string? temporada,
+            Talla? talla,
+            string? comprador,
+            string? sort,
+            int page = 1,
+            int pageSize = 20,
+            CancellationToken ct = default)
+        {
+            var venta = await _repo.GetVentaAsync(id, ct);
+            var ok = await _repo.DeleteVentaAsync(id, ct);
+            if (ok)
+            {
+                TempData["Success"] = "Venta eliminada y stock restablecido.";
+                if (venta != null)
+                {
+                    var payload = System.Text.Json.JsonSerializer.Serialize(new
+                    {
+                        venta.Id,
+                        venta.CamisetaId,
+                        venta.FechaVenta,
+                        venta.Precio,
+                        venta.Talla,
+                        venta.Comprador,
+                        venta.Observaciones,
+                        venta.ProductoNombre,
+                        venta.Equipo,
+                        venta.Temporada
+                    });
+                    TempData["UndoVentaPayload"] = payload;
+                }
+            }
+            else
+                TempData["Error"] = "No se pudo eliminar la venta.";
+
+            return RedirectToAction(nameof(Ventas), new { desde, hasta, equipo, temporada, talla, comprador, sort, page, pageSize });
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeshacerVenta(
+            string payload,
+            DateOnly? desde,
+            DateOnly? hasta,
+            string? equipo,
+            string? temporada,
+            Talla? talla,
+            string? comprador,
+            string? sort,
+            int page = 1,
+            int pageSize = 20,
+            CancellationToken ct = default)
+        {
+            try
+            {
+                var dto = System.Text.Json.JsonSerializer.Deserialize<Venta>(payload);
+                if (dto != null)
+                {
+                    var ok = await _repo.RecreateVentaAsync(dto, ct);
+                    TempData[ok ? "Success" : "Error"] = ok ? "Venta restaurada." : "No se pudo restaurar la venta.";
+                }
+                else
+                {
+                    TempData["Error"] = "Datos de deshacer no válidos.";
+                }
+            }
+            catch
+            {
+                TempData["Error"] = "Error al procesar deshacer.";
+            }
+            return RedirectToAction(nameof(Ventas), new { desde, hasta, equipo, temporada, talla, comprador, sort, page, pageSize });
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> UpdateVenta(
+            int id,
+            string? comprador,
+            string? observaciones,
+            DateOnly? desde,
+            DateOnly? hasta,
+            string? equipo,
+            string? temporada,
+            Talla? talla,
+            string? sort,
+            int page = 1,
+            int pageSize = 20,
+            CancellationToken ct = default)
+        {
+            var ok = await _repo.UpdateVentaAsync(id, comprador, observaciones, ct);
+            TempData[ok ? "Success" : "Error"] = ok ? "Venta actualizada." : "No se pudo actualizar la venta.";
+            return RedirectToAction(nameof(Ventas), new { desde, hasta, equipo, temporada, talla, comprador, sort, page, pageSize });
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> ExportVentas(
+            DateOnly? desde,
+            DateOnly? hasta,
+            string? equipo,
+            string? temporada,
+            Talla? talla,
+            string? comprador,
+            string? sort,
+            CancellationToken ct = default)
+        {
+            var (items, _) = await _repo.GetVentasAsync(desde, hasta, equipo, temporada, talla, comprador, sort, page: 1, pageSize: 200000, ct);
+            var sb = new System.Text.StringBuilder();
+            sb.AppendLine("Fecha,Producto,Equipo,Temporada,Talle,Comprador,Precio,Observaciones");
+            foreach (var v in items)
+            {
+                string Csv(string? s) => string.IsNullOrEmpty(s) ? string.Empty : ("\"" + s.Replace("\"", "\"\"") + "\"");
+                var fecha = v.FechaVenta.ToLocalTime().ToString("yyyy-MM-dd HH:mm");
+                sb.AppendLine(string.Join(',', new[] {
+                    fecha,
+                    Csv(v.ProductoNombre ?? v.Camiseta?.Nombre),
+                    Csv(v.Equipo),
+                    Csv(v.Temporada),
+                    v.Talla.ToString(),
+                    Csv(v.Comprador),
+                    v.Precio.ToString(System.Globalization.CultureInfo.InvariantCulture),
+                    Csv(v.Observaciones)
+                }));
+            }
+            var bytes = System.Text.Encoding.UTF8.GetPreamble().Concat(System.Text.Encoding.UTF8.GetBytes(sb.ToString())).ToArray();
+            var fileName = $"ventas_{DateTime.UtcNow:yyyyMMdd_HHmm}.csv";
+            return File(bytes, "text/csv; charset=utf-8", fileName);
         }
 
         // ------------------------- HELPERS ---------------------------

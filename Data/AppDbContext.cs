@@ -12,6 +12,7 @@ namespace ProyectoCamisetas.Data
         public DbSet<CamisetaImagen> CamisetaImagenes => Set<CamisetaImagen>();
         public DbSet<CamisetaTalleStock> CamisetaTalles => Set<CamisetaTalleStock>();
         public DbSet<HomeFeaturedCard> HomeFeatured => Set<HomeFeaturedCard>();
+        public DbSet<Venta> Ventas => Set<Venta>();
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -73,6 +74,19 @@ namespace ProyectoCamisetas.Data
                 e.Property(x => x.Talla).HasConversion<short>();
                 e.HasIndex(x => x.CamisetaId);
                 e.HasIndex(x => new { x.CamisetaId, x.Talla }).IsUnique();
+            });
+
+            // Ventas -> 'ventas'
+            modelBuilder.Entity<Venta>(e =>
+            {
+                e.ToTable("ventas");
+                e.HasIndex(v => v.CamisetaId);
+                e.HasIndex(v => v.FechaVenta);
+                e.Property(v => v.Talla).HasConversion<short>();
+                e.HasOne(v => v.Camiseta!)
+                    .WithMany()
+                    .HasForeignKey(v => v.CamisetaId)
+                    .OnDelete(DeleteBehavior.Restrict);
             });
         }
     }

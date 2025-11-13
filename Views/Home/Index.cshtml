@@ -44,10 +44,10 @@
                                 <div class="carousel-caption @align">
                                     @if (!string.IsNullOrWhiteSpace(s.Title)) { <h1 class="display-5 fw-bold">@s.Title</h1> }
                                     @if (!string.IsNullOrWhiteSpace(s.Description)) { <p class="lead">@s.Description</p> }
-                                    @if (!string.IsNullOrWhiteSpace(s.ButtonText))
-                                    {
+                                    @{
                                         var href = string.IsNullOrWhiteSpace(s.ButtonUrl) ? "#" : s.ButtonUrl;
-                                        <p><a class="btn btn-lg btn-primary" href="@href">@s.ButtonText</a></p>
+                                        var btnText = string.IsNullOrWhiteSpace(s.ButtonText) ? "Ver" : s.ButtonText;
+                                        <p><a class="btn btn-lg btn-primary" href="@href">@btnText</a></p>
                                     }
                                 </div>
                             </div>

@@ -1,4 +1,4 @@
-html {
+﻿html {
   font-size: 14px;
 }
 
@@ -36,8 +36,10 @@ html, body, header, header .navbar {
   margin-top: 0 !important;
 }
 body > *:first-child { margin-top: 0 !important; }
-/* Navbar sizing: slightly taller without separar del borde */
-header .navbar { padding-top: 10px; padding-bottom: 10px; }
+/* Navbar sizing: adjust padding to center content visually */
+header .navbar { padding-top: 28px; padding-bottom: 14px; }
+/* Ensure nav links match the increased height */
+.navbar .nav-link, .navbar .btn.nav-link { padding-top: .6rem; padding-bottom: .6rem; }
 /* Let content area grow and push footer to bottom */
 body > .container { flex: 1 0 auto; }
 
@@ -145,16 +147,16 @@ body > .container { flex: 1 0 auto; }
   max-height: 380px;
   width: 100%;
   object-fit: contain;
-  background: transparent;
+  background: rgba(0,0,0,.44);
 }
 .jersey-detail {
   display: block;
   max-height: 380px;
   width: 100%;
   object-fit: contain;
-  background: transparent;
+  background: rgba(0,0,0,.44);
 }
-/* Contenedor adaptable para detalles con límites min/max */
+/* Contenedor adaptable para detalles con lÃ­mites min/max */
 .details-media {
   position: relative;
   height: clamp(240px, 60vh, 520px);
@@ -181,7 +183,7 @@ body > .container { flex: 1 0 auto; }
   top: 0 !important;
   transform: none !important;
   transition: opacity .15s ease !important;
-}
+  z-index: 11 !important;\n}}
 .details-media .carousel-control-prev,
 #heroCarousel .carousel-control-prev { left: 0; }
 .details-media .carousel-control-next,
@@ -192,7 +194,7 @@ body > .container { flex: 1 0 auto; }
   .details-media .carousel-control-prev,
   .details-media .carousel-control-next,
   #heroCarousel .carousel-control-prev,
-  #heroCarousel .carousel-control-next { opacity: 0; pointer-events: none; }
+  #heroCarousel .carousel-control-next { opacity: 0; pointer-events: none;   z-index: 11 !important;\n}}
 
   .details-media:hover .carousel-control-prev,
   .details-media:hover .carousel-control-next,
@@ -220,7 +222,7 @@ body > .container { flex: 1 0 auto; }
   background: transparent !important;
   border: 0 !important;
   box-shadow: none !important;
-}
+  z-index: 11 !important;\n}}
 /* Make detail carousel controls like the Bootstrap demo (no bg/border/shadow) */
 .details-media .carousel-control-prev,
 .details-media .carousel-control-next {
@@ -240,7 +242,7 @@ body > .container { flex: 1 0 auto; }
   #heroCarousel .carousel-control-next {
     opacity: 1 !important;
     pointer-events: auto !important;
-  }
+    z-index: 11 !important;\n}}
 }
 .details-media .carousel-control-prev-icon,
 .details-media .carousel-control-next-icon,
@@ -306,7 +308,7 @@ body > .container { flex: 1 0 auto; }
   max-width: 100vw;
 }
 
-/* Versión escritorio: mayor presencia del hero */
+/* VersiÃ³n escritorio: mayor presencia del hero */
 @media (min-width: 992px) {
   #heroCarousel .carousel-item {
     height: calc(100vh - var(--nav-h)) !important;
@@ -352,20 +354,27 @@ body > .container { flex: 1 0 auto; }
   border-color: #fff !important;
 }
 
-/* En pantallas pequeñas, agrega background suave a la caja del caption para legibilidad */
+/* En pantallas pequeÃ±as, agrega background suave a la caja del caption para legibilidad */
 @media (max-width: 576px) {
-  /* Mostrar caption centrado en móvil con caja legible */
+  /* Mostrar caption centrado en mÃ³vil con caja legible */
   #heroCarousel .carousel-caption {
     display: block !important;
     text-align: center !important;
     left: 50% !important;
     right: auto !important;
-    transform: translateX(-50%);
+    transform: translate(-50%, -50%) !important;
     width: calc(100% - 2rem);
-    bottom: 1rem;
-    background: rgba(0,0,0,.44);
+    top: 50% !important;
+    bottom: auto !important;
+    background: transparent;
     border-radius: .5rem;
     padding: .75rem .875rem;
+    pointer-events: none;
+  }
+  #heroCarousel .carousel-caption .btn,
+  #heroCarousel .carousel-caption a,
+  #heroCarousel .carousel-caption button {
+    pointer-events: auto;
   }
   /* Slightly larger type and CTA on mobile for readability */
   #heroCarousel .carousel-caption h1 { font-size: 1.65rem; line-height: 1.2; margin-bottom: .5rem; }
@@ -386,6 +395,10 @@ body > .container { flex: 1 0 auto; }
 @media (max-width: 576px) {
   .carousel-item img,
   .jersey-detail { max-height: 280px; }
+}
+
+}
+  #heroCarousel .carousel-caption .btn { display: inline-block; }
 }
 .product-info { padding: .75rem .9rem .9rem; }
 .product-top { display:flex; gap:.5rem; align-items:center; margin-bottom:.25rem; }
@@ -484,7 +497,7 @@ body > .container { flex: 1 0 auto; }
 .hero-football .hero-content h1 { font-weight:800; letter-spacing:.4px; }
 
 /* Marca y redes */
-.brand-logo { width:28px; height:28px; object-fit:contain; border-radius:4px; }
+.brand-logo { width:32px; height:32px; object-fit:contain; border-radius:4px; }
 .brand-name { font-weight:700; letter-spacing:.3px; }
 
 .ig-fab {
@@ -492,7 +505,7 @@ body > .container { flex: 1 0 auto; }
   width: 45px; height: 45px; border-radius: 50%;
   display:flex; align-items:center; justify-content:center;
   color: #fff; text-decoration: none;
-  background: transparent;
+  background: rgba(0,0,0,.44);
   box-shadow: 0 10px 24px rgba(0,0,0,.25);
   transition: transform .15s ease, box-shadow .15s ease;
 }
@@ -516,7 +529,7 @@ body > .container { flex: 1 0 auto; }
   width: 46px; height: 46px; border-radius: 50%;
   display:flex; align-items:center; justify-content:center;
   color: #fff; text-decoration: none;
-  background: transparent;
+  background: rgba(0,0,0,.44);
   box-shadow: 0 10px 24px rgba(0,0,0,.25);
   transition: transform .15s ease, box-shadow .15s ease;
 }
@@ -534,7 +547,7 @@ body > .container { flex: 1 0 auto; }
 .wa-fab .wa-icon { display:block; width: 60%; height: 60%; border-radius:50%; object-fit: cover; filter: drop-shadow(0 2px 6px rgba(0,0,0,.25)); }
 .icon-20 { width:20px; height:20px; display:inline-block; object-fit: contain; }
 @media (max-width: 576px) {
-  /* Unificar tamaños de FAB en móvil */
+  /* Unificar tamaÃ±os de FAB en mÃ³vil */
   .ig-fab, .wa-fab { width: 58px; height: 58px; }
 }
 @media (prefers-reduced-motion: no-preference) {
@@ -593,7 +606,7 @@ footer.site-footer {
 /* Show only titles until hover on desktop; keep expanded on mobile */
 .mega-dropdown .mega-title { color:#9ec5fe; font-weight:700; cursor:pointer; display:flex; align-items:center; justify-content:space-between; border-radius:.375rem; padding:10px 12px; font-size:1.05rem; transition: color .15s ease, background-color .15s ease, box-shadow .15s ease; }
 .mega-dropdown .mega-title:hover { background-color: rgba(13,110,253,.15); box-shadow: inset 0 0 0 1px rgba(13,110,253,.25); }
-.mega-dropdown .mega-title::after { content:'\203A'; /* › */ color:#9ec5fe; margin-left:8px; transition: transform .15s ease, color .15s ease; }
+.mega-dropdown .mega-title::after { content:'\203A'; /* â€º */ color:#9ec5fe; margin-left:8px; transition: transform .15s ease, color .15s ease; }
 .mega-dropdown .mega-section { position: relative; padding: 2px 0; margin: 2px 0; }
 /* base submenu panel (flyout to the right) */
 .mega-dropdown .submenu { position:absolute; left: 100%; top: 0; min-width: 280px; padding: .35rem 0; background-color:#151c2c; border:1px solid rgba(255,255,255,.08); border-radius:.5rem; box-shadow: 0 12px 28px rgba(0,0,0,.35); z-index: 1060; }
@@ -627,13 +640,13 @@ footer.site-footer {
 .nav-search .form-control::placeholder { color:#9aa6c1; }
 @media (max-width: 576px) {
   .nav-search { display: none !important; }
-  /* Mostrar nombres junto a iconos en menú móvil */
+  /* Mostrar nombres junto a iconos en menÃº mÃ³vil */
   .navbar .nav-link span { display: inline !important; }
-  /* Evitar superposición del footer/FABs con el último contenido */
+  /* Evitar superposiciÃ³n del footer/FABs con el Ãºltimo contenido */
   main[role="main"] { padding-bottom: 200px; }
 }
 
-/* Afinar separación en pantallas muy pequeñas */
+/* Afinar separaciÃ³n en pantallas muy pequeÃ±as */
 @media (max-width: 439px) {
   main[role="main"] { padding-bottom: 260px; }
   footer.site-footer { position: relative; z-index: 0; margin-top: 8px; }
@@ -649,6 +662,7 @@ footer.site-footer {
 .dropzone {
   border: 2px dashed #6c757d; border-radius: 8px; padding: 18px; text-align: center; color: #6c757d; background: #f8f9fa;
   transition: border-color .15s ease, background .15s ease, color .15s ease;
+  aspect-ratio: 1 / 1; width: 100%; max-width: 420px; display: flex; align-items: center; justify-content: center;
 }
 .dropzone.dragover { border-color: #0d6efd; background:#eef5ff; color:#0d6efd; }
 
@@ -672,10 +686,11 @@ footer.site-footer {
 
 /* Sticky support for header and mobile search (fallback overrides) */
 header { position: sticky; top: 0; z-index: 1050; }
-/* Quita separación inferior del navbar para pegar el carrusel */
+/* Quita separaciÃ³n inferior del navbar para pegar el carrusel */
 header .navbar { margin-bottom: 0 !important; }
 @media (max-width: 576px) {
-  .mobile-site-search { position: sticky; top: 56px; z-index: 1045; background:#0f1625; border-bottom:1px solid #2b3448; padding:8px 0; margin-bottom:8px; }
+  /* Anchor search at top; do not follow on scroll */
+  .mobile-site-search { position: static; top: auto; z-index: auto; background:#0f1625; border-bottom:1px solid #2b3448; padding:8px 0; margin-bottom:8px; }
   .wa-fab { bottom: 120px !important; }
   .ig-fab { bottom: 56px !important; }
 }
@@ -696,7 +711,7 @@ header .navbar { margin-bottom: 0 !important; }
 
 
 
-/* Oculta de forma accesible cuando está cerrado */
+/* Oculta de forma accesible cuando estÃ¡ cerrado */
 [hidden] { display: none !important; }
 
 /* Contenedor que se desliza (usamos height para animar) */
@@ -709,7 +724,7 @@ header .navbar { margin-bottom: 0 !important; }
 /* Allow flyout overflow on mega dropdown while sliding */
 .dropdown-menu.mega-dropdown.collapse-slide { overflow: visible; }
 
-/* En pantallas md+ que tu mega menú sea ancho como dropdown */
+/* En pantallas md+ que tu mega menÃº sea ancho como dropdown */
 .mega-dropdown {
   /* Alineado con el tema oscuro del dropdown */
   background-color: #151c2c;
@@ -722,7 +737,7 @@ header .navbar { margin-bottom: 0 !important; }
   .collapse-slide { transition: none; }
 }
 
-/* Ajustes del mega menú dentro del menú hamburguesa (móvil) */
+/* Ajustes del mega menÃº dentro del menÃº hamburguesa (mÃ³vil) */
 @media (max-width: 767.98px) {
   .navbar-collapse.show { max-height: calc(100vh - 64px); overflow-y: auto; }
   .navbar .dropdown-menu.mega-dropdown {
@@ -732,7 +747,7 @@ header .navbar { margin-bottom: 0 !important; }
     min-width: 0;
     margin: .25rem 0 0 0;
     border: 1px solid rgba(255,255,255,.06);
-    background-color: #151c2c; /* asegura fondo oscuro en móvil */
+    background-color: #151c2c; /* asegura fondo oscuro en mÃ³vil */
     border-radius: .5rem;
     box-shadow: none;
   }
@@ -742,13 +757,13 @@ header .navbar { margin-bottom: 0 !important; }
   }
 }
 
-/* Evitar superposición del footer con el último contenido en móvil */
+/* Evitar superposiciÃ³n del footer con el Ãºltimo contenido en mÃ³vil */
 @media (max-width: 576px) {
   footer.site-footer { clear: both; position: relative; z-index: 0; margin-top: 16px; padding-top: 8px; }
   footer.site-footer .d-flex { flex-wrap: wrap; row-gap: .4rem; }
 }
 
-/* Separación extra antes del footer para carrusel horizontal en móvil */
+/* SeparaciÃ³n extra antes del footer para carrusel horizontal en mÃ³vil */
 @media (max-width: 576px) {
   .showcase { margin-bottom: 84px; }
   .showcase-track { padding-bottom: 16px; }
@@ -771,3 +786,56 @@ header .navbar { margin-bottom: 0 !important; }
   
 }
 
+
+/* Vertically center everything inside navbar */
+/* reverted navbar inner centering */
+
+
+
+
+
+/* Sticky table header for ventas */
+.table-sticky thead th { position: sticky; top: 0; background-color: #151c2c; z-index: 2; }
+
+
+/* Responsive table cells for ventas */
+@media (max-width: 576px){ .table td.d-none, .table th.d-none { display: none !important; } }
+
+
+/* Undo button high-contrast style */
+.undo-btn{ background-color:#ffc107; color:#111; border:1px solid #ffcd39; }
+.undo-btn:hover, .undo-btn:focus{ background-color:#ffcd39; color:#111; border-color:#ffd766; }
+
+/* Product card content spacing and layout */
+.product-card .product-info {
+  padding: .75rem .9rem 1rem;
+  display: flex;
+  flex-direction: column;
+  row-gap: .4rem;
+}
+.product-card .product-top {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  column-gap: .4rem;
+  row-gap: .25rem;
+}
+.product-card h3 {
+  margin: 0;
+  font-size: 1rem;
+  line-height: 1.25;
+}
+.product-card p { margin: 0; color:#b8c2d9; }
+.product-card .product-foot {
+  margin-top: .35rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: .5rem;
+}
+.product-card .product-foot .price {
+  font-weight: 700; letter-spacing: .2px;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.product-card .cta { color:#fff; font-weight: 600; opacity:.95; }
+.product-card:hover .cta { text-decoration: underline; }

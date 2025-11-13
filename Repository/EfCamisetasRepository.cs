@@ -211,6 +211,28 @@ namespace ProyectoCamisetas.Repository
             await _db.SaveChangesAsync(ct);
         }
 
+        public async Task<int> RestoreDiscountsAsync(IEnumerable<int> ids, CancellationToken ct = default)
+        {
+            var idList = ids?.Distinct().ToList() ?? new List<int>();
+            if (idList.Count == 0) return 0;
+            var affected = await _db.Camisetas
+                .Where(c => idList.Contains(c.Id) && c.PrecioAnterior != null)
+                .ExecuteUpdateAsync(s => s
+                    .SetProperty(c => c.Precio, c => c.PrecioAnterior!.Value)
+                    .SetProperty(c => c.PrecioAnterior, c => null), ct);
+            return affected;
+        }
+
+        public async Task<int> RestoreAllDiscountsAsync(CancellationToken ct = default)
+        {
+            var affected = await _db.Camisetas
+                .Where(c => c.PrecioAnterior != null)
+                .ExecuteUpdateAsync(s => s
+                    .SetProperty(c => c.Precio, c => c.PrecioAnterior!.Value)
+                    .SetProperty(c => c.PrecioAnterior, c => null), ct);
+            return affected;
+        }
+
         // ---------------- Home carousel (file-backed JSON) ----------------
 
         private string GetWebRoot()
@@ -352,6 +374,250 @@ namespace ProyectoCamisetas.Repository
             if (ts is null || ts.Cantidad <= 0) return false;
             ts.Cantidad -= 1;
             _db.CamisetaTalles.Update(ts);
+            await _db.SaveChangesAsync(ct);
+            return true;
+        }
+
+        public async Task<bool> RegisterSaleAsync(int camisetaId, Talla talla, string? comprador, string? observaciones, CancellationToken ct = default)
+        {
+            var ts = await _db.CamisetaTalles
+                .FirstOrDefaultAsync(t => t.CamisetaId == camisetaId && t.Talla == talla, ct);
+            if (ts is null || ts.Cantidad <= 0) return false;
+            ts.Cantidad -= 1;
+            _db.CamisetaTalles.Update(ts);
+
+            var cam = await _db.Camisetas.AsNoTracking().FirstOrDefaultAsync(c => c.Id == camisetaId, ct);
+            if (cam is null)
+            {
+                await _db.SaveChangesAsync(ct);
+                return true;
+            }
+
+            _db.Ventas.Add(new Venta
+            {
+                CamisetaId = cam.Id,
+                FechaVenta = DateTime.UtcNow,
+                Precio = cam.Precio,
+                Talla = talla,
+                Comprador = string.IsNullOrWhiteSpace(comprador) ? null : comprador!.Trim(),
+                Observaciones = string.IsNullOrWhiteSpace(observaciones) ? null : observaciones!.Trim(),
+                ProductoNombre = cam.Nombre,
+                Equipo = cam.Equipo,
+                Temporada = cam.Temporada
+            });
+
+            await _db.SaveChangesAsync(ct);
+            return true;
+        }
+
+        public async Task<(IReadOnlyList<Venta> items, int total)> GetVentasAsync(
+            DateOnly? desde,
+            DateOnly? hasta,
+            string? equipo,
+            string? temporada,
+            Talla? talla,
+            string? comprador,
+            string? sort,
+            int page,
+            int pageSize,
+            CancellationToken ct = default)
+        {
+            IQueryable<Venta> q = _db.Ventas.AsNoTracking().Include(v => v.Camiseta);
+            // Rango de fechas
+            if (desde.HasValue)
+            {
+                var d = desde.Value.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc);
+                q = q.Where(v => v.FechaVenta >= d);
+            }
+            if (hasta.HasValue)
+            {
+                var h = hasta.Value.ToDateTime(TimeOnly.MaxValue, DateTimeKind.Utc);
+                q = q.Where(v => v.FechaVenta <= h);
+            }
+
+            // Filtros adicionales
+            if (!string.IsNullOrWhiteSpace(equipo))
+            {
+                var s = equipo.Trim();
+                q = q.Where(v => EF.Functions.ILike(v.Equipo!, "%" + s + "%"));
+            }
+            if (!string.IsNullOrWhiteSpace(temporada))
+            {
+                var s = temporada.Trim();
+                q = q.Where(v => EF.Functions.ILike(v.Temporada!, "%" + s + "%"));
+            }
+            if (talla.HasValue)
+            {
+                var t = talla.Value;
+                q = q.Where(v => v.Talla == t);
+            }
+            if (!string.IsNullOrWhiteSpace(comprador))
+            {
+                var s = comprador.Trim();
+                q = q.Where(v => v.Comprador != null && EF.Functions.ILike(v.Comprador!, "%" + s + "%"));
+            }
+
+            // Ordenamiento
+            sort = (sort ?? "fecha_desc").ToLowerInvariant();
+            q = sort switch
+            {
+                "fecha_asc" => q.OrderBy(v => v.FechaVenta),
+                "precio_asc" => q.OrderBy(v => v.Precio),
+                "precio_desc" => q.OrderByDescending(v => v.Precio),
+                "equipo_asc" => q.OrderBy(v => v.Equipo),
+                "equipo_desc" => q.OrderByDescending(v => v.Equipo),
+                "talla_asc" => q.OrderBy(v => v.Talla),
+                "talla_desc" => q.OrderByDescending(v => v.Talla),
+                "comprador_asc" => q.OrderBy(v => v.Comprador),
+                "comprador_desc" => q.OrderByDescending(v => v.Comprador),
+                _ => q.OrderByDescending(v => v.FechaVenta)
+            };
+
+            var total = await q.CountAsync(ct);
+            pageSize = Math.Clamp(pageSize, 1, 200);
+            page = Math.Max(page, 1);
+            var items = await q.Skip((page - 1) * pageSize).Take(pageSize).ToListAsync(ct);
+            return (items, total);
+        }
+
+        public async Task<VentasSummary> GetVentasSummaryAsync(
+            DateOnly? desde,
+            DateOnly? hasta,
+            string? equipo,
+            string? temporada,
+            Talla? talla,
+            string? comprador,
+            CancellationToken ct = default)
+        {
+            IQueryable<Venta> q = _db.Ventas.AsNoTracking();
+            // Rango de fechas
+            if (desde.HasValue)
+            {
+                var d = desde.Value.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc);
+                q = q.Where(v => v.FechaVenta >= d);
+            }
+            if (hasta.HasValue)
+            {
+                var h = hasta.Value.ToDateTime(TimeOnly.MaxValue, DateTimeKind.Utc);
+                q = q.Where(v => v.FechaVenta <= h);
+            }
+            // Filtros adicionales
+            if (!string.IsNullOrWhiteSpace(equipo))
+            {
+                var s = equipo.Trim();
+                q = q.Where(v => EF.Functions.ILike(v.Equipo!, "%" + s + "%"));
+            }
+            if (!string.IsNullOrWhiteSpace(temporada))
+            {
+                var s = temporada.Trim();
+                q = q.Where(v => EF.Functions.ILike(v.Temporada!, "%" + s + "%"));
+            }
+            if (talla.HasValue)
+            {
+                var t = talla.Value;
+                q = q.Where(v => v.Talla == t);
+            }
+            if (!string.IsNullOrWhiteSpace(comprador))
+            {
+                var s = comprador.Trim();
+                q = q.Where(v => v.Comprador != null && EF.Functions.ILike(v.Comprador!, "%" + s + "%"));
+            }
+
+            var totalRecaudado = await q.SumAsync(v => (decimal?)v.Precio, ct) ?? 0m;
+            var cantidad = await q.CountAsync(ct);
+            var precioMax = await q.MaxAsync(v => (decimal?)v.Precio, ct) ?? 0m;
+            var precioMin = await q.MinAsync(v => (decimal?)v.Precio, ct) ?? 0m;
+
+            var topTalles = await q.GroupBy(v => v.Talla)
+                                   .Select(g => new { Talla = g.Key, Cant = g.Count() })
+                                   .OrderByDescending(x => x.Cant).Take(5).ToListAsync(ct);
+            var topEquipos = await q.GroupBy(v => v.Equipo ?? "")
+                                    .Select(g => new { Eq = g.Key, Cant = g.Count() })
+                                    .OrderByDescending(x => x.Cant).Take(5).ToListAsync(ct);
+            var porDia = await q.GroupBy(v => DateOnly.FromDateTime(v.FechaVenta.Date))
+                                 .Select(g => new { Dia = g.Key, Cant = g.Count() })
+                                 .OrderBy(x => x.Dia)
+                                 .ToListAsync(ct);
+
+            return new VentasSummary
+            {
+                TotalRecaudado = totalRecaudado,
+                Cantidad = cantidad,
+                TicketPromedio = cantidad > 0 ? Math.Round(totalRecaudado / cantidad, 2) : 0m,
+                PrecioMax = precioMax,
+                PrecioMin = precioMin,
+                TopTalles = topTalles.Select(x => (x.Talla, x.Cant)).ToList(),
+                TopEquipos = topEquipos.Select(x => (x.Eq, x.Cant)).ToList(),
+                VentasPorDia = porDia.Select(x => (x.Dia, x.Cant)).ToList()
+            };
+        }
+
+        public async Task<bool> DeleteVentaAsync(int ventaId, CancellationToken ct = default)
+        {
+            var venta = await _db.Ventas.FirstOrDefaultAsync(v => v.Id == ventaId, ct);
+            if (venta is null) return false;
+
+            // Restaurar stock del talle correspondiente
+            var ts = await _db.CamisetaTalles
+                .FirstOrDefaultAsync(t => t.CamisetaId == venta.CamisetaId && t.Talla == venta.Talla, ct);
+            if (ts is null)
+            {
+                ts = new CamisetaTalleStock
+                {
+                    CamisetaId = venta.CamisetaId,
+                    Talla = venta.Talla,
+                    Cantidad = 0
+                };
+                _db.CamisetaTalles.Add(ts);
+            }
+            ts.Cantidad += 1;
+            _db.CamisetaTalles.Update(ts);
+
+            _db.Ventas.Remove(venta);
+            await _db.SaveChangesAsync(ct);
+            return true;
+        }
+
+        public async Task<Venta?> GetVentaAsync(int id, CancellationToken ct = default)
+        {
+            return await _db.Ventas.AsNoTracking().FirstOrDefaultAsync(v => v.Id == id, ct);
+        }
+
+        public async Task<bool> UpdateVentaAsync(int id, string? comprador, string? observaciones, CancellationToken ct = default)
+        {
+            var venta = await _db.Ventas.FirstOrDefaultAsync(v => v.Id == id, ct);
+            if (venta is null) return false;
+            venta.Comprador = string.IsNullOrWhiteSpace(comprador) ? null : comprador!.Trim();
+            venta.Observaciones = string.IsNullOrWhiteSpace(observaciones) ? null : observaciones!.Trim();
+            _db.Ventas.Update(venta);
+            await _db.SaveChangesAsync(ct);
+            return true;
+        }
+
+        public async Task<bool> RecreateVentaAsync(Venta venta, CancellationToken ct = default)
+        {
+            // Restar 1 al stock del talle correspondiente
+            var ts = await _db.CamisetaTalles.FirstOrDefaultAsync(t => t.CamisetaId == venta.CamisetaId && t.Talla == venta.Talla, ct);
+            if (ts is null || ts.Cantidad <= 0)
+            {
+                return false;
+            }
+            ts.Cantidad -= 1;
+            _db.CamisetaTalles.Update(ts);
+
+            var nueva = new Venta
+            {
+                CamisetaId = venta.CamisetaId,
+                FechaVenta = venta.FechaVenta,
+                Precio = venta.Precio,
+                Talla = venta.Talla,
+                Comprador = venta.Comprador,
+                Observaciones = venta.Observaciones,
+                ProductoNombre = venta.ProductoNombre,
+                Equipo = venta.Equipo,
+                Temporada = venta.Temporada
+            };
+            _db.Ventas.Add(nueva);
             await _db.SaveChangesAsync(ct);
             return true;
         }
