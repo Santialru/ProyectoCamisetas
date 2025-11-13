@@ -96,7 +96,9 @@ namespace ProyectoCamisetas.Repository
 
         public async Task<IReadOnlyList<Camiseta>> GetAllAdminAsync(CancellationToken ct = default)
         {
+            // Include Imagenes to allow admin lists to render first photo thumbnails
             return await _db.Camisetas.AsNoTracking()
+                .Include(c => c.Imagenes!.OrderBy(i => i.Orden))
                 .Include(c => c.TallesStock)
                 .OrderByDescending(c => c.Id)
                 .ToListAsync(ct);

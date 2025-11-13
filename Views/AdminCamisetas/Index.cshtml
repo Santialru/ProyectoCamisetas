@@ -187,6 +187,7 @@
             <th style="width:36px" class="text-center d-none" id="th-select">
                 <input type="checkbox" id="selectAll" />
             </th>
+            <th style="width:42px" class="text-center">Foto</th>
             <th>Equipo</th>
             <th class="d-none d-md-table-cell">Temporada</th>
             <th class="d-none d-lg-table-cell">Tipo</th>
@@ -202,6 +203,17 @@
         <tr>
             <td class="text-center align-middle d-none sel-cell">
                 <input type="checkbox" name="ids" value="@item.Id" form="bulkForm" />
+            </td>
+            <td class="text-center align-middle">
+                @{
+                    var firstImg = (item.Imagenes?.OrderBy(x => x.Orden).Select(x => x.Url).FirstOrDefault()) ?? item.ImagenUrl;
+                }
+                @{
+                    var thumbSrc = !string.IsNullOrWhiteSpace(firstImg)
+                        ? Url.Content(firstImg)
+                        : Url.Content("~/img/logo.jpg");
+                }
+                <img src="@thumbSrc" alt="thumb" class="admin-thumb" />
             </td>
             <td>@item.Equipo</td>
             <td class="d-none d-md-table-cell">@item.Temporada</td>

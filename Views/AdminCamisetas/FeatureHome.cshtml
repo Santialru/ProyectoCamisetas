@@ -215,6 +215,7 @@
     <thead>
         <tr>
             <th>ID</th>
+            <th style="width:42px" class="text-center">Foto</th>
             <th>Equipo</th>
             <th class="d-none d-md-table-cell">Temporada</th>
             <th>Nombre</th>
@@ -226,6 +227,17 @@
     {
         <tr>
             <td>@c.Id</td>
+            <td class="text-center align-middle">
+                @{
+                    var firstImg = (c.Imagenes?.OrderBy(x => x.Orden).Select(x => x.Url).FirstOrDefault()) ?? c.ImagenUrl;
+                }
+                @{
+                    var thumbSrc = !string.IsNullOrWhiteSpace(firstImg)
+                        ? Url.Content(firstImg)
+                        : Url.Content("~/img/logo.jpg");
+                }
+                <img src="@thumbSrc" alt="thumb" class="admin-thumb" />
+            </td>
             <td>@c.Equipo</td>
             <td class="d-none d-md-table-cell">@c.Temporada</td>
             <td>

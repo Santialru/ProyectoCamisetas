@@ -143,6 +143,7 @@ body > .container { flex: 1 0 auto; }
 @media (min-width: 768px) {
   .jersey-thumb { height: 320px; }
 }
+.admin-thumb { width: 36px; height: 36px; object-fit: cover; border-radius: 4px; display: inline-block; }
 .carousel-item img {
   max-height: 380px;
   width: 100%;
@@ -152,7 +153,10 @@ body > .container { flex: 1 0 auto; }
 .jersey-detail {
   display: block;
   max-height: 380px;
-  width: 100%;
+  /* Avoid forced stretch; keep proportions inside the frame */
+  width: auto;
+  height: auto;
+  max-width: 100%;
   object-fit: contain;
   background: rgba(0,0,0,.44);
 }
@@ -164,10 +168,20 @@ body > .container { flex: 1 0 auto; }
   align-items: center;
   justify-content: center;
 }
+.details-media .carousel-item.active,
+.details-media .carousel-item-next,
+.details-media .carousel-item-prev,
+.details-media .carousel-item-start,
+.details-media .carousel-item-end {
+  /* Center slide content and maintain a stable frame without breaking Bootstrap's display logic */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
 .details-media .carousel,
 .details-media .carousel-inner,
 .details-media .carousel-item { height: 100%; }
-.details-media .jersey-detail { max-height: 100%; width: 100%; object-fit: contain; cursor: zoom-in; }
+.details-media .jersey-detail { max-height: 100%; max-width: 100%; width: auto; height: auto; object-fit: contain; cursor: zoom-in; }
 @media (max-width: 576px) {
   .details-media { height: clamp(200px, 50vh, 420px); }
 }
@@ -188,6 +202,14 @@ body > .container { flex: 1 0 auto; }
 #heroCarousel .carousel-control-prev { left: 0; }
 .details-media .carousel-control-next,
 #heroCarousel .carousel-control-next { right: 0; }
+
+/* Keep control overlays centered and icon fixed-size within details view */
+.details-media .carousel-control-prev,
+.details-media .carousel-control-next {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
 
 /* Show arrows on hover (desktop), keep visible on touch */
 @media (hover: hover) {
@@ -250,6 +272,8 @@ body > .container { flex: 1 0 auto; }
 #heroCarousel .carousel-control-next-icon {
   /* Match Bootstrap example arrows (use default icon color/size) */
   filter: none;
+  width: 2.5rem;
+  height: 2.5rem;
   background-size: 100% 100%;
 }
 /* Hero carousel indicators like Bootstrap example (bars) */
