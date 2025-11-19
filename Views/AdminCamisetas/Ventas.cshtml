@@ -24,7 +24,12 @@
     var firstOfMonth = new DateOnly(today.Year, today.Month, 1);
 }
 
-<h1>Ventas</h1>
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="mb-0">Ventas</h1>
+    <a asp-action="CrearVenta" class="btn btn-sm btn-success">
+        Crear venta (múltiples productos)
+    </a>
+</div>
 
 @{
     var undoJson = TempData["UndoVentaPayload"] as string;

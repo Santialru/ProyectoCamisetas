@@ -637,6 +637,51 @@ namespace ProyectoCamisetas.Controllers
             return View(items);
         }
 
+        [HttpGet]
+        public async Task<IActionResult> CrearVenta(int? preselectId, Talla? preselectTalla, CancellationToken ct = default)
+        {
+            var disponibles = await _repo.GetAllAdminAsync(ct);
+            var vm = new CrearVentaViewModel
+            {
+                Disponibles = disponibles
+                    .Where(c => c.EnStock && c.TallesStock != null && c.TallesStock.Any(ts => ts.Cantidad > 0))
+                    .OrderBy(c => c.Equipo)
+                    .ThenBy(c => c.Temporada)
+                    .ThenBy(c => c.Nombre)
+                    .ToList(),
+                PreselectId = preselectId,
+                PreselectTalla = preselectTalla
+            };
+            return View(vm);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> CrearVenta(string? comprador, string? observaciones, int[] SelectedIds, string[] SelectedTallas, CancellationToken ct = default)
+        {
+            if (SelectedIds == null || SelectedTallas == null || SelectedIds.Length == 0 || SelectedTallas.Length != SelectedIds.Length)
+            {
+                TempData["Error"] = "Selecciona al menos una camiseta para la venta.";
+                return RedirectToAction(nameof(Ventas));
+            }
+
+            var okAny = false;
+            for (int i = 0; i < SelectedIds.Length; i++)
+            {
+                var id = SelectedIds[i];
+                if (!Enum.TryParse<Talla>(SelectedTallas[i], out var talla)) continue;
+
+                var ok = await _repo.RegisterSaleAsync(id, talla, comprador, observaciones, ct);
+                if (ok) okAny = true;
+            }
+
+            TempData[okAny ? "Success" : "Error"] = okAny
+                ? "Venta registrada con múltiples productos."
+                : "No se pudo registrar la venta. Verifica el stock de los productos seleccionados.";
+
+            return RedirectToAction(nameof(Ventas));
+        }
+
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> EliminarVenta(

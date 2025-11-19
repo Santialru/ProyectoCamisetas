@@ -107,14 +107,28 @@
 
 @if (cards.Any())
 {
-    <section class="container mb-5 home-featured-grid">
+    <section class="container mb-5 home-featured-grid" id="homeFeaturedGrid">
         <div class="row g-3 justify-content-center">
+            @{
+                var idx = 0;
+                var total = cards.Count;
+            }
             @foreach (var c in cards)
             {
                 var thumb = c.Imagenes?.OrderBy(x => x.Orden).FirstOrDefault()?.Url ?? c.ImagenUrl;
                 var count = c.Imagenes?.Count ?? 0;
                 if (count == 0 && !string.IsNullOrWhiteSpace(thumb)) { count = 1; }
-                <div class="col-12 col-md-6 col-lg-4">
+                var slot = (++idx, total) switch
+                {
+                    (1, 1) => "from-bottom",
+                    (1, 2) => "from-left",
+                    (2, 2) => "from-right",
+                    (1, 3) => "from-left",
+                    (2, 3) => "from-bottom",
+                    (3, 3) => "from-right",
+                    _ => "from-bottom"
+                };
+                <div class="col-12 col-md-6 col-lg-4" data-enter="@slot">
                     <a class="product-card" asp-controller="Camisetas" asp-action="Details" asp-route-id="@c.Id">
                         <div class="product-image" style="background-image:url('@thumb')">
                             @if (count > 0)
@@ -141,7 +155,7 @@
     </section>
 }
 
-<section class="showcase mb-4">
+<section class="showcase mb-4" id="homeProducts">
     <div class="d-flex justify-content-between align-items-end mb-2">
         <h2 class="m-0">Productos</h2>
         <a class="link-light small" asp-controller="Camisetas" asp-action="Index">Ver todo</a>
@@ -179,3 +193,86 @@
         <div class="text-center text-muted py-4">No hay camisetas disponibles por ahora.</div>
     }
  </section>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  const isDesktop = window.matchMedia && window.matchMedia('(min-width: 992px)').matches;
+  const section = document.getElementById('homeFeaturedGrid');
+  if (!section) return;
+  const cards = section.querySelectorAll('.product-card');
+  if (!cards.length) return;
+
+  if (isDesktop) {
+    // Desktop: animar las 3 tarjetas según su posición relativa al carrusel
+    cards.forEach(card => {
+      const col = card.closest('[data-enter]');
+      if (!col) return;
+      const dir = col.getAttribute('data-enter');
+      if (dir === 'from-left') card.classList.add('card-enter-from-left');
+      else if (dir === 'from-right') card.classList.add('card-enter-from-right');
+      else card.classList.add('card-enter-from-bottom');
+    });
+    const observer = new IntersectionObserver((entries, obs) => {
+      entries.forEach(entry => {
+        if (!entry.isIntersecting) return;
+        section.querySelectorAll('.product-card').forEach(card => {
+          card.classList.add('card-enter-active');
+        });
+        obs.disconnect();
+      });
+    }, { threshold: 0.25 });
+    observer.observe(section);
+  } else {
+    // Móvil: ir mostrando tarjetas alternando derecha/izquierda
+    cards.forEach((card, idx) => {
+      const fromRight = idx % 2 === 0;
+      card.classList.add(fromRight ? 'card-enter-from-right' : 'card-enter-from-left');
+    });
+    const mobObserver = new IntersectionObserver((entries, obs) => {
+      entries.forEach(entry => {
+        if (!entry.isIntersecting) return;
+        const card = entry.target;
+        card.classList.add('card-enter-active');
+        obs.unobserve(card);
+      });
+    }, { threshold: 0.2 });
+    cards.forEach(card => mobObserver.observe(card));
+  }
+});
+</script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  var isDesktop = window.matchMedia && window.matchMedia('(min-width: 992px)').matches;
+  var section = document.getElementById('homeProducts');
+  if (!section) return;
+  var track = section.querySelector('.showcase-track');
+  var cards = track ? track.querySelectorAll('.product-card') : null;
+  if (!track || !cards || !cards.length) return;
+
+  if (isDesktop) {
+    var obs = new IntersectionObserver(function (entries, o) {
+      entries.forEach(function (entry) {
+        if (!entry.isIntersecting) return;
+        section.classList.add('showcase-visible');
+        o.disconnect();
+      });
+    }, { threshold: 0.2 });
+    obs.observe(section);
+  } else {
+    cards.forEach(function (card, idx) {
+      var fromRight = idx % 2 === 0;
+      card.classList.add(fromRight ? 'prod-from-right' : 'prod-from-left');
+    });
+    var mobObs = new IntersectionObserver(function (entries, o) {
+      entries.forEach(function (entry) {
+        if (!entry.isIntersecting) return;
+        var card = entry.target;
+        card.classList.add('prod-visible');
+        o.unobserve(card);
+      });
+    }, { threshold: 0.15 });
+    cards.forEach(function (card) { mobObs.observe(card); });
+  }
+});
+</script>

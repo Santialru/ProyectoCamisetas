@@ -73,6 +73,50 @@ body > .container { flex: 1 0 auto; }
 .showcase-track::-webkit-scrollbar { height: 8px; }
 .showcase-track::-webkit-scrollbar-thumb { background: #2b3448; border-radius: 4px; }
 
+/* Animación del contenedor de productos en home (desktop) */
+@media (min-width: 992px) {
+  #homeProducts {
+    opacity: 0;
+    transform: translateY(40px);
+    transition: opacity .6s ease, transform .6s ease;
+  }
+  #homeProducts.showcase-visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Animación de tarjetas de productos en home (mobile) */
+@media (max-width: 991.98px) {
+  #homeProducts .showcase-track .product-card {
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity .5s ease, transform .5s ease;
+  }
+  #homeProducts .showcase-track .product-card.prod-from-left {
+    transform: translateX(-40px);
+  }
+  #homeProducts .showcase-track .product-card.prod-from-right {
+    transform: translateX(40px);
+  }
+  #homeProducts .showcase-track .product-card.prod-visible {
+    opacity: 1;
+    transform: translateX(0) translateY(0);
+  }
+}
+@media (max-width: 767.98px) {
+  .showcase-track {
+    flex-direction: column;
+    overflow-x: hidden;
+    overflow-y: visible;
+    scroll-snap-type: none;
+  }
+  .showcase-track .product-card {
+    flex: 0 0 auto;
+    width: 100%;
+  }
+}
+
 /* Catalog sections wrapper (grid lists) */
 .catalog-section {
   background: linear-gradient(180deg,#1b2437,#151c2c);
@@ -117,11 +161,16 @@ body > .container { flex: 1 0 auto; }
 .product-image {
   width: 100%;
   height: 190px;
-  background-size: cover;
-  background-position: center;
+  background-size: contain;
+  background-position: center center;
+  background-repeat: no-repeat;
   border-top-left-radius: .75rem;
   border-top-right-radius: .75rem;
   position: relative;
+}
+/* Aumentar altura de tarjetas destacadas en Home en mÃ³vil/tablet */
+@media (max-width: 991.98px) {
+  .home-featured-grid .product-image { height: 240px; }
 }
 /* Aumentar altura de tarjetas destacadas en Home (desktop) */
 @media (min-width: 992px) {
@@ -129,6 +178,24 @@ body > .container { flex: 1 0 auto; }
 }
 @media (min-width: 1200px) {
   .home-featured-grid .product-image { height: 360px; }
+}
+.home-featured-grid .product-card {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity .6s ease, transform .6s ease;
+}
+.home-featured-grid .product-card.card-enter-from-left {
+  transform: translateX(-40px);
+}
+.home-featured-grid .product-card.card-enter-from-right {
+  transform: translateX(40px);
+}
+.home-featured-grid .product-card.card-enter-from-bottom {
+  transform: translateY(40px);
+}
+.home-featured-grid .product-card.card-enter-active {
+  opacity: 1;
+  transform: translateX(0) translateY(0);
 }
 .photo-badge { position:absolute; top:8px; right:8px; background: rgba(0,0,0,.55); color:#fff; padding:2px 8px; border-radius:999px; font-size:.8rem; }
 .image-wrap { position: relative; }
