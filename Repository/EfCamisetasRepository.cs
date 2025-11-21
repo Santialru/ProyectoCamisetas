@@ -250,6 +250,13 @@ namespace ProyectoCamisetas.Repository
             return dir;
         }
 
+        private string GetNavDir()
+        {
+            var dir = Path.Combine(GetWebRoot(), "uploads", "nav");
+            Directory.CreateDirectory(dir);
+            return dir;
+        }
+
         public async Task<IReadOnlyList<HomeCarouselSlide>> GetHomeCarouselSlidesAsync(CancellationToken ct = default)
         {
             var file = Path.Combine(GetHeroDir(), "slides.json");
@@ -308,6 +315,142 @@ namespace ProyectoCamisetas.Repository
             var opts = new JsonSerializerOptions { WriteIndented = true };
             await using var fs = System.IO.File.Create(file);
             await JsonSerializer.SerializeAsync(fs, norm, opts, ct);
+        }
+
+        // ------------------------ Nav menu -------------------------
+
+        private NavMenuConfig BuildDefaultNavMenu()
+        {
+            return new NavMenuConfig
+            {
+                Sections = new List<NavSection>
+                {
+                    new NavSection
+                    {
+                        Orden = 1,
+                        Title = "Clubes",
+                        Links = new List<NavLinkConfig>
+                        {
+                            new NavLinkConfig { Orden = 1, Label = "River", Type = "q", Value = "River" },
+                            new NavLinkConfig { Orden = 2, Label = "Boca", Type = "q", Value = "Boca" },
+                            new NavLinkConfig { Orden = 3, Label = "Barcelona", Type = "q", Value = "Barcelona" },
+                            new NavLinkConfig { Orden = 4, Label = "Real Madrid", Type = "q", Value = "Real Madrid" },
+                            new NavLinkConfig { Orden = 5, Label = "Chelsea", Type = "q", Value = "Chelsea" },
+                            new NavLinkConfig { Orden = 6, Label = "Manchester United", Type = "q", Value = "Manchester United" },
+                            new NavLinkConfig { Orden = 7, Label = "Otro (otros clubes)", Type = "other", Value = "club" }
+                        }
+                    },
+                    new NavSection
+                    {
+                        Orden = 2,
+                        Title = "Selecciones",
+                        Links = new List<NavLinkConfig>
+                        {
+                            new NavLinkConfig { Orden = 1, Label = "Argentina", Type = "equipo", Value = "Argentina" },
+                            new NavLinkConfig { Orden = 2, Label = "Brasil", Type = "equipo", Value = "Brasil" },
+                            new NavLinkConfig { Orden = 3, Label = "Espana", Type = "equipo", Value = "Espana" },
+                            new NavLinkConfig { Orden = 4, Label = "Portugal", Type = "equipo", Value = "Portugal" },
+                            new NavLinkConfig { Orden = 5, Label = "Francia", Type = "equipo", Value = "Francia" },
+                            new NavLinkConfig { Orden = 6, Label = "Otro (otras selecciones)", Type = "other", Value = "seleccion" }
+                        }
+                    },
+                    new NavSection
+                    {
+                        Orden = 3,
+                        Title = "Categorias",
+                        Links = new List<NavLinkConfig>
+                        {
+                            new NavLinkConfig { Orden = 1, Label = "La Liga", Type = "q", Value = "La Liga" },
+                            new NavLinkConfig { Orden = 2, Label = "Premier League", Type = "q", Value = "Premier League" },
+                            new NavLinkConfig { Orden = 3, Label = "Serie A", Type = "q", Value = "Serie A" },
+                            new NavLinkConfig { Orden = 4, Label = "Bundesliga", Type = "q", Value = "Bundesliga" },
+                            new NavLinkConfig { Orden = 5, Label = "Ligue 1", Type = "q", Value = "Ligue 1" },
+                            new NavLinkConfig { Orden = 6, Label = "En stock ahora", Type = "enstock", Value = "true" },
+                            new NavLinkConfig { Orden = 7, Label = "Por encargo", Type = "enstock", Value = "false" },
+                            new NavLinkConfig { Orden = 8, Label = "Aficionado", Type = "version", Value = "aficionado" },
+                            new NavLinkConfig { Orden = 9, Label = "Version jugador", Type = "version", Value = "jugador" },
+                            new NavLinkConfig { Orden = 10, Label = "Retro", Type = "version", Value = "retro" }
+                        }
+                    },
+                    new NavSection
+                    {
+                        Orden = 4,
+                        Title = "Producto",
+                        Links = new List<NavLinkConfig>
+                        {
+                            new NavLinkConfig { Orden = 1, Label = "Camiseta", Type = "producto", Value = "camiseta" },
+                            new NavLinkConfig { Orden = 2, Label = "Campera", Type = "producto", Value = "campera" },
+                            new NavLinkConfig { Orden = 3, Label = "Short", Type = "producto", Value = "short" },
+                            new NavLinkConfig { Orden = 4, Label = "Conjunto", Type = "producto", Value = "conjunto" }
+                        }
+                    }
+                }
+            };
+        }
+
+        public async Task<NavMenuConfig> GetNavMenuAsync(CancellationToken ct = default)
+        {
+            var file = Path.Combine(GetNavDir(), "menu.json");
+            if (!System.IO.File.Exists(file))
+            {
+                return BuildDefaultNavMenu();
+            }
+
+            try
+            {
+                await using var fs = System.IO.File.OpenRead(file);
+                var config = await JsonSerializer.DeserializeAsync<NavMenuConfig>(fs, cancellationToken: ct);
+                if (config == null || config.Sections == null || config.Sections.Count == 0)
+                    return BuildDefaultNavMenu();
+                config.Sections = config.Sections.OrderBy(s => s.Orden).ToList();
+                foreach (var sec in config.Sections)
+                {
+                    sec.Links = (sec.Links ?? new List<NavLinkConfig>()).OrderBy(l => l.Orden).ToList();
+                }
+                return config;
+            }
+            catch
+            {
+                return BuildDefaultNavMenu();
+            }
+        }
+
+        public async Task SaveNavMenuAsync(NavMenuConfig config, CancellationToken ct = default)
+        {
+            config ??= new NavMenuConfig();
+            var sections = config.Sections ?? new List<NavSection>();
+
+            short idx = 0;
+            foreach (var section in sections)
+            {
+                section.Orden = ++idx;
+                section.Title = string.IsNullOrWhiteSpace(section.Title) ? "Seccion" : section.Title.Trim();
+                section.Links = (section.Links ?? new List<NavLinkConfig>())
+                    .Where(l => !string.IsNullOrWhiteSpace(l.Label))
+                    .Select((l, i) => new NavLinkConfig
+                    {
+                        Orden = (short)(i + 1),
+                        Label = l.Label?.Trim(),
+                        Type = string.IsNullOrWhiteSpace(l.Type) ? "q" : l.Type!.Trim(),
+                        Value = string.IsNullOrWhiteSpace(l.Value) ? null : l.Value!.Trim(),
+                        Href = string.IsNullOrWhiteSpace(l.Href) ? null : l.Href!.Trim()
+                    })
+                    .Take(20)
+                    .ToList();
+            }
+
+            var clean = new NavMenuConfig
+            {
+                Sections = sections.Where(s => s.Links.Any()).ToList()
+            };
+
+            if (clean.Sections.Count == 0)
+                clean = BuildDefaultNavMenu();
+
+            var file = Path.Combine(GetNavDir(), "menu.json");
+            var opts = new JsonSerializerOptions { WriteIndented = true };
+            await using var fs = System.IO.File.Create(file);
+            await JsonSerializer.SerializeAsync(fs, clean, opts, ct);
         }
 
         public async Task SetImagesAsync(int camisetaId, IEnumerable<string> urls, CancellationToken ct = default)

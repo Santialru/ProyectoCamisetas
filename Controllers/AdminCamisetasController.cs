@@ -816,6 +816,28 @@ namespace ProyectoCamisetas.Controllers
             return File(bytes, "text/csv; charset=utf-8", fileName);
         }
 
+        // ----------------------- NAV MENU ---------------------------
+
+        [HttpGet]
+        public async Task<IActionResult> NavMenu(CancellationToken ct = default)
+        {
+            var model = await _repo.GetNavMenuAsync(ct);
+            if (model.Sections.Count == 0)
+            {
+                model.Sections.Add(new NavSection { Title = "Nueva sección", Orden = 1, Links = new List<NavLinkConfig> { new NavLinkConfig { Label = "Ejemplo", Type = "q", Value = "River", Orden = 1 } } });
+            }
+            return View(model);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> NavMenu(NavMenuConfig model, CancellationToken ct = default)
+        {
+            await _repo.SaveNavMenuAsync(model, ct);
+            TempData["Success"] = "Menú guardado.";
+            return RedirectToAction(nameof(NavMenu));
+        }
+
         // ------------------------- HELPERS ---------------------------
 
         private void PopulateSelects()

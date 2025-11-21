@@ -1,0 +1,224 @@
+{
+  "Sections": [
+    {
+      "Title": "Clubes",
+      "Orden": 1,
+      "Links": [
+        {
+          "Label": "River",
+          "Type": "q",
+          "Value": "River",
+          "Orden": 1,
+          "Href": null
+        },
+        {
+          "Label": "Boca",
+          "Type": "q",
+          "Value": "Boca",
+          "Orden": 2,
+          "Href": null
+        },
+        {
+          "Label": "Barcelona",
+          "Type": "q",
+          "Value": "Barcelona",
+          "Orden": 3,
+          "Href": null
+        },
+        {
+          "Label": "Real Madrid",
+          "Type": "q",
+          "Value": "Real Madrid",
+          "Orden": 4,
+          "Href": null
+        },
+        {
+          "Label": "Chelsea",
+          "Type": "q",
+          "Value": "Chelsea",
+          "Orden": 5,
+          "Href": null
+        },
+        {
+          "Label": "Manchester United",
+          "Type": "q",
+          "Value": "Manchester United",
+          "Orden": 6,
+          "Href": null
+        },
+        {
+          "Label": "Otro (otros clubes)",
+          "Type": "other",
+          "Value": "club",
+          "Orden": 7,
+          "Href": null
+        }
+      ]
+    },
+    {
+      "Title": "Selecciones",
+      "Orden": 2,
+      "Links": [
+        {
+          "Label": "Mundial",
+          "Type": "liga",
+          "Value": "Mundial",
+          "Orden": 1,
+          "Href": null
+        },
+        {
+          "Label": "Argentina",
+          "Type": "equipo",
+          "Value": "Argentina",
+          "Orden": 2,
+          "Href": null
+        },
+        {
+          "Label": "Brasil",
+          "Type": "equipo",
+          "Value": "Brasil",
+          "Orden": 3,
+          "Href": null
+        },
+        {
+          "Label": "Espana",
+          "Type": "equipo",
+          "Value": "Espana",
+          "Orden": 4,
+          "Href": null
+        },
+        {
+          "Label": "Portugal",
+          "Type": "equipo",
+          "Value": "Portugal",
+          "Orden": 5,
+          "Href": null
+        },
+        {
+          "Label": "Francia",
+          "Type": "equipo",
+          "Value": "Francia",
+          "Orden": 6,
+          "Href": null
+        },
+        {
+          "Label": "Otro (otras selecciones)",
+          "Type": "other",
+          "Value": "seleccion",
+          "Orden": 7,
+          "Href": null
+        }
+      ]
+    },
+    {
+      "Title": "Categorias",
+      "Orden": 3,
+      "Links": [
+        {
+          "Label": "La Liga",
+          "Type": "q",
+          "Value": "La Liga",
+          "Orden": 1,
+          "Href": null
+        },
+        {
+          "Label": "Premier League",
+          "Type": "q",
+          "Value": "Premier League",
+          "Orden": 2,
+          "Href": null
+        },
+        {
+          "Label": "Serie A",
+          "Type": "q",
+          "Value": "Serie A",
+          "Orden": 3,
+          "Href": null
+        },
+        {
+          "Label": "Bundesliga",
+          "Type": "q",
+          "Value": "Bundesliga",
+          "Orden": 4,
+          "Href": null
+        },
+        {
+          "Label": "Ligue 1",
+          "Type": "q",
+          "Value": "Ligue 1",
+          "Orden": 5,
+          "Href": null
+        },
+        {
+          "Label": "En stock ahora",
+          "Type": "enstock",
+          "Value": "true",
+          "Orden": 6,
+          "Href": null
+        },
+        {
+          "Label": "Por encargo",
+          "Type": "enstock",
+          "Value": "false",
+          "Orden": 7,
+          "Href": null
+        },
+        {
+          "Label": "Aficionado",
+          "Type": "version",
+          "Value": "aficionado",
+          "Orden": 8,
+          "Href": null
+        },
+        {
+          "Label": "Version jugador",
+          "Type": "version",
+          "Value": "jugador",
+          "Orden": 9,
+          "Href": null
+        },
+        {
+          "Label": "Retro",
+          "Type": "version",
+          "Value": "retro",
+          "Orden": 10,
+          "Href": null
+        }
+      ]
+    },
+    {
+      "Title": "Producto",
+      "Orden": 4,
+      "Links": [
+        {
+          "Label": "Camiseta",
+          "Type": "producto",
+          "Value": "camiseta",
+          "Orden": 1,
+          "Href": null
+        },
+        {
+          "Label": "Campera",
+          "Type": "producto",
+          "Value": "campera",
+          "Orden": 2,
+          "Href": null
+        },
+        {
+          "Label": "Short",
+          "Type": "producto",
+          "Value": "short",
+          "Orden": 3,
+          "Href": null
+        },
+        {
+          "Label": "Conjunto",
+          "Type": "producto",
+          "Value": "conjunto",
+          "Orden": 4,
+          "Href": null
+        }
+      ]
+    }
+  ]
+}

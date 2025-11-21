@@ -167,6 +167,21 @@ body > .container { flex: 1 0 auto; }
   border-top-left-radius: .75rem;
   border-top-right-radius: .75rem;
   position: relative;
+  overflow: hidden;
+}
+.product-image::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: var(--img-alt, none);
+  background-size: contain;
+  background-position: center center;
+  background-repeat: no-repeat;
+  opacity: 0;
+  transition: opacity .25s ease;
+}
+.product-card:hover .product-image::after {
+  opacity: 1;
 }
 /* Aumentar altura de tarjetas destacadas en Home en mÃ³vil/tablet */
 @media (max-width: 991.98px) {
@@ -197,13 +212,23 @@ body > .container { flex: 1 0 auto; }
   opacity: 1;
   transform: translateX(0) translateY(0);
 }
-.photo-badge { position:absolute; top:8px; right:8px; background: rgba(0,0,0,.55); color:#fff; padding:2px 8px; border-radius:999px; font-size:.8rem; }
+.photo-badge { position:absolute; top:8px; right:8px; background: rgba(0,0,0,.55); color:#fff; padding:2px 8px; border-radius:999px; font-size:.8rem; z-index: 2; }
 .image-wrap { position: relative; }
 .jersey-thumb {
   width: 100%;
   height: 240px;
   object-fit: cover;
 }
+.hover-swap { position: relative; }
+.hover-swap .primary-thumb { transition: opacity .25s ease; }
+.hover-swap .secondary-thumb {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transition: opacity .25s ease;
+}
+.hover-swap:hover .primary-thumb { opacity: 0; }
+.hover-swap:hover .secondary-thumb { opacity: 1; }
 @media (min-width: 576px) {
   .jersey-thumb { height: 280px; }
 }
@@ -361,8 +386,28 @@ body > .container { flex: 1 0 auto; }
   opacity: 1;
 }
 @media (max-width: 768px) {
-  .carousel-item img,
+.carousel-item img,
   .jersey-detail { max-height: 320px; }
+}
+
+/* Hero con fondo fijo anclado abajo */
+#heroCarousel.hero-fixed .carousel-item {
+  background-size: cover;
+  background-position: center bottom;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+}
+#heroCarousel.hero-fixed .carousel-item > img {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+@media (max-width: 991.98px) {
+  #heroCarousel.hero-fixed .carousel-item { background-attachment: scroll; }
+  #heroCarousel.hero-fixed .carousel-item > img {
+    opacity: 1;
+    visibility: visible;
+  }
 }
 
 /* Bootstrap example-like hero carousel sizing */
@@ -385,7 +430,7 @@ body > .container { flex: 1 0 auto; }
   max-height: none !important; /* no limitar en m
 a */
   object-fit: cover;
-  object-position: center center; /* centra el recorte cuando el ancho es menor */
+  object-position: center bottom; /* ancla al fondo para efecto fijo */
 }
 
 /* Make hero carousel span exactly full viewport width (edge-to-edge) */
@@ -514,6 +559,7 @@ body > .container { flex: 1 0 auto; }
   border-top-right-radius: 6px;
   border-bottom-right-radius: 6px;
   box-shadow: 0 4px 12px rgba(0,0,0,.25);
+  z-index: 2;
 }
 
 /* Autocomplete dropdown */

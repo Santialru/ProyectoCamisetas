@@ -23,7 +23,7 @@
     }
     @if (slides != null && slides.Any())
     {
-        <div id="heroCarousel" class="carousel slide mb-4" data-bs-ride="carousel" data-bs-interval="3500" data-bs-pause="false" data-bs-touch="true">
+        <div id="heroCarousel" class="carousel slide mb-4 hero-fixed" data-bs-ride="carousel" data-bs-interval="3500" data-bs-pause="false" data-bs-touch="true">
             <div class="carousel-indicators">
                 @for (int i = 0; i < slides.Count; i++)
                 {
@@ -36,7 +36,7 @@
                     var s = slides[i];
                     var active = i == 0 ? "active" : "";
                     var align = i == 0 ? "text-start" : (i == 2 ? "text-end" : "");
-                    <div class="carousel-item @active">
+                    <div class="carousel-item @active" style="background-image:url('@s.ImageUrl')">
                         <img src="@s.ImageUrl" class="d-block w-100" alt="Slide @(i+1)" />
                         @if (!string.IsNullOrWhiteSpace(s.Title) || !string.IsNullOrWhiteSpace(s.Description) || !string.IsNullOrWhiteSpace(s.ButtonText))
                         {
@@ -67,7 +67,7 @@
     }
     else
     {
-        <div id="heroCarousel" class="carousel slide mb-4" data-bs-ride="carousel" data-bs-interval="3500" data-bs-pause="false" data-bs-touch="true">
+        <div id="heroCarousel" class="carousel slide mb-4 hero-fixed" data-bs-ride="carousel" data-bs-interval="3500" data-bs-pause="false" data-bs-touch="true">
             <div class="carousel-indicators">
                 @for (int i = 0; i < imgs.Count; i++)
                 {
@@ -78,7 +78,7 @@
                 @for (int i = 0; i < imgs.Count; i++)
                 {
                     var active = i == 0 ? "active" : "";
-                    <div class="carousel-item @active">
+                    <div class="carousel-item @active" style="background-image:url('@imgs[i]')">
                         <img src="@imgs[i]" class="d-block w-100" alt="Slide @(i+1)" asp-append-version="true" />
                     </div>
                 }
@@ -116,6 +116,7 @@
             @foreach (var c in cards)
             {
                 var thumb = c.Imagenes?.OrderBy(x => x.Orden).FirstOrDefault()?.Url ?? c.ImagenUrl;
+                var second = c.Imagenes?.OrderBy(x => x.Orden).Skip(1).Select(x => x.Url).FirstOrDefault() ?? thumb;
                 var count = c.Imagenes?.Count ?? 0;
                 if (count == 0 && !string.IsNullOrWhiteSpace(thumb)) { count = 1; }
                 var slot = (++idx, total) switch
@@ -130,7 +131,7 @@
                 };
                 <div class="col-12 col-md-6 col-lg-4" data-enter="@slot">
                     <a class="product-card" asp-controller="Camisetas" asp-action="Details" asp-route-id="@c.Id">
-                        <div class="product-image" style="background-image:url('@thumb')">
+                        <div class="product-image" style="--img-main:url('@thumb'); --img-alt:url('@second'); background-image:var(--img-main);">
                             @if (count > 0)
                             {
                                 <span class="photo-badge">@count fotos</span>
@@ -164,10 +165,11 @@
         @foreach (var c in Model)
         {
             var thumb = c.Imagenes?.OrderBy(x => x.Orden).FirstOrDefault()?.Url ?? c.ImagenUrl;
+            var second = c.Imagenes?.OrderBy(x => x.Orden).Skip(1).Select(x => x.Url).FirstOrDefault() ?? thumb;
             var count = c.Imagenes?.Count ?? 0;
             if (count == 0 && !string.IsNullOrWhiteSpace(thumb)) { count = 1; }
             <a class="product-card" asp-controller="Camisetas" asp-action="Details" asp-route-id="@c.Id">
-                <div class="product-image" style="background-image:url('@thumb')">
+                <div class="product-image" style="--img-main:url('@thumb'); --img-alt:url('@second'); background-image:var(--img-main);">
                     @if (count > 0)
                     {
                         <span class="photo-badge">@count fotos</span>

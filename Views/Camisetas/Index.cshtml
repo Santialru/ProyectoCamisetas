@@ -167,14 +167,16 @@
     @foreach (var c in disponibles)
     {
         var thumb = c.Imagenes?.OrderBy(x => x.Orden).FirstOrDefault()?.Url ?? c.ImagenUrl;
+        var second = c.Imagenes?.OrderBy(x => x.Orden).Skip(1).Select(x => x.Url).FirstOrDefault() ?? thumb;
         var count = c.Imagenes?.Count ?? 0;
         if (count == 0 && !string.IsNullOrWhiteSpace(thumb)) { count = 1; }
         <div class="col">
             <div class="card h-100 position-relative">
                 @if (!string.IsNullOrWhiteSpace(thumb))
                 {
-                    <div class="image-wrap">
-                        <img src="@thumb" class="card-img-top jersey-thumb" alt="@c.Nombre" />
+                    <div class="image-wrap hover-swap">
+                        <img src="@thumb" class="card-img-top jersey-thumb primary-thumb" alt="@c.Nombre" />
+                        <img src="@second" class="card-img-top jersey-thumb secondary-thumb" alt="@c.Nombre" />
                         @if (count > 0)
                         {
                             <span class="photo-badge">@count fotos</span>
@@ -226,14 +228,16 @@
     @foreach (var c in porEncargo)
     {
         var thumb = c.Imagenes?.OrderBy(x => x.Orden).FirstOrDefault()?.Url ?? c.ImagenUrl;
+        var second = c.Imagenes?.OrderBy(x => x.Orden).Skip(1).Select(x => x.Url).FirstOrDefault() ?? thumb;
         var count = c.Imagenes?.Count ?? 0;
         if (count == 0 && !string.IsNullOrWhiteSpace(thumb)) { count = 1; }
         <div class="col">
             <div class="card h-100 opacity-90 position-relative">
                 @if (!string.IsNullOrWhiteSpace(thumb))
                 {
-                    <div class="image-wrap">
-                        <img src="@thumb" class="card-img-top jersey-thumb" alt="@c.Nombre" />
+                    <div class="image-wrap hover-swap">
+                        <img src="@thumb" class="card-img-top jersey-thumb primary-thumb" alt="@c.Nombre" />
+                        <img src="@second" class="card-img-top jersey-thumb secondary-thumb" alt="@c.Nombre" />
                         @if (count > 0)
                         {
                             <span class="photo-badge">@count fotos</span>

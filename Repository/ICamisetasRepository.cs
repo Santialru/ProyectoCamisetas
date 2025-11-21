@@ -50,6 +50,8 @@ namespace ProyectoCamisetas.Repository
         Task<IReadOnlyList<ProyectoCamisetas.Models.HomeCarouselSlide>> GetHomeCarouselSlidesAsync(CancellationToken ct = default);
         Task SaveHomeCarouselSlidesAsync(IEnumerable<ProyectoCamisetas.Models.HomeCarouselSlide> slides, CancellationToken ct = default);
         Task SaveHomeCarouselAsync(ProyectoCamisetas.Models.HomeCarouselConfig config, CancellationToken ct = default);
+        Task<ProyectoCamisetas.Models.NavMenuConfig> GetNavMenuAsync(CancellationToken ct = default);
+        Task SaveNavMenuAsync(ProyectoCamisetas.Models.NavMenuConfig config, CancellationToken ct = default);
 
         // Restaurar precios previos eliminando descuentos
         Task<int> RestoreDiscountsAsync(IEnumerable<int> ids, CancellationToken ct = default);
