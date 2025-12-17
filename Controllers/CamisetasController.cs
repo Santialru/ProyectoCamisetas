@@ -25,14 +25,23 @@ namespace ProyectoCamisetas.Controllers
         {
             // Normaliza alias de selecciones/equipos (ej: "seleccion argentina", "afa") a un nombre canónico
             var equipoCanon = NormalizeEquipoAlias(equipo ?? q);
+            string? equipoCanonKey = null;
             if (!string.IsNullOrWhiteSpace(equipoCanon))
             {
-                equipo = equipoCanon;
-                q = null;
+                // Forzamos la búsqueda libre con el alias canónico para que coincida aunque el campo Equipo tenga espacios/mayúsculas distintos.
+                q = equipoCanon;
+                equipo = null;
+                equipoCanonKey = ToSearchKey(equipoCanon);
             }
 
             var destacadas = await _repo.GetDestacadasAsync(q, liga, equipo, temporada, 12, ct);
             var camisetas = await _repo.GetAllAsync(q, liga, equipo, temporada, ct);
+            if (!string.IsNullOrWhiteSpace(equipoCanonKey))
+            {
+                Func<Camiseta, bool> equipoPredicate = c => ToSearchKey(c.Equipo ?? string.Empty).Contains(equipoCanonKey);
+                destacadas = destacadas.Where(equipoPredicate).ToList();
+                camisetas = camisetas.Where(equipoPredicate).ToList();
+            }
             // PÃ¡gina inicial paginada (9 items) para scroll infinito
                         // Filtro por tipo de producto (camiseta, campera, short, conjunto)
             var prodCanon = NormalizeProductoAlias(producto);
@@ -140,9 +149,7 @@ namespace ProyectoCamisetas.Controllers
             // Priorizar en stock en memoria usando la propiedad EnStock
             destacadas = destacadas
                 .Where(c => c.EnStock)
-                .OrderByDescending(c => c.EnStock)
-                .ThenBy(c => c.Equipo)
-                .ThenBy(c => c.Temporada)
+                .OrderByDescending(c => c.Id) // Mostrar las más recientes primero
                 .ToList();
             if (!string.IsNullOrWhiteSpace(sort))
             {
@@ -168,20 +175,14 @@ namespace ProyectoCamisetas.Controllers
                 else
                 {
                     camisetas = camisetas
-                        .OrderByDescending(c => c.EnStock)
-                        .ThenBy(c => c.Equipo)
-                        .ThenBy(c => c.Temporada)
-                        .ThenBy(c => c.Tipo)
+                        .OrderByDescending(c => c.Id) // predeterminado: últimas altas primero
                         .ToList();
                 }
             }
             else
             {
                 camisetas = camisetas
-                    .OrderByDescending(c => c.EnStock)
-                    .ThenBy(c => c.Equipo)
-                    .ThenBy(c => c.Temporada)
-                    .ThenBy(c => c.Tipo)
+                    .OrderByDescending(c => c.Id) // predeterminado: últimas altas primero
                     .ToList();
             }
 
@@ -320,7 +321,3 @@ namespace ProyectoCamisetas.Controllers
 
     }
 }
-
-
-
-

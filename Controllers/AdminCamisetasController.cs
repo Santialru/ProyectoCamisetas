@@ -89,8 +89,8 @@ namespace ProyectoCamisetas.Controllers
             {
                 bool ProdMatch(ProyectoCamisetas.Models.Camiseta c)
                 {
-                    var name = (c.Nombre ?? string.Empty).ToLowerInvariant();
-                    var desc = (c.Descripcion ?? string.Empty).ToLowerInvariant();
+                    var name = ToSearchKey(c.Nombre);
+                    var desc = ToSearchKey(c.Descripcion);
                     return ProductoMatches(prod!, name, desc);
                 }
                 list = list.Where(ProdMatch).ToList();
@@ -435,7 +435,7 @@ namespace ProyectoCamisetas.Controllers
         private static string? NormalizeProductoAlias(string? raw)
         {
             if (string.IsNullOrWhiteSpace(raw)) return null;
-            var key = raw.Trim().ToLowerInvariant();
+            var key = ToSearchKey(raw);
             if (key is "camiseta" or "remera" or "jersey") return "camiseta";
             if (key is "campera" or "chaqueta" or "buzo" or "abrigo" or "hoodie" or "jacket") return "campera";
             if (key is "short" or "pantalon corto" or "pantaloncorto" or "pantalon-corto") return "short";
@@ -446,12 +446,16 @@ namespace ProyectoCamisetas.Controllers
         private static bool ProductoMatches(string prodCanon, string nameKey, string descKey)
         {
             bool Has(params string[] tokens) => tokens.Any(t => (nameKey?.Contains(t) ?? false) || (descKey?.Contains(t) ?? false));
+            var isCampera = Has("campera", "chaqueta", "buzo", "abrigo", "hoodie", "jacket");
+            var isShort = Has("short", "pantalon corto", "pantaloncorto", "pantalon-corto");
+            var isConjunto = Has("conjunto", "set", "kit");
             return prodCanon switch
             {
-                "camiseta" => Has("camiseta", "remera", "jersey"),
-                "campera"  => Has("campera", "chaqueta", "buzo", "abrigo", "hoodie", "jacket"),
-                "short"    => Has("short", "pantalon corto", "pantaloncorto", "pantalon-corto"),
-                "conjunto" => Has("conjunto", "set", "kit"),
+                // Para "camiseta", si no encontramos palabras de otros productos, dejamos pasar por defecto.
+                "camiseta" => Has("camiseta", "remera", "jersey") || (!isCampera && !isShort && !isConjunto),
+                "campera"  => isCampera,
+                "short"    => isShort,
+                "conjunto" => isConjunto,
                 _ => true
             };
         }
