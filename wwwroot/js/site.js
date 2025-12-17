@@ -177,6 +177,9 @@ document.addEventListener('DOMContentLoaded', function () {
     // Permitir Ctrl/Cmd/Shift/Alt o botón medio para abrir en nueva pestaña si quisieras
     if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
 
+    // En touch ya controlamos el tap para no cerrar inmediato
+    if (isTouch) return;
+
     e.preventDefault();
     e.stopPropagation();
 
@@ -481,3 +484,6 @@ document.addEventListener('DOMContentLoaded', function () {
     }
   } catch (_) { /* ignore */ }
 });
+
+
+
