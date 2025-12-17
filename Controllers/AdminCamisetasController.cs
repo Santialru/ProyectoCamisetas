@@ -4,6 +4,9 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using ProyectoCamisetas.Models;
 using ProyectoCamisetas.Repository;
+using System.Globalization;
+using System.Text;
+using System.Text.RegularExpressions;
 
 namespace ProyectoCamisetas.Controllers
 {
@@ -28,24 +31,36 @@ namespace ProyectoCamisetas.Controllers
             // Búsqueda libre
             if (!string.IsNullOrWhiteSpace(q))
             {
-                var tokens = q.Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
-                              .Select(t => t.ToLowerInvariant()).ToList();
-                bool MatchAny(ProyectoCamisetas.Models.Camiseta c)
+                var tokens = SplitTokens(q);
+                var aliasTokens = BuildAliasTokens(q);
+
+                bool MatchSearch(ProyectoCamisetas.Models.Camiseta c)
                 {
-                    var pool = string.Join(' ', new[] { c.Nombre, c.Equipo, c.Liga, c.Temporada, c.Marca, c.Descripcion }.Where(s => !string.IsNullOrWhiteSpace(s))).ToLowerInvariant();
-                    return tokens.All(t => pool.Contains(t));
+                    var raw = string.Join(' ', new[]
+                    {
+                        c.Nombre, c.Equipo, c.Liga, c.Temporada, c.Marca, c.Descripcion,
+                        c.Patrocinador, c.Jugador, c.SKU, c.Tipo.ToString(), c.Version.ToString()
+                    }.Where(s => !string.IsNullOrWhiteSpace(s)));
+                    var pool = ToSearchKey(raw);
+
+                    var matchesBase = tokens.Count == 0 || tokens.All(t => pool.Contains(t));
+                    var matchesAlias = aliasTokens.Count > 0 && aliasTokens.Any(t => pool.Contains(t));
+                    return matchesBase || matchesAlias;
                 }
-                list = list.Where(MatchAny).ToList();
+
+                list = list.Where(MatchSearch).ToList();
             }
 
             // Filtros
             if (!string.IsNullOrWhiteSpace(equipo))
             {
-                list = list.Where(c => c.Equipo == equipo).ToList();
+                var eqKey = ToSearchKey(equipo);
+                list = list.Where(c => ToSearchKey(c.Equipo).Contains(eqKey)).ToList();
             }
             if (!string.IsNullOrWhiteSpace(temporada))
             {
-                list = list.Where(c => c.Temporada == temporada).ToList();
+                var tempKey = ToSearchKey(temporada);
+                list = list.Where(c => ToSearchKey(c.Temporada).Contains(tempKey)).ToList();
             }
             // Version
             if (!string.IsNullOrWhiteSpace(version))
@@ -439,6 +454,46 @@ namespace ProyectoCamisetas.Controllers
                 "conjunto" => Has("conjunto", "set", "kit"),
                 _ => true
             };
+        }
+
+        private static List<string> SplitTokens(string? raw)
+        {
+            var key = ToSearchKey(raw);
+            return key.Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+                      .Distinct(StringComparer.OrdinalIgnoreCase)
+                      .ToList();
+        }
+
+        // Alias extra (afa/albiceleste) para que todas las camisetas de Argentina aparezcan aunque el texto use abreviaturas.
+        private static List<string> BuildAliasTokens(string? raw)
+        {
+            var key = ToSearchKey(raw);
+            var set = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            if (key.Contains("argentina") || key.Contains("afa") || key.Contains("albiceleste"))
+            {
+                set.Add("argentina");
+                set.Add("afa");
+                set.Add("albiceleste");
+                set.Add("seleccion argentina");
+                set.Add("seleccion de argentina");
+            }
+            return set.ToList();
+        }
+
+        private static string ToSearchKey(string? s)
+        {
+            s = (s ?? string.Empty).Trim().ToLowerInvariant();
+            var nf = s.Normalize(NormalizationForm.FormD);
+            var sb = new StringBuilder();
+            foreach (var c in nf)
+            {
+                var uc = CharUnicodeInfo.GetUnicodeCategory(c);
+                if (uc != UnicodeCategory.NonSpacingMark) sb.Append(c);
+            }
+            var noAccents = sb.ToString().Normalize(NormalizationForm.FormC);
+            var cleaned = Regex.Replace(noAccents, @"[^a-z0-9]+", " ").Trim();
+            cleaned = Regex.Replace(cleaned, @"\s+", " ");
+            return cleaned;
         }
     }
 }
