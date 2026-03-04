@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "PWijP79q2CA=",
+  "dgSpecHash": "HXI5GN/Vqyg=",
   "success": true,
-  "projectFilePath": "C:\\Users\\santi\\OneDrive\\Desktop\\camisetas\\ProyectoCamisetas\\ProyectoCamisetas.csproj",
+  "projectFilePath": "C:\\Users\\santi\\Desktop\\camisetas\\ProyectoCamisetas\\ProyectoCamisetas.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\santi\\.nuget\\packages\\efcore.namingconventions\\8.0.3\\efcore.namingconventions.8.0.3.nupkg.sha512",
     "C:\\Users\\santi\\.nuget\\packages\\humanizer.core\\2.14.1\\humanizer.core.2.14.1.nupkg.sha512",

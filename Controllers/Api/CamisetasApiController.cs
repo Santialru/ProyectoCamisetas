@@ -114,6 +114,39 @@ namespace ProyectoCamisetas.Controllers.Api
             return Ok(result);
         }
 
+        // Admin search: returns camisetas with thumbnail for admin picker
+        [HttpGet("search-admin")]
+        [Authorize(Roles = "Owner")]
+        [ProducesResponseType(typeof(IEnumerable<object>), 200)]
+        public async Task<IActionResult> SearchAdmin([FromQuery] string? q, CancellationToken ct)
+        {
+            if (string.IsNullOrWhiteSpace(q)) return Ok(Array.Empty<object>());
+            var term = q.Trim();
+            if (term.Length < 1) return Ok(Array.Empty<object>());
+
+            var like = $"%{term}%";
+            var items = await _db.Camisetas.AsNoTracking()
+                .Include(c => c.Imagenes)
+                .Where(c => EF.Functions.ILike(c.Nombre, like)
+                         || EF.Functions.ILike(c.Equipo, like)
+                         || EF.Functions.ILike(c.Temporada, like)
+                         || EF.Functions.ILike(c.Liga, like)
+                         || (c.SKU != null && EF.Functions.ILike(c.SKU!, like)))
+                .OrderBy(c => c.Equipo).ThenBy(c => c.Temporada)
+                .Take(10)
+                .ToListAsync(ct);
+
+            var result = items.Select(c => new
+            {
+                id = c.Id,
+                equipo = c.Equipo,
+                temporada = c.Temporada,
+                nombre = c.Nombre,
+                thumb = c.Imagenes?.OrderBy(i => i.Orden).Select(i => i.Url).FirstOrDefault() ?? c.ImagenUrl ?? ""
+            });
+            return Ok(result);
+        }
+
         /// <summary>
         /// Lista todas las camisetas sin filtros.
         /// </summary>

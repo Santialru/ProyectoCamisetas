@@ -23,7 +23,7 @@
     }
     @if (slides != null && slides.Any())
     {
-        <div id="heroCarousel" class="carousel slide mb-4 hero-fixed" data-bs-ride="carousel" data-bs-interval="3500" data-bs-pause="false" data-bs-touch="true">
+        <div id="heroCarousel" class="carousel slide carousel-fade mb-4 hero-fixed" data-bs-ride="carousel" data-bs-interval="3500" data-bs-pause="false" data-bs-touch="true">
             <div class="carousel-indicators">
                 @for (int i = 0; i < slides.Count; i++)
                 {
@@ -67,7 +67,7 @@
     }
     else
     {
-        <div id="heroCarousel" class="carousel slide mb-4 hero-fixed" data-bs-ride="carousel" data-bs-interval="3500" data-bs-pause="false" data-bs-touch="true">
+        <div id="heroCarousel" class="carousel slide carousel-fade mb-4 hero-fixed" data-bs-ride="carousel" data-bs-interval="3500" data-bs-pause="false" data-bs-touch="true">
             <div class="carousel-indicators">
                 @for (int i = 0; i < imgs.Count; i++)
                 {

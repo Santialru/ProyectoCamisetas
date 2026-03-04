@@ -137,12 +137,10 @@ namespace ProyectoCamisetas.Controllers
                 }
             }
 
-            // Priorizar en stock en memoria usando la propiedad EnStock
+            // Priorizar en stock y luego por más recientes
             destacadas = destacadas
                 .Where(c => c.EnStock)
-                .OrderByDescending(c => c.EnStock)
-                .ThenBy(c => c.Equipo)
-                .ThenBy(c => c.Temporada)
+                .OrderByDescending(c => c.Id)
                 .ToList();
             if (!string.IsNullOrWhiteSpace(sort))
             {
@@ -169,9 +167,7 @@ namespace ProyectoCamisetas.Controllers
                 {
                     camisetas = camisetas
                         .OrderByDescending(c => c.EnStock)
-                        .ThenBy(c => c.Equipo)
-                        .ThenBy(c => c.Temporada)
-                        .ThenBy(c => c.Tipo)
+                        .ThenByDescending(c => c.Id)
                         .ToList();
                 }
             }
@@ -179,9 +175,7 @@ namespace ProyectoCamisetas.Controllers
             {
                 camisetas = camisetas
                     .OrderByDescending(c => c.EnStock)
-                    .ThenBy(c => c.Equipo)
-                    .ThenBy(c => c.Temporada)
-                    .ThenBy(c => c.Tipo)
+                    .ThenByDescending(c => c.Id)
                     .ToList();
             }
 

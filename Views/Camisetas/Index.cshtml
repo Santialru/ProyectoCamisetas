@@ -175,8 +175,8 @@
                 @if (!string.IsNullOrWhiteSpace(thumb))
                 {
                     <div class="image-wrap hover-swap">
-                        <img src="@thumb" class="card-img-top jersey-thumb primary-thumb" alt="@c.Nombre" />
-                        <img src="@second" class="card-img-top jersey-thumb secondary-thumb" alt="@c.Nombre" />
+                        <img src="@thumb" class="card-img-top jersey-thumb primary-thumb" alt="@c.Nombre" loading="lazy" />
+                        <img src="@second" class="card-img-top jersey-thumb secondary-thumb" alt="@c.Nombre" loading="lazy" />
                         @if (count > 0)
                         {
                             <span class="photo-badge">@count fotos</span>
@@ -236,8 +236,8 @@
                 @if (!string.IsNullOrWhiteSpace(thumb))
                 {
                     <div class="image-wrap hover-swap">
-                        <img src="@thumb" class="card-img-top jersey-thumb primary-thumb" alt="@c.Nombre" />
-                        <img src="@second" class="card-img-top jersey-thumb secondary-thumb" alt="@c.Nombre" />
+                        <img src="@thumb" class="card-img-top jersey-thumb primary-thumb" alt="@c.Nombre" loading="lazy" />
+                        <img src="@second" class="card-img-top jersey-thumb secondary-thumb" alt="@c.Nombre" loading="lazy" />
                         @if (count > 0)
                         {
                             <span class="photo-badge">@count fotos</span>
@@ -345,7 +345,7 @@
             @if (!string.IsNullOrWhiteSpace(thumb))
             {
                 <div class="image-wrap">
-                    <img src="@thumb" class="card-img-top jersey-thumb" alt="@c.Nombre" />
+                    <img src="@thumb" class="card-img-top jersey-thumb" alt="@c.Nombre" loading="lazy" />
                     @if (count > 0)
                     {
                         <span class="photo-badge">@count fotos</span>

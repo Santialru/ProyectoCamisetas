@@ -72,7 +72,7 @@ document.addEventListener('DOMContentLoaded', function () {
   // Set CSS var --nav-h to navbar height so hero can fill viewport minus navbar
   try {
     var nav = document.querySelector('header .navbar');
-    function setNavH(){
+    function setNavH() {
       var h = nav ? nav.offsetHeight : 0;
       document.documentElement.style.setProperty('--nav-h', h + 'px');
     }
@@ -80,7 +80,7 @@ document.addEventListener('DOMContentLoaded', function () {
     window.addEventListener('resize', setNavH);
   } catch (_) { /* ignore */ }
   const trigger = document.getElementById('catalogoDropdown');
-  const panel   = document.getElementById('catalogoPanel');
+  const panel = document.getElementById('catalogoPanel');
   const navCollapse = document.getElementById('navbarSupportedContent');
   const isTouch = (window.matchMedia && window.matchMedia('(hover: none)').matches) || ('ontouchstart' in window);
 
@@ -243,23 +243,17 @@ document.addEventListener('DOMContentLoaded', function () {
 
 
 
-// Inject a global mobile search form into main when navbar is collapsed
+// Inject a mobile search form inside the hero carousel
 document.addEventListener('DOMContentLoaded', function () {
   try {
     var isMobile = window.matchMedia('(max-width: 576px)').matches;
     if (!isMobile) return;
-    var main = document.querySelector('main[role="main"]');
-    if (!main) return;
-    // Avoid duplicates if a page already provides a main search
-    if (main.querySelector('input[name="q"]')) return;
 
     var form = document.createElement('form');
     form.method = 'get';
     form.action = '/Camisetas/Index';
-    form.className = 'row g-2 mb-3 mobile-site-search';
+    form.className = 'mobile-hero-search';
 
-    var colInput = document.createElement('div');
-    colInput.className = 'col-9';
     var input = document.createElement('input');
     input.type = 'text';
     input.name = 'q';
@@ -267,31 +261,24 @@ document.addEventListener('DOMContentLoaded', function () {
     input.className = 'form-control';
     var qs = new URLSearchParams(window.location.search).get('q');
     if (qs) input.value = qs;
-    colInput.appendChild(input);
 
-    var colBtn = document.createElement('div');
-    colBtn.className = 'col-3';
     var btn = document.createElement('button');
     btn.type = 'submit';
-    btn.className = 'btn btn-primary w-100';
+    btn.className = 'btn btn-light btn-sm';
     btn.textContent = 'Buscar';
-    colBtn.appendChild(btn);
 
-    form.appendChild(colInput);
-    form.appendChild(colBtn);
+    form.appendChild(input);
+    form.appendChild(btn);
 
-
-    // Anchor at top (non-sticky in mobile)
-    var nav = document.querySelector('header .navbar');
-    form.style.position = 'static';
-    form.style.top = '';
-    form.style.zIndex = '';
-    form.style.background = '#0f1625';
-    form.style.borderBottom = '1px solid #2b3448';
-    form.style.padding = '8px 0';
-    form.style.marginBottom = '8px';
-
-    main.insertBefore(form, main.firstChild);
+    // Insert inside hero carousel if present
+    var hero = document.getElementById('heroCarousel');
+    if (hero) {
+      hero.appendChild(form);
+    } else {
+      // Fallback: top of main
+      var main = document.querySelector('main[role="main"]') || document.querySelector('main');
+      if (main) main.insertBefore(form, main.firstChild);
+    }
   } catch (e) { /* no-op */ }
 });
 
@@ -346,7 +333,7 @@ document.addEventListener('DOMContentLoaded', function () {
       function onEnd() {
         if (!moved) return;
         var inst = null;
-        try { inst = window.bootstrap && window.bootstrap.Carousel ? window.bootstrap.Carousel.getOrCreateInstance(carousel) : null; } catch (_) {}
+        try { inst = window.bootstrap && window.bootstrap.Carousel ? window.bootstrap.Carousel.getOrCreateInstance(carousel) : null; } catch (_) { }
         if (!inst) return;
         if (dx < 0) { inst.next(); } else { inst.prev(); }
       }
@@ -365,7 +352,7 @@ document.addEventListener('DOMContentLoaded', function () {
     inputs.forEach(function (input) { wireAutocomplete(input); });
 
     // If a mobile search form is dynamically injected later, re-scan
-    setTimeout(function(){
+    setTimeout(function () {
       var more = document.querySelectorAll('input[name="q"]');
       more.forEach(function (el) { if (!el.dataset.autoWired) wireAutocomplete(el); });
     }, 800);
@@ -377,7 +364,7 @@ document.addEventListener('DOMContentLoaded', function () {
       var parent = input.parentElement;
       if (getComputedStyle(parent).position === 'static') { parent.style.position = 'relative'; }
       // Avoid native browser autocomplete interfering
-      try { input.setAttribute('autocomplete', 'off'); } catch(_) {}
+      try { input.setAttribute('autocomplete', 'off'); } catch (_) { }
 
       var menu = document.createElement('div');
       menu.className = 'autocomplete-menu';
@@ -385,7 +372,7 @@ document.addEventListener('DOMContentLoaded', function () {
       menu.hidden = true;
       parent.appendChild(menu);
       // Place menu right under the input
-      try { menu.style.top = (input.offsetHeight + 4) + 'px'; } catch(_) {}
+      try { menu.style.top = (input.offsetHeight + 4) + 'px'; } catch (_) { }
 
       var timer = null;
       var aborter = null;
@@ -397,23 +384,23 @@ document.addEventListener('DOMContentLoaded', function () {
         var q = input.value.trim();
         clearTimeout(timer);
         if (q.length < 2) {
-          try { if (aborter) aborter.abort(); } catch (_) {}
+          try { if (aborter) aborter.abort(); } catch (_) { }
           hide();
           return;
         }
         timer = setTimeout(function () { lastTerm = q; fetchSuggestions(q); }, 160);
         // recalc position in case of layout changes
-        try { menu.style.top = (input.offsetHeight + 4) + 'px'; } catch(_) {}
+        try { menu.style.top = (input.offsetHeight + 4) + 'px'; } catch (_) { }
       });
       // For type="search": native clear (x) triggers 'search'
-      input.addEventListener('search', function(){
+      input.addEventListener('search', function () {
         var q = (input.value || '').trim();
         if (q.length < 2) {
-          try { if (aborter) aborter.abort(); } catch (_) {}
+          try { if (aborter) aborter.abort(); } catch (_) { }
           hide();
         }
       });
-      window.addEventListener('resize', function(){ try { menu.style.top = (input.offsetHeight + 4) + 'px'; } catch(_) {} });
+      window.addEventListener('resize', function () { try { menu.style.top = (input.offsetHeight + 4) + 'px'; } catch (_) { } });
       input.addEventListener('keydown', function (e) {
         if (menu.hidden) return;
         if (e.key === 'ArrowDown') { e.preventDefault(); setActive(activeIndex + 1); }
@@ -421,7 +408,7 @@ document.addEventListener('DOMContentLoaded', function () {
         else if (e.key === 'Enter') { if (activeIndex >= 0) { e.preventDefault(); choose(items[activeIndex]); } }
         else if (e.key === 'Escape') { hide(); }
       });
-      input.addEventListener('blur', function(){ setTimeout(hide, 150); });
+      input.addEventListener('blur', function () { setTimeout(hide, 150); });
 
       menu.addEventListener('mousedown', function (e) {
         var el = e.target.closest('[data-value]');
@@ -430,7 +417,7 @@ document.addEventListener('DOMContentLoaded', function () {
       });
 
       function fetchSuggestions(q) {
-        try { if (aborter) aborter.abort(); } catch (_) {}
+        try { if (aborter) aborter.abort(); } catch (_) { }
         aborter = new AbortController();
         fetch('/api/camisetas/suggest?q=' + encodeURIComponent(q), { signal: aborter.signal })
           .then(function (r) { return r.ok ? r.json() : []; })
@@ -449,8 +436,8 @@ document.addEventListener('DOMContentLoaded', function () {
         activeIndex = -1;
         menu.innerHTML = items.map(function (i, idx) {
           return '<div class="autocomplete-item" role="option" data-index="' + idx + '" data-value="' + escapeHtml(i.value) + '">' +
-                   '<span class="pill pill-' + i.type + '">' + i.type + '</span> ' + escapeHtml(i.value) +
-                 '</div>';
+            '<span class="pill pill-' + i.type + '">' + i.type + '</span> ' + escapeHtml(i.value) +
+            '</div>';
         }).join('');
         menu.hidden = false;
       }
