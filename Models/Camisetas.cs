@@ -182,5 +182,3 @@ namespace ProyectoCamisetas.Models
 }
 
 
-
-

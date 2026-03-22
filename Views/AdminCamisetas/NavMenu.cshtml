@@ -1,0 +1,274 @@
+@model ProyectoCamisetas.Models.NavMenuConfig
+@{
+    ViewData["Title"] = "Menú de catálogo";
+    var sections = Model?.Sections ?? new List<ProyectoCamisetas.Models.NavSection>();
+    if (!sections.Any())
+    {
+        sections.Add(new ProyectoCamisetas.Models.NavSection
+        {
+            Title = "Sección",
+            Orden = 1,
+            Links = new List<ProyectoCamisetas.Models.NavLinkConfig>
+            {
+                new ProyectoCamisetas.Models.NavLinkConfig { Label = "Ejemplo", Type = "q", Value = "River", Orden = 1 }
+            }
+        });
+    }
+}
+
+<h1>Menú de catálogo</h1>
+<p class="text-muted">Administra las columnas y filas del desplegable Catálogo. Solo Owner.</p>
+
+@if (TempData["Success"] is string okMsg)
+{
+    <div class="alert alert-success">@okMsg</div>
+}
+@if (TempData["Error"] is string errMsg)
+{
+    <div class="alert alert-danger">@errMsg</div>
+}
+
+<form asp-action="NavMenu" method="post" id="navForm">
+    @Html.AntiForgeryToken()
+    <div id="sectionsContainer" class="d-flex flex-column gap-3">
+        @for (var i = 0; i < sections.Count; i++)
+        {
+            var s = sections[i];
+            <div class="card section-card" data-index="@i">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <div class="d-flex align-items-center gap-2 flex-wrap">
+                        <input type="hidden" name="Sections[@i].Orden" data-name="Sections[__s__].Orden" value="@s.Orden" class="section-orden" />
+                        <input type="text" name="Sections[@i].Title" class="form-control form-control-sm" data-name="Sections[__s__].Title" value="@s.Title" placeholder="Título de la columna" />
+                    </div>
+                    <div class="d-flex gap-2">
+                        <div class="btn-group btn-group-sm" role="group" aria-label="Mover sección">
+                            <button type="button" class="btn btn-outline-light move-section-up" title="Subir">&#8593;</button>
+                            <button type="button" class="btn btn-outline-light move-section-down" title="Bajar">&#8595;</button>
+                        </div>
+                        <button type="button" class="btn btn-outline-light btn-sm add-link">+ Link</button>
+                        <button type="button" class="btn btn-outline-danger btn-sm remove-section" title="Quitar sección">&times;</button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-dark table-sm align-middle mb-2 link-table">
+                            <thead>
+                                <tr>
+                                    <th style="width: 30%">Texto</th>
+                                    <th style="width: 24%">Destino</th>
+                                    <th style="width: 28%">Valor</th>
+                                    <th style="width: 14%">Href opcional</th>
+                                    <th style="width: 6%"></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @for (var j = 0; j < (s.Links?.Count ?? 0); j++)
+                                {
+                                    var link = s.Links[j];
+                                    <tr class="link-row" data-link-index="@j">
+                                        <td>
+                                            <input type="text" name="Sections[@i].Links[@j].Label" class="form-control form-control-sm" data-name="Sections[__s__].Links[__l__].Label" value="@link.Label" />
+                                            <input type="hidden" name="Sections[@i].Links[@j].Orden" class="link-orden" data-name="Sections[__s__].Links[__l__].Orden" value="@link.Orden" />
+                                        </td>
+                                        <td>
+                                            <select name="Sections[@i].Links[@j].Type" class="form-select form-select-sm" data-name="Sections[__s__].Links[__l__].Type">
+                                                @{
+                                                    var options = new[] { "q","liga","equipo","temporada","version","producto","talla","other","enstock" };
+                                                }
+                                                @foreach (var opt in options)
+                                                {
+                                                    <option value="@opt" selected="@(string.Equals(opt, link.Type, StringComparison.OrdinalIgnoreCase) ? "selected" : null)">@opt</option>
+                                                }
+                                            </select>
+                                        </td>
+                                        <td>
+                                            <input type="text" name="Sections[@i].Links[@j].Value" class="form-control form-control-sm" data-name="Sections[__s__].Links[__l__].Value" value="@link.Value" placeholder="Valor de búsqueda" />
+                                        </td>
+                                        <td>
+                                            <input type="text" name="Sections[@i].Links[@j].Href" class="form-control form-control-sm" data-name="Sections[__s__].Links[__l__].Href" value="@link.Href" placeholder="https:// o /ruta" />
+                                        </td>
+                                        <td class="text-end">
+                                            <div class="btn-group btn-group-sm" role="group">
+                                                <button type="button" class="btn btn-outline-light move-link-up" title="Subir">&#8593;</button>
+                                                <button type="button" class="btn btn-outline-light move-link-down" title="Bajar">&#8595;</button>
+                                                <button type="button" class="btn btn-outline-danger remove-link" title="Quitar fila">&times;</button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+    <div class="d-flex justify-content-between align-items-center mt-3">
+        <button type="button" class="btn btn-outline-primary" id="addSection">+ Nueva columna</button>
+        <button type="submit" class="btn btn-success">Guardar menú</button>
+    </div>
+</form>
+
+<template id="linkRowTemplate">
+    <tr class="link-row" data-link-index="__l__">
+        <td>
+            <input type="text" class="form-control form-control-sm" data-name="Sections[__s__].Links[__l__].Label" />
+            <input type="hidden" class="link-orden" data-name="Sections[__s__].Links[__l__].Orden" value="0" />
+        </td>
+        <td>
+            <select class="form-select form-select-sm" data-name="Sections[__s__].Links[__l__].Type">
+                <option value="q">q (búsqueda libre)</option>
+                <option value="liga">liga</option>
+                <option value="equipo">equipo</option>
+                <option value="temporada">temporada</option>
+                <option value="version">version</option>
+                <option value="producto">producto</option>
+                <option value="talla">talla</option>
+                <option value="other">other</option>
+                <option value="enstock">enstock (true/false)</option>
+            </select>
+        </td>
+        <td>
+            <input type="text" class="form-control form-control-sm" data-name="Sections[__s__].Links[__l__].Value" placeholder="Valor de búsqueda" />
+        </td>
+        <td>
+            <input type="text" class="form-control form-control-sm" data-name="Sections[__s__].Links[__l__].Href" placeholder="https:// o /ruta" />
+        </td>
+        <td>
+            <button type="button" class="btn btn-outline-danger btn-sm remove-link" title="Quitar fila">&times;</button>
+        </td>
+    </tr>
+</template>
+
+<template id="sectionTemplate">
+    <div class="card section-card" data-index="__s__">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <div class="d-flex align-items-center gap-2 flex-wrap">
+                <input type="hidden" data-name="Sections[__s__].Orden" value="0" class="section-orden" />
+                <input type="text" class="form-control form-control-sm" data-name="Sections[__s__].Title" placeholder="Título de la columna" />
+            </div>
+            <div class="d-flex gap-2">
+                <button type="button" class="btn btn-outline-light btn-sm add-link">+ Link</button>
+                <button type="button" class="btn btn-outline-danger btn-sm remove-section" title="Quitar sección">&times;</button>
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-dark table-sm align-middle mb-2 link-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 30%">Texto</th>
+                            <th style="width: 24%">Destino</th>
+                            <th style="width: 28%">Valor</th>
+                            <th style="width: 14%">Href opcional</th>
+                            <th style="width: 6%"></th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</template>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const container = document.getElementById('sectionsContainer');
+            const sectionTpl = document.getElementById('sectionTemplate');
+            const linkTpl = document.getElementById('linkRowTemplate');
+            const addSectionBtn = document.getElementById('addSection');
+
+            function renumber() {
+                const sections = container.querySelectorAll('.section-card');
+                sections.forEach((card, sIdx) => {
+                    card.dataset.index = sIdx;
+                    card.querySelectorAll('[data-name]').forEach(inp => {
+                        const base = inp.getAttribute('data-name');
+                        if (!base) return;
+                        const linkRow = inp.closest('.link-row');
+                        const lIdx = linkRow ? Array.from(linkRow.parentElement.children).indexOf(linkRow) : null;
+                        let name = base.replace('__s__', sIdx);
+                        if (lIdx !== null) name = name.replace('__l__', lIdx);
+                        inp.name = name;
+                        if (inp.classList.contains('section-orden')) inp.value = sIdx + 1;
+                        if (inp.classList.contains('link-orden') && lIdx !== null) inp.value = lIdx + 1;
+                    });
+                });
+            }
+
+            function addLink(card) {
+                const tbody = card.querySelector('.link-table tbody');
+                const clone = linkTpl.content.firstElementChild.cloneNode(true);
+                tbody.appendChild(clone);
+                renumber();
+            }
+
+            addSectionBtn?.addEventListener('click', () => {
+                const clone = sectionTpl.content.firstElementChild.cloneNode(true);
+                container.appendChild(clone);
+                addLink(clone);
+                renumber();
+            });
+
+            container.addEventListener('click', (e) => {
+                const btn = e.target.closest('button');
+                if (!btn) return;
+                if (btn.classList.contains('add-link')) {
+                    e.preventDefault();
+                    addLink(btn.closest('.section-card'));
+                }
+                if (btn.classList.contains('remove-link')) {
+                    e.preventDefault();
+                    const row = btn.closest('.link-row');
+                    row?.parentElement?.removeChild(row);
+                    renumber();
+                }
+                if (btn.classList.contains('remove-section')) {
+                    e.preventDefault();
+                    const card = btn.closest('.section-card');
+                    card?.parentElement?.removeChild(card);
+                    renumber();
+                }
+                if (btn.classList.contains('move-section-up')) {
+                    e.preventDefault();
+                    const card = btn.closest('.section-card');
+                    const prev = card?.previousElementSibling;
+                    if (card && prev) {
+                        card.parentElement.insertBefore(card, prev);
+                        renumber();
+                    }
+                }
+                if (btn.classList.contains('move-section-down')) {
+                    e.preventDefault();
+                    const card = btn.closest('.section-card');
+                    const next = card?.nextElementSibling?.nextElementSibling;
+                    if (card) {
+                        card.parentElement.insertBefore(card, next || null);
+                        renumber();
+                    }
+                }
+                if (btn.classList.contains('move-link-up')) {
+                    e.preventDefault();
+                    const row = btn.closest('.link-row');
+                    const prev = row?.previousElementSibling;
+                    if (row && prev) {
+                        row.parentElement.insertBefore(row, prev);
+                        renumber();
+                    }
+                }
+                if (btn.classList.contains('move-link-down')) {
+                    e.preventDefault();
+                    const row = btn.closest('.link-row');
+                    const next = row?.nextElementSibling?.nextElementSibling;
+                    if (row) {
+                        row.parentElement.insertBefore(row, next || null);
+                        renumber();
+                    }
+                }
+            });
+
+            renumber();
+        });
+    </script>
+}

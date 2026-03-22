@@ -1,16 +1,24 @@
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
 using ProyectoCamisetas.Data;
 using ProyectoCamisetas.Models;
 using System.Linq.Expressions;
 using Npgsql.EntityFrameworkCore.PostgreSQL;
 using System.Collections.Generic;
+using System.Text.Json;
 
 namespace ProyectoCamisetas.Repository
 {
     public class EfCamisetasRepository : ICamisetasRepository
     {
         private readonly AppDbContext _db;
-        public EfCamisetasRepository(AppDbContext db) { _db = db; }
+        private readonly IWebHostEnvironment _env;
+
+        public EfCamisetasRepository(AppDbContext db, IWebHostEnvironment env)
+        {
+            _db = db;
+            _env = env;
+        }
 
         public async Task<IReadOnlyList<Camiseta>> GetAllAsync(string? q, string? liga, string? equipo, string? temporada, CancellationToken ct = default)
         {
@@ -88,7 +96,9 @@ namespace ProyectoCamisetas.Repository
 
         public async Task<IReadOnlyList<Camiseta>> GetAllAdminAsync(CancellationToken ct = default)
         {
+            // Include Imagenes to allow admin lists to render first photo thumbnails
             return await _db.Camisetas.AsNoTracking()
+                .Include(c => c.Imagenes!.OrderBy(i => i.Orden))
                 .Include(c => c.TallesStock)
                 .OrderByDescending(c => c.Id)
                 .ToListAsync(ct);
@@ -128,6 +138,19 @@ namespace ProyectoCamisetas.Repository
                 .FirstOrDefaultAsync(c => c.DestacadaInicio, ct);
         }
 
+        public async Task<IReadOnlyList<Camiseta>> GetHomeFeaturedGridAsync(CancellationToken ct = default)
+        {
+            var query = _db.HomeFeatured
+                .AsNoTracking()
+                .Include(h => h.Camiseta)!
+                    .ThenInclude(c => c!.Imagenes)
+                .OrderBy(h => h.Orden)
+                .Take(3);
+
+            var list = await query.ToListAsync(ct);
+            return list.Select(h => h.Camiseta!).Where(c => c != null).ToList();
+        }
+
         public async Task<Camiseta> AddAsync(Camiseta entity, CancellationToken ct = default)
         {
             _db.Camisetas.Add(entity);
@@ -161,12 +184,39 @@ namespace ProyectoCamisetas.Repository
             await _db.SaveChangesAsync(ct);
         }
 
+        public async Task SetHomeFeaturedGridAsync(IEnumerable<(int camisetaId, short orden)> featured, CancellationToken ct = default)
+        {
+            var normalized = featured
+                .Where(f => f.camisetaId > 0 && f.orden >= 1 && f.orden <= 3)
+                .GroupBy(f => f.orden)
+                .Select(g => g.First())
+                .OrderBy(f => f.orden)
+                .Take(3)
+                .ToList();
+
+            // Limpiar y reinsertar
+            var existing = await _db.HomeFeatured.ToListAsync(ct);
+            if (existing.Count > 0)
+            {
+                _db.HomeFeatured.RemoveRange(existing);
+            }
+
+            foreach (var it in normalized)
+            {
+                _db.HomeFeatured.Add(new HomeFeaturedCard
+                {
+                    CamisetaId = it.camisetaId,
+                    Orden = it.orden
+                });
+            }
+
+            await _db.SaveChangesAsync(ct);
+        }
+
         public async Task<int> RestoreDiscountsAsync(IEnumerable<int> ids, CancellationToken ct = default)
         {
             var idList = ids?.Distinct().ToList() ?? new List<int>();
             if (idList.Count == 0) return 0;
-
-            // Restaura Precio = PrecioAnterior y limpia PrecioAnterior para los seleccionados
             var affected = await _db.Camisetas
                 .Where(c => idList.Contains(c.Id) && c.PrecioAnterior != null)
                 .ExecuteUpdateAsync(s => s
@@ -177,13 +227,230 @@ namespace ProyectoCamisetas.Repository
 
         public async Task<int> RestoreAllDiscountsAsync(CancellationToken ct = default)
         {
-            // Restaura Precio = PrecioAnterior y limpia PrecioAnterior para todos los que tengan descuento
             var affected = await _db.Camisetas
                 .Where(c => c.PrecioAnterior != null)
                 .ExecuteUpdateAsync(s => s
                     .SetProperty(c => c.Precio, c => c.PrecioAnterior!.Value)
                     .SetProperty(c => c.PrecioAnterior, c => null), ct);
             return affected;
+        }
+
+        // ---------------- Home carousel (file-backed JSON) ----------------
+
+        private string GetWebRoot()
+        {
+            if (!string.IsNullOrWhiteSpace(_env.WebRootPath)) return _env.WebRootPath!;
+            return Path.Combine(_env.ContentRootPath ?? Directory.GetCurrentDirectory(), "wwwroot");
+        }
+
+        private string GetHeroDir()
+        {
+            var dir = Path.Combine(GetWebRoot(), "uploads", "hero");
+            Directory.CreateDirectory(dir);
+            return dir;
+        }
+
+        private string GetNavDir()
+        {
+            var dir = Path.Combine(GetWebRoot(), "uploads", "nav");
+            Directory.CreateDirectory(dir);
+            return dir;
+        }
+
+        public async Task<IReadOnlyList<HomeCarouselSlide>> GetHomeCarouselSlidesAsync(CancellationToken ct = default)
+        {
+            var file = Path.Combine(GetHeroDir(), "slides.json");
+            if (!System.IO.File.Exists(file)) return new List<HomeCarouselSlide>();
+            try
+            {
+                await using var fs = System.IO.File.OpenRead(file);
+                var slides = await JsonSerializer.DeserializeAsync<List<HomeCarouselSlide>>(fs, cancellationToken: ct) ?? new List<HomeCarouselSlide>();
+                return slides.OrderBy(s => s.Orden).Take(3).ToList();
+            }
+            catch
+            {
+                return new List<HomeCarouselSlide>();
+            }
+        }
+
+        public async Task SaveHomeCarouselSlidesAsync(IEnumerable<HomeCarouselSlide> slides, CancellationToken ct = default)
+        {
+            var file = Path.Combine(GetHeroDir(), "slides.json");
+            var norm = slides
+                .Where(s => !string.IsNullOrWhiteSpace(s.ImageUrl))
+                .Select(s => new HomeCarouselSlide
+                {
+                    Orden = (short)(s.Orden < 1 ? 1 : (s.Orden > 3 ? 3 : s.Orden)),
+                    ImageUrl = s.ImageUrl!.Trim(),
+                    Title = string.IsNullOrWhiteSpace(s.Title) ? null : s.Title!.Trim(),
+                    Description = string.IsNullOrWhiteSpace(s.Description) ? null : s.Description!.Trim(),
+                    ButtonText = string.IsNullOrWhiteSpace(s.ButtonText) ? null : s.ButtonText!.Trim(),
+                    ButtonUrl = string.IsNullOrWhiteSpace(s.ButtonUrl) ? null : s.ButtonUrl!.Trim()
+                })
+                .GroupBy(s => s.Orden)
+                .Select(g => g.First())
+                .OrderBy(s => s.Orden)
+                .Take(3)
+                .ToList();
+
+            var opts = new JsonSerializerOptions { WriteIndented = true };
+            await using var fs = System.IO.File.Create(file);
+            await JsonSerializer.SerializeAsync(fs, norm, opts, ct);
+        }
+
+        public async Task SaveHomeCarouselAsync(HomeCarouselConfig config, CancellationToken ct = default)
+        {
+            var file = Path.Combine(GetHeroDir(), "config.json");
+            var norm = new HomeCarouselConfig
+            {
+                Slide1Url = string.IsNullOrWhiteSpace(config.Slide1Url) ? null : config.Slide1Url!.Trim(),
+                Slide2Url = string.IsNullOrWhiteSpace(config.Slide2Url) ? null : config.Slide2Url!.Trim(),
+                Slide3Url = string.IsNullOrWhiteSpace(config.Slide3Url) ? null : config.Slide3Url!.Trim(),
+                Title = string.IsNullOrWhiteSpace(config.Title) ? null : config.Title!.Trim(),
+                Description = string.IsNullOrWhiteSpace(config.Description) ? null : config.Description!.Trim(),
+                ButtonText = string.IsNullOrWhiteSpace(config.ButtonText) ? null : config.ButtonText!.Trim(),
+                ButtonUrl = string.IsNullOrWhiteSpace(config.ButtonUrl) ? null : config.ButtonUrl!.Trim()
+            };
+
+            var opts = new JsonSerializerOptions { WriteIndented = true };
+            await using var fs = System.IO.File.Create(file);
+            await JsonSerializer.SerializeAsync(fs, norm, opts, ct);
+        }
+
+        // ------------------------ Nav menu -------------------------
+
+        private NavMenuConfig BuildDefaultNavMenu()
+        {
+            return new NavMenuConfig
+            {
+                Sections = new List<NavSection>
+                {
+                    new NavSection
+                    {
+                        Orden = 1,
+                        Title = "Clubes",
+                        Links = new List<NavLinkConfig>
+                        {
+                            new NavLinkConfig { Orden = 1, Label = "River", Type = "q", Value = "River" },
+                            new NavLinkConfig { Orden = 2, Label = "Boca", Type = "q", Value = "Boca" },
+                            new NavLinkConfig { Orden = 3, Label = "Barcelona", Type = "q", Value = "Barcelona" },
+                            new NavLinkConfig { Orden = 4, Label = "Real Madrid", Type = "q", Value = "Real Madrid" },
+                            new NavLinkConfig { Orden = 5, Label = "Chelsea", Type = "q", Value = "Chelsea" },
+                            new NavLinkConfig { Orden = 6, Label = "Manchester United", Type = "q", Value = "Manchester United" },
+                            new NavLinkConfig { Orden = 7, Label = "Otro (otros clubes)", Type = "other", Value = "club" }
+                        }
+                    },
+                    new NavSection
+                    {
+                        Orden = 2,
+                        Title = "Selecciones",
+                        Links = new List<NavLinkConfig>
+                        {
+                            new NavLinkConfig { Orden = 1, Label = "Argentina", Type = "equipo", Value = "Argentina" },
+                            new NavLinkConfig { Orden = 2, Label = "Brasil", Type = "equipo", Value = "Brasil" },
+                            new NavLinkConfig { Orden = 3, Label = "Espana", Type = "equipo", Value = "Espana" },
+                            new NavLinkConfig { Orden = 4, Label = "Portugal", Type = "equipo", Value = "Portugal" },
+                            new NavLinkConfig { Orden = 5, Label = "Francia", Type = "equipo", Value = "Francia" },
+                            new NavLinkConfig { Orden = 6, Label = "Otro (otras selecciones)", Type = "other", Value = "seleccion" }
+                        }
+                    },
+                    new NavSection
+                    {
+                        Orden = 3,
+                        Title = "Categorias",
+                        Links = new List<NavLinkConfig>
+                        {
+                            new NavLinkConfig { Orden = 1, Label = "La Liga", Type = "q", Value = "La Liga" },
+                            new NavLinkConfig { Orden = 2, Label = "Premier League", Type = "q", Value = "Premier League" },
+                            new NavLinkConfig { Orden = 3, Label = "Serie A", Type = "q", Value = "Serie A" },
+                            new NavLinkConfig { Orden = 4, Label = "Bundesliga", Type = "q", Value = "Bundesliga" },
+                            new NavLinkConfig { Orden = 5, Label = "Ligue 1", Type = "q", Value = "Ligue 1" },
+                            new NavLinkConfig { Orden = 6, Label = "En stock ahora", Type = "enstock", Value = "true" },
+                            new NavLinkConfig { Orden = 7, Label = "Por encargo", Type = "enstock", Value = "false" },
+                            new NavLinkConfig { Orden = 8, Label = "Aficionado", Type = "version", Value = "aficionado" },
+                            new NavLinkConfig { Orden = 9, Label = "Version jugador", Type = "version", Value = "jugador" },
+                            new NavLinkConfig { Orden = 10, Label = "Retro", Type = "version", Value = "retro" }
+                        }
+                    },
+                    new NavSection
+                    {
+                        Orden = 4,
+                        Title = "Producto",
+                        Links = new List<NavLinkConfig>
+                        {
+                            new NavLinkConfig { Orden = 1, Label = "Camiseta", Type = "producto", Value = "camiseta" },
+                            new NavLinkConfig { Orden = 2, Label = "Campera", Type = "producto", Value = "campera" },
+                            new NavLinkConfig { Orden = 3, Label = "Short", Type = "producto", Value = "short" },
+                            new NavLinkConfig { Orden = 4, Label = "Conjunto", Type = "producto", Value = "conjunto" }
+                        }
+                    }
+                }
+            };
+        }
+
+        public async Task<NavMenuConfig> GetNavMenuAsync(CancellationToken ct = default)
+        {
+            var file = Path.Combine(GetNavDir(), "menu.json");
+            if (!System.IO.File.Exists(file))
+            {
+                return BuildDefaultNavMenu();
+            }
+
+            try
+            {
+                await using var fs = System.IO.File.OpenRead(file);
+                var config = await JsonSerializer.DeserializeAsync<NavMenuConfig>(fs, cancellationToken: ct);
+                if (config == null || config.Sections == null || config.Sections.Count == 0)
+                    return BuildDefaultNavMenu();
+                config.Sections = config.Sections.OrderBy(s => s.Orden).ToList();
+                foreach (var sec in config.Sections)
+                {
+                    sec.Links = (sec.Links ?? new List<NavLinkConfig>()).OrderBy(l => l.Orden).ToList();
+                }
+                return config;
+            }
+            catch
+            {
+                return BuildDefaultNavMenu();
+            }
+        }
+
+        public async Task SaveNavMenuAsync(NavMenuConfig config, CancellationToken ct = default)
+        {
+            config ??= new NavMenuConfig();
+            var sections = config.Sections ?? new List<NavSection>();
+
+            short idx = 0;
+            foreach (var section in sections)
+            {
+                section.Orden = ++idx;
+                section.Title = string.IsNullOrWhiteSpace(section.Title) ? "Seccion" : section.Title.Trim();
+                section.Links = (section.Links ?? new List<NavLinkConfig>())
+                    .Where(l => !string.IsNullOrWhiteSpace(l.Label))
+                    .Select((l, i) => new NavLinkConfig
+                    {
+                        Orden = (short)(i + 1),
+                        Label = l.Label?.Trim(),
+                        Type = string.IsNullOrWhiteSpace(l.Type) ? "q" : l.Type!.Trim(),
+                        Value = string.IsNullOrWhiteSpace(l.Value) ? null : l.Value!.Trim(),
+                        Href = string.IsNullOrWhiteSpace(l.Href) ? null : l.Href!.Trim()
+                    })
+                    .Take(20)
+                    .ToList();
+            }
+
+            var clean = new NavMenuConfig
+            {
+                Sections = sections.Where(s => s.Links.Any()).ToList()
+            };
+
+            if (clean.Sections.Count == 0)
+                clean = BuildDefaultNavMenu();
+
+            var file = Path.Combine(GetNavDir(), "menu.json");
+            var opts = new JsonSerializerOptions { WriteIndented = true };
+            await using var fs = System.IO.File.Create(file);
+            await JsonSerializer.SerializeAsync(fs, clean, opts, ct);
         }
 
         public async Task SetImagesAsync(int camisetaId, IEnumerable<string> urls, CancellationToken ct = default)
@@ -252,6 +519,250 @@ namespace ProyectoCamisetas.Repository
             if (ts is null || ts.Cantidad <= 0) return false;
             ts.Cantidad -= 1;
             _db.CamisetaTalles.Update(ts);
+            await _db.SaveChangesAsync(ct);
+            return true;
+        }
+
+        public async Task<bool> RegisterSaleAsync(int camisetaId, Talla talla, string? comprador, string? observaciones, CancellationToken ct = default)
+        {
+            var ts = await _db.CamisetaTalles
+                .FirstOrDefaultAsync(t => t.CamisetaId == camisetaId && t.Talla == talla, ct);
+            if (ts is null || ts.Cantidad <= 0) return false;
+            ts.Cantidad -= 1;
+            _db.CamisetaTalles.Update(ts);
+
+            var cam = await _db.Camisetas.AsNoTracking().FirstOrDefaultAsync(c => c.Id == camisetaId, ct);
+            if (cam is null)
+            {
+                await _db.SaveChangesAsync(ct);
+                return true;
+            }
+
+            _db.Ventas.Add(new Venta
+            {
+                CamisetaId = cam.Id,
+                FechaVenta = DateTime.UtcNow,
+                Precio = cam.Precio,
+                Talla = talla,
+                Comprador = string.IsNullOrWhiteSpace(comprador) ? null : comprador!.Trim(),
+                Observaciones = string.IsNullOrWhiteSpace(observaciones) ? null : observaciones!.Trim(),
+                ProductoNombre = cam.Nombre,
+                Equipo = cam.Equipo,
+                Temporada = cam.Temporada
+            });
+
+            await _db.SaveChangesAsync(ct);
+            return true;
+        }
+
+        public async Task<(IReadOnlyList<Venta> items, int total)> GetVentasAsync(
+            DateOnly? desde,
+            DateOnly? hasta,
+            string? equipo,
+            string? temporada,
+            Talla? talla,
+            string? comprador,
+            string? sort,
+            int page,
+            int pageSize,
+            CancellationToken ct = default)
+        {
+            IQueryable<Venta> q = _db.Ventas.AsNoTracking().Include(v => v.Camiseta);
+            // Rango de fechas
+            if (desde.HasValue)
+            {
+                var d = desde.Value.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc);
+                q = q.Where(v => v.FechaVenta >= d);
+            }
+            if (hasta.HasValue)
+            {
+                var h = hasta.Value.ToDateTime(TimeOnly.MaxValue, DateTimeKind.Utc);
+                q = q.Where(v => v.FechaVenta <= h);
+            }
+
+            // Filtros adicionales
+            if (!string.IsNullOrWhiteSpace(equipo))
+            {
+                var s = equipo.Trim();
+                q = q.Where(v => EF.Functions.ILike(v.Equipo!, "%" + s + "%"));
+            }
+            if (!string.IsNullOrWhiteSpace(temporada))
+            {
+                var s = temporada.Trim();
+                q = q.Where(v => EF.Functions.ILike(v.Temporada!, "%" + s + "%"));
+            }
+            if (talla.HasValue)
+            {
+                var t = talla.Value;
+                q = q.Where(v => v.Talla == t);
+            }
+            if (!string.IsNullOrWhiteSpace(comprador))
+            {
+                var s = comprador.Trim();
+                q = q.Where(v => v.Comprador != null && EF.Functions.ILike(v.Comprador!, "%" + s + "%"));
+            }
+
+            // Ordenamiento
+            sort = (sort ?? "fecha_desc").ToLowerInvariant();
+            q = sort switch
+            {
+                "fecha_asc" => q.OrderBy(v => v.FechaVenta),
+                "precio_asc" => q.OrderBy(v => v.Precio),
+                "precio_desc" => q.OrderByDescending(v => v.Precio),
+                "equipo_asc" => q.OrderBy(v => v.Equipo),
+                "equipo_desc" => q.OrderByDescending(v => v.Equipo),
+                "talla_asc" => q.OrderBy(v => v.Talla),
+                "talla_desc" => q.OrderByDescending(v => v.Talla),
+                "comprador_asc" => q.OrderBy(v => v.Comprador),
+                "comprador_desc" => q.OrderByDescending(v => v.Comprador),
+                _ => q.OrderByDescending(v => v.FechaVenta)
+            };
+
+            var total = await q.CountAsync(ct);
+            pageSize = Math.Clamp(pageSize, 1, 200);
+            page = Math.Max(page, 1);
+            var items = await q.Skip((page - 1) * pageSize).Take(pageSize).ToListAsync(ct);
+            return (items, total);
+        }
+
+        public async Task<VentasSummary> GetVentasSummaryAsync(
+            DateOnly? desde,
+            DateOnly? hasta,
+            string? equipo,
+            string? temporada,
+            Talla? talla,
+            string? comprador,
+            CancellationToken ct = default)
+        {
+            IQueryable<Venta> q = _db.Ventas.AsNoTracking();
+            // Rango de fechas
+            if (desde.HasValue)
+            {
+                var d = desde.Value.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc);
+                q = q.Where(v => v.FechaVenta >= d);
+            }
+            if (hasta.HasValue)
+            {
+                var h = hasta.Value.ToDateTime(TimeOnly.MaxValue, DateTimeKind.Utc);
+                q = q.Where(v => v.FechaVenta <= h);
+            }
+            // Filtros adicionales
+            if (!string.IsNullOrWhiteSpace(equipo))
+            {
+                var s = equipo.Trim();
+                q = q.Where(v => EF.Functions.ILike(v.Equipo!, "%" + s + "%"));
+            }
+            if (!string.IsNullOrWhiteSpace(temporada))
+            {
+                var s = temporada.Trim();
+                q = q.Where(v => EF.Functions.ILike(v.Temporada!, "%" + s + "%"));
+            }
+            if (talla.HasValue)
+            {
+                var t = talla.Value;
+                q = q.Where(v => v.Talla == t);
+            }
+            if (!string.IsNullOrWhiteSpace(comprador))
+            {
+                var s = comprador.Trim();
+                q = q.Where(v => v.Comprador != null && EF.Functions.ILike(v.Comprador!, "%" + s + "%"));
+            }
+
+            var totalRecaudado = await q.SumAsync(v => (decimal?)v.Precio, ct) ?? 0m;
+            var cantidad = await q.CountAsync(ct);
+            var precioMax = await q.MaxAsync(v => (decimal?)v.Precio, ct) ?? 0m;
+            var precioMin = await q.MinAsync(v => (decimal?)v.Precio, ct) ?? 0m;
+
+            var topTalles = await q.GroupBy(v => v.Talla)
+                                   .Select(g => new { Talla = g.Key, Cant = g.Count() })
+                                   .OrderByDescending(x => x.Cant).Take(5).ToListAsync(ct);
+            var topEquipos = await q.GroupBy(v => v.Equipo ?? "")
+                                    .Select(g => new { Eq = g.Key, Cant = g.Count() })
+                                    .OrderByDescending(x => x.Cant).Take(5).ToListAsync(ct);
+            var porDia = await q.GroupBy(v => DateOnly.FromDateTime(v.FechaVenta.Date))
+                                 .Select(g => new { Dia = g.Key, Cant = g.Count() })
+                                 .OrderBy(x => x.Dia)
+                                 .ToListAsync(ct);
+
+            return new VentasSummary
+            {
+                TotalRecaudado = totalRecaudado,
+                Cantidad = cantidad,
+                TicketPromedio = cantidad > 0 ? Math.Round(totalRecaudado / cantidad, 2) : 0m,
+                PrecioMax = precioMax,
+                PrecioMin = precioMin,
+                TopTalles = topTalles.Select(x => (x.Talla, x.Cant)).ToList(),
+                TopEquipos = topEquipos.Select(x => (x.Eq, x.Cant)).ToList(),
+                VentasPorDia = porDia.Select(x => (x.Dia, x.Cant)).ToList()
+            };
+        }
+
+        public async Task<bool> DeleteVentaAsync(int ventaId, CancellationToken ct = default)
+        {
+            var venta = await _db.Ventas.FirstOrDefaultAsync(v => v.Id == ventaId, ct);
+            if (venta is null) return false;
+
+            // Restaurar stock del talle correspondiente
+            var ts = await _db.CamisetaTalles
+                .FirstOrDefaultAsync(t => t.CamisetaId == venta.CamisetaId && t.Talla == venta.Talla, ct);
+            if (ts is null)
+            {
+                ts = new CamisetaTalleStock
+                {
+                    CamisetaId = venta.CamisetaId,
+                    Talla = venta.Talla,
+                    Cantidad = 0
+                };
+                _db.CamisetaTalles.Add(ts);
+            }
+            ts.Cantidad += 1;
+            _db.CamisetaTalles.Update(ts);
+
+            _db.Ventas.Remove(venta);
+            await _db.SaveChangesAsync(ct);
+            return true;
+        }
+
+        public async Task<Venta?> GetVentaAsync(int id, CancellationToken ct = default)
+        {
+            return await _db.Ventas.AsNoTracking().FirstOrDefaultAsync(v => v.Id == id, ct);
+        }
+
+        public async Task<bool> UpdateVentaAsync(int id, string? comprador, string? observaciones, CancellationToken ct = default)
+        {
+            var venta = await _db.Ventas.FirstOrDefaultAsync(v => v.Id == id, ct);
+            if (venta is null) return false;
+            venta.Comprador = string.IsNullOrWhiteSpace(comprador) ? null : comprador!.Trim();
+            venta.Observaciones = string.IsNullOrWhiteSpace(observaciones) ? null : observaciones!.Trim();
+            _db.Ventas.Update(venta);
+            await _db.SaveChangesAsync(ct);
+            return true;
+        }
+
+        public async Task<bool> RecreateVentaAsync(Venta venta, CancellationToken ct = default)
+        {
+            // Restar 1 al stock del talle correspondiente
+            var ts = await _db.CamisetaTalles.FirstOrDefaultAsync(t => t.CamisetaId == venta.CamisetaId && t.Talla == venta.Talla, ct);
+            if (ts is null || ts.Cantidad <= 0)
+            {
+                return false;
+            }
+            ts.Cantidad -= 1;
+            _db.CamisetaTalles.Update(ts);
+
+            var nueva = new Venta
+            {
+                CamisetaId = venta.CamisetaId,
+                FechaVenta = venta.FechaVenta,
+                Precio = venta.Precio,
+                Talla = venta.Talla,
+                Comprador = venta.Comprador,
+                Observaciones = venta.Observaciones,
+                ProductoNombre = venta.ProductoNombre,
+                Equipo = venta.Equipo,
+                Temporada = venta.Temporada
+            };
+            _db.Ventas.Add(nueva);
             await _db.SaveChangesAsync(ct);
             return true;
         }

@@ -7,66 +7,427 @@
     int pageSize = ViewBag.PageSize ?? 10;
 }
 
-<h1>Seleccionar camiseta destacada para inicio</h1>
+<h1>Seleccionar contenido de inicio</h1>
 
-<p class="text-muted">Elige la camiseta cuyas imágenes se mostrarán en la portada. En móviles, esas imágenes aparecen debajo del texto.</p>
+<h2 class="h5 mt-3">Carrusel de inicio</h2>
+@{
+    var slides = (IReadOnlyList<ProyectoCamisetas.Models.HomeCarouselSlide>) (ViewBag.CarouselSlides ?? new List<ProyectoCamisetas.Models.HomeCarouselSlide>());
+    var s1 = slides.FirstOrDefault(x => x.Orden == 1);
+    var s2 = slides.FirstOrDefault(x => x.Orden == 2);
+    var s3 = slides.FirstOrDefault(x => x.Orden == 3);
+}
+<form asp-action="SaveHomeCarousel" method="post" enctype="multipart/form-data" class="border rounded p-3 mb-4">
+    @Html.AntiForgeryToken()
+    <div class="row g-3">
+        <div class="col-12 col-md-4">
+            <div class="card bg-dark text-white h-100 position-relative">
+                <button type="button"
+                        id="s1-remove"
+                        class="btn-close btn-close-white position-absolute top-0 end-0 m-1 @(string.IsNullOrWhiteSpace(s1?.ImageUrl)?"d-none":"")"
+                        aria-label="Quitar imagen"></button>
+                <img id="s1-preview" src="@s1?.ImageUrl" class="card-img-top @(string.IsNullOrWhiteSpace(s1?.ImageUrl)?"d-none":"")" alt="Slide 1" />
+                <div class="card-body">
+                    <h5 class="card-title">Slide 1</h5>
+                    <div class="d-grid gap-2 mb-2">
+                        <button type="button" class="btn btn-outline-primary btn-sm" id="btnS1">Agregar imágenes</button>
+                        <input type="file" id="s1-file" name="Slide1File" accept="image/*" hidden />
+                        <input type="hidden" id="s1-url" name="Slide1Url" value="@s1?.ImageUrl" />
+                    </div>
+                    <div class="mb-2">
+                        <label class="form-label small">Título</label>
+                        <input type="text" class="form-control form-control-sm" name="Slide1Title" value="@s1?.Title" />
+                    </div>
+                    <div class="mb-2">
+                        <label class="form-label small">Descripción</label>
+                        <textarea class="form-control form-control-sm" name="Slide1Desc" rows="2">@s1?.Description</textarea>
+                    </div>
+                    <div class="row g-2">
+                        <div class="col-6">
+                            <label class="form-label small">Texto botón</label>
+                            <input type="text" class="form-control form-control-sm" name="Slide1BtnText" value="@s1?.ButtonText" />
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label small">URL botón</label>
+                            <input type="text" class="form-control form-control-sm" name="Slide1BtnUrl" value="@s1?.ButtonUrl" />
+                        </div>
+                    </div>
+                    <!-- Estado de eliminación (oculto) -->
+                    <input type="hidden" name="Slide1Delete" id="s1-del" value="false" />
+                    <div class="mt-2">
+                        <button type="button" class="btn btn-outline-danger btn-sm" id="clearS1">Borrar slide</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-md-4">
+            <div class="card bg-dark text-white h-100 position-relative">
+                <button type="button"
+                        id="s2-remove"
+                        class="btn-close btn-close-white position-absolute top-0 end-0 m-1 @(string.IsNullOrWhiteSpace(s2?.ImageUrl)?"d-none":"")"
+                        aria-label="Quitar imagen"></button>
+                <img id="s2-preview" src="@s2?.ImageUrl" class="card-img-top @(string.IsNullOrWhiteSpace(s2?.ImageUrl)?"d-none":"")" alt="Slide 2" />
+                <div class="card-body">
+                    <h5 class="card-title">Slide 2</h5>
+                    <div class="d-grid gap-2 mb-2">
+                        <button type="button" class="btn btn-outline-primary btn-sm" id="btnS2">Agregar imágenes</button>
+                        <input type="file" id="s2-file" name="Slide2File" accept="image/*" hidden />
+                        <input type="hidden" id="s2-url" name="Slide2Url" value="@s2?.ImageUrl" />
+                    </div>
+                    <div class="mb-2">
+                        <label class="form-label small">Título</label>
+                        <input type="text" class="form-control form-control-sm" name="Slide2Title" value="@s2?.Title" />
+                    </div>
+                    <div class="mb-2">
+                        <label class="form-label small">Descripción</label>
+                        <textarea class="form-control form-control-sm" name="Slide2Desc" rows="2">@s2?.Description</textarea>
+                    </div>
+                    <div class="row g-2">
+                        <div class="col-6">
+                            <label class="form-label small">Texto botón</label>
+                            <input type="text" class="form-control form-control-sm" name="Slide2BtnText" value="@s2?.ButtonText" />
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label small">URL botón</label>
+                            <input type="text" class="form-control form-control-sm" name="Slide2BtnUrl" value="@s2?.ButtonUrl" />
+                        </div>
+                    </div>
+                    <!-- Estado de eliminación (oculto) -->
+                    <input type="hidden" name="Slide2Delete" id="s2-del" value="false" />
+                    <div class="mt-2">
+                        <button type="button" class="btn btn-outline-danger btn-sm" id="clearS2">Borrar slide</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-md-4">
+            <div class="card bg-dark text-white h-100 position-relative">
+                <button type="button"
+                        id="s3-remove"
+                        class="btn-close btn-close-white position-absolute top-0 end-0 m-1 @(string.IsNullOrWhiteSpace(s3?.ImageUrl)?"d-none":"")"
+                        aria-label="Quitar imagen"></button>
+                <img id="s3-preview" src="@s3?.ImageUrl" class="card-img-top @(string.IsNullOrWhiteSpace(s3?.ImageUrl)?"d-none":"")" alt="Slide 3" />
+                <div class="card-body">
+                    <h5 class="card-title">Slide 3</h5>
+                    <div class="d-grid gap-2 mb-2">
+                        <button type="button" class="btn btn-outline-primary btn-sm" id="btnS3">Agregar imágenes</button>
+                        <input type="file" id="s3-file" name="Slide3File" accept="image/*" hidden />
+                        <input type="hidden" id="s3-url" name="Slide3Url" value="@s3?.ImageUrl" />
+                    </div>
+                    <div class="mb-2">
+                        <label class="form-label small">Título</label>
+                        <input type="text" class="form-control form-control-sm" name="Slide3Title" value="@s3?.Title" />
+                    </div>
+                    <div class="mb-2">
+                        <label class="form-label small">Descripción</label>
+                        <textarea class="form-control form-control-sm" name="Slide3Desc" rows="2">@s3?.Description</textarea>
+                    </div>
+                    <div class="row g-2">
+                        <div class="col-6">
+                            <label class="form-label small">Texto botón</label>
+                            <input type="text" class="form-control form-control-sm" name="Slide3BtnText" value="@s3?.ButtonText" />
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label small">URL botón</label>
+                            <input type="text" class="form-control form-control-sm" name="Slide3BtnUrl" value="@s3?.ButtonUrl" />
+                        </div>
+                    </div>
+                    <!-- Estado de eliminación (oculto) -->
+                    <input type="hidden" name="Slide3Delete" id="s3-del" value="false" />
+                    <div class="mt-2">
+                        <button type="button" class="btn btn-outline-danger btn-sm" id="clearS3">Borrar slide</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 d-flex justify-content-end mt-2">
+            <button type="submit" class="btn btn-success">Guardar carrusel</button>
+        </div>
+    </div>
+</form>
 
-<div class="table-responsive">
-<table class="table table-dark table-hover table-sm align-middle">
-    <thead>
-        <tr>
-            <th>ID</th>
-            <th>Equipo</th>
-            <th class="d-none d-md-table-cell">Temporada</th>
-            <th>Nombre</th>
-            <th class="text-end">Acciones</th>
-        </tr>
-    </thead>
-    <tbody>
-    @foreach (var c in Model)
+<script>
+(() => {
+  const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+  const upload = async (file) => {
+    const fd = new FormData();
+    fd.append('file', file);
+    const resp = await fetch('@Url.Action("UploadImage","AdminCamisetas")', {
+      method: 'POST', headers: { 'RequestVerificationToken': token }, body: fd, credentials: 'same-origin'
+    });
+    if (!resp.ok) throw new Error('Error subiendo');
+    return resp.json();
+  };
+
+  const wire = (btnId, fileId, urlId, prevId, delId, removeBtnId) => {
+    const btn = document.getElementById(btnId);
+    const file = document.getElementById(fileId);
+    const url = document.getElementById(urlId);
+    const prev = document.getElementById(prevId);
+    const removeBtn = removeBtnId ? document.getElementById(removeBtnId) : null;
+    btn?.addEventListener('click', () => file.click());
+    file?.addEventListener('change', async () => {
+      if (!file.files?.length) return;
+      try {
+        const { url: u } = await upload(file.files[0]);
+        url.value = u;
+        if (prev) { prev.src = u; prev.classList.remove('d-none'); }
+        const del = delId ? document.getElementById(delId) : null;
+        if (del && del instanceof HTMLInputElement) del.value = 'false';
+        if (removeBtn) removeBtn.classList.remove('d-none');
+      } catch (e) { console.error(e); }
+      file.value = '';
+    });
+  };
+  wire('btnS1','s1-file','s1-url','s1-preview','s1-del','s1-remove');
+  wire('btnS2','s2-file','s2-url','s2-preview','s2-del','s2-remove');
+  wire('btnS3','s3-file','s3-url','s3-preview','s3-del','s3-remove');
+  
+  // Limpiar contenido de slide manteniendo al menos 1
+  const remainingAfter = (targetDelId) => {
+    const ids = ['s1-del','s2-del','s3-del'];
+    let delCount = 0;
+    ids.forEach(id => { const el = document.getElementById(id); if (el && el.value === 'true') delCount++; });
+    const target = document.getElementById(targetDelId);
+    const willCheck = target && target.value !== 'true';
+    return 3 - (delCount + (willCheck ? 1 : 0));
+  };
+  const clearSlide = (prefix, urlId, prevId, delId, removeBtnId) => {
+    if (remainingAfter(delId) <= 0) { alert('Debe quedar al menos un slide.'); return; }
+    const fields = [`${prefix}Title`, `${prefix}Desc`, `${prefix}BtnText`, `${prefix}BtnUrl`];
+    fields.forEach(n => {
+      const el = document.querySelector(`[name="${n}"]`);
+      if (el) el.value = '';
+    });
+    const url = document.getElementById(urlId);
+    if (url) url.value = '';
+    const prev = document.getElementById(prevId);
+    if (prev) { prev.src = ''; prev.classList.add('d-none'); }
+    const del = document.getElementById(delId);
+    if (del) del.value = 'true';
+  };
+  document.getElementById('clearS1')?.addEventListener('click', () => clearSlide('Slide1','s1-url','s1-preview','s1-del','s1-remove'));
+  document.getElementById('clearS2')?.addEventListener('click', () => clearSlide('Slide2','s2-url','s2-preview','s2-del','s2-remove'));
+  document.getElementById('clearS3')?.addEventListener('click', () => clearSlide('Slide3','s3-url','s3-preview','s3-del','s3-remove'));
+
+  const wireRemoveImage = (removeBtnId, urlId, prevId) => {
+    const btn = document.getElementById(removeBtnId);
+    const url = document.getElementById(urlId);
+    const prev = document.getElementById(prevId);
+    if (!btn) return;
+    btn.addEventListener('click', () => {
+      if (url) url.value = '';
+      if (prev) { prev.src = ''; prev.classList.add('d-none'); }
+      btn.classList.add('d-none');
+    });
+  };
+  wireRemoveImage('s1-remove','s1-url','s1-preview');
+  wireRemoveImage('s2-remove','s2-url','s2-preview');
+  wireRemoveImage('s3-remove','s3-url','s3-preview');
+})();
+</script>
+
+@* ================== TARJETAS DESTACADAS ================== *@
+
+<h2 class="h5 mt-4">Tarjetas destacadas en inicio</h2>
+<p class="text-muted small">Seleccioná 3 camisetas para mostrar debajo del carrusel. El orden es de izquierda (1) a derecha (3).</p>
+
+@{
+    var gridList = ViewBag.CurrentGrid as IEnumerable<dynamic>;
+    var allCamisetas = Model as IEnumerable<ProyectoCamisetas.Models.Camiseta>;
+
+    ProyectoCamisetas.Models.Camiseta FindCamiseta(int id)
     {
-        <tr>
-            <td>@c.Id</td>
-            <td>@c.Equipo</td>
-            <td class="d-none d-md-table-cell">@c.Temporada</td>
-            <td>
-                @c.Nombre
-                @if (c.DestacadaInicio)
+        return allCamisetas?.FirstOrDefault(c => c.Id == id);
+    }
+
+    var slots = new (int? Id, string Equipo, string Temporada, string Nombre, string Thumb)[3];
+    if (gridList != null)
+    {
+        foreach (var g in gridList)
+        {
+            int orden = (short)g.Orden;
+            int cId = (int)g.Id;
+            if (orden >= 1 && orden <= 3)
+            {
+                var cam = FindCamiseta(cId);
+                if (cam != null)
                 {
-                    <span class="badge bg-info ms-2">Actual</span>
+                    var thumbUrl = cam.Imagenes?.OrderBy(x => x.Orden).Select(x => x.Url).FirstOrDefault() ?? cam.ImagenUrl ?? "";
+                    slots[orden - 1] = (cam.Id, cam.Equipo ?? "", cam.Temporada ?? "", cam.Nombre ?? "", thumbUrl);
                 }
-            </td>
-            <td class="text-end">
-                <form method="post" asp-action="FeatureHome">
-                    @Html.AntiForgeryToken()
-                    <input type="hidden" name="camisetaId" value="@c.Id" />
-                    <button type="submit" class="btn btn-sm btn-primary">Seleccionar</button>
-                </form>
-            </td>
-        </tr>
+                else
+                {
+                    slots[orden - 1] = (cId, "", "", $"ID {cId}", "");
+                }
+            }
+        }
     }
-    </tbody>
-</table>
-</div>
+}
 
-<nav aria-label="Paginación" class="mt-3">
-  <ul class="pagination pagination-sm">
-    <li class="page-item @(page <= 1 ? "disabled" : null)">
-      <a class="page-link" asp-action="FeatureHome" asp-route-page="@(page-1)" asp-route-pageSize="@pageSize">Anterior</a>
-    </li>
-    @for (int p = 1; p <= totalPages; p++)
-    {
-        <li class="page-item @(p == page ? "active" : null)">
-            <a class="page-link" asp-action="FeatureHome" asp-route-page="@p" asp-route-pageSize="@pageSize">@p</a>
-        </li>
-    }
-    <li class="page-item @(page >= totalPages ? "disabled" : null)">
-      <a class="page-link" asp-action="FeatureHome" asp-route-page="@(page+1)" asp-route-pageSize="@pageSize">Siguiente</a>
-    </li>
-  </ul>
-  <div class="small text-muted">Página @(page) de @(totalPages)</div>
-</nav>
+<form id="gridForm" method="post" asp-action="UpdateHomeGrid">
+    @Html.AntiForgeryToken()
+    <div class="row g-3 mb-3">
+        @for (int i = 0; i < 3; i++)
+        {
+            var slot = slots[i];
+            var slotNum = i + 1;
+            var hasValue = slot.Id.HasValue;
+            <div class="col-12 col-md-4">
+                <div class="card bg-dark text-white h-100" id="slot-card-@slotNum">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <strong>Posición @slotNum</strong>
+                        <button type="button" class="btn btn-outline-danger btn-sm slot-clear @(!hasValue ? "d-none" : "")" data-slot="@slotNum">✕ Quitar</button>
+                    </div>
+
+                    @* Preview de la camiseta seleccionada *@
+                    <div class="slot-preview @(!hasValue ? "d-none" : "")" id="slot-preview-@slotNum">
+                        @if (hasValue && !string.IsNullOrWhiteSpace(slot.Thumb))
+                        {
+                            <img src="@slot.Thumb" class="card-img-top" style="height:160px;object-fit:contain;background:#111;" alt="@slot.Equipo" id="slot-img-@slotNum" />
+                        }
+                        else
+                        {
+                            <img src="" class="card-img-top d-none" style="height:160px;object-fit:contain;background:#111;" alt="" id="slot-img-@slotNum" />
+                        }
+                        <div class="card-body py-2 px-3">
+                            <p class="card-text m-0 fw-bold" id="slot-equipo-@slotNum">@(hasValue ? $"{slot.Equipo} {slot.Temporada}" : "")</p>
+                            <p class="card-text m-0 small text-muted" id="slot-nombre-@slotNum">@(hasValue ? slot.Nombre : "")</p>
+                        </div>
+                    </div>
+
+                    @* Buscador *@
+                    <div class="card-body">
+                        <div class="position-relative">
+                            <input type="text" class="form-control form-control-sm slot-search" id="slot-search-@slotNum"
+                                   placeholder="Buscar camiseta..." autocomplete="off" data-slot="@slotNum" />
+                            <div class="slot-results list-group position-absolute w-100" id="slot-results-@slotNum" style="z-index:100;max-height:250px;overflow-y:auto;display:none;"></div>
+                        </div>
+                    </div>
+
+                    @* Hidden fields para enviar al servidor *@
+                    <input type="hidden" name="@(hasValue ? "SelectedIds" : "")" id="slot-id-@slotNum" value="@(hasValue ? slot.Id.ToString() : "")" @(!hasValue ? "disabled" : "") />
+                    <input type="hidden" name="@(hasValue ? $"Order_{slot.Id}" : "Order_0")" id="slot-order-@slotNum" value="@slotNum" />
+                </div>
+            </div>
+        }
+    </div>
+    <div class="d-flex align-items-center gap-2 mb-3">
+        <button type="submit" class="btn btn-success">Guardar tarjetas de inicio</button>
+    </div>
+</form>
 
 <div class="mt-3">
     <a asp-action="Index" class="btn btn-secondary">Volver</a>
- </div>
+</div>
+
+<script>
+(() => {
+    const API_URL = '/api/camisetas/search-admin';
+
+    function debounce(fn, ms) {
+        let timer;
+        return function (...args) { clearTimeout(timer); timer = setTimeout(() => fn.apply(this, args), ms); };
+    }
+
+    function esc(s) {
+        return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+    }
+
+    function wireSlot(slotNum) {
+        const searchInput = document.getElementById(`slot-search-${slotNum}`);
+        const resultsDiv = document.getElementById(`slot-results-${slotNum}`);
+        const preview = document.getElementById(`slot-preview-${slotNum}`);
+        const img = document.getElementById(`slot-img-${slotNum}`);
+        const equipoEl = document.getElementById(`slot-equipo-${slotNum}`);
+        const nombreEl = document.getElementById(`slot-nombre-${slotNum}`);
+        const hiddenId = document.getElementById(`slot-id-${slotNum}`);
+        const hiddenOrder = document.getElementById(`slot-order-${slotNum}`);
+        const clearBtn = document.querySelector(`.slot-clear[data-slot="${slotNum}"]`);
+
+        if (!searchInput || !resultsDiv) return;
+
+        const doSearch = debounce(async (q) => {
+            if (q.length < 1) { resultsDiv.style.display = 'none'; return; }
+            try {
+                const resp = await fetch(`${API_URL}?q=${encodeURIComponent(q)}`, { credentials: 'same-origin' });
+                if (!resp.ok) return;
+                const items = await resp.json();
+                renderResults(items);
+            } catch (e) { console.error(e); }
+        }, 200);
+
+        function renderResults(items) {
+            if (!items.length) {
+                resultsDiv.innerHTML = '<div class="list-group-item list-group-item-dark small">Sin resultados</div>';
+                resultsDiv.style.display = 'block';
+                return;
+            }
+            resultsDiv.innerHTML = items.map(item => `
+                <button type="button" class="list-group-item list-group-item-action list-group-item-dark d-flex align-items-center gap-2 py-1"
+                        data-id="${item.id}" data-equipo="${esc(item.equipo)}" data-temporada="${esc(item.temporada)}" data-nombre="${esc(item.nombre)}" data-thumb="${esc(item.thumb)}">
+                    ${item.thumb ? `<img src="${esc(item.thumb)}" style="width:36px;height:36px;object-fit:cover;border-radius:4px;" alt="" />` : '<span style="width:36px;height:36px;background:#222;border-radius:4px;display:inline-block;"></span>'}
+                    <div class="flex-grow-1 text-truncate">
+                        <span class="fw-bold small">${esc(item.equipo)} ${esc(item.temporada)}</span><br/>
+                        <span class="small text-muted">${esc(item.nombre)}</span>
+                    </div>
+                </button>
+            `).join('');
+            resultsDiv.style.display = 'block';
+        }
+
+        function selectItem(id, equipo, temporada, nombre, thumb) {
+            hiddenId.value = id;
+            hiddenId.disabled = false;
+            hiddenId.name = 'SelectedIds';
+            hiddenOrder.name = `Order_${id}`;
+            hiddenOrder.value = String(slotNum);
+
+            if (thumb) { img.src = thumb; img.classList.remove('d-none'); }
+            else { img.classList.add('d-none'); }
+            equipoEl.textContent = `${equipo} ${temporada}`;
+            nombreEl.textContent = nombre;
+            preview.classList.remove('d-none');
+            clearBtn.classList.remove('d-none');
+
+            searchInput.value = '';
+            resultsDiv.style.display = 'none';
+        }
+
+        function clearSlot() {
+            hiddenId.value = '';
+            hiddenId.disabled = true;
+            hiddenId.name = '';
+            hiddenOrder.name = 'Order_0';
+            preview.classList.add('d-none');
+            clearBtn.classList.add('d-none');
+            img.src = '';
+            img.classList.add('d-none');
+            equipoEl.textContent = '';
+            nombreEl.textContent = '';
+            searchInput.value = '';
+            resultsDiv.style.display = 'none';
+        }
+
+        searchInput.addEventListener('input', () => doSearch(searchInput.value.trim()));
+        searchInput.addEventListener('focus', () => { if (searchInput.value.trim().length >= 1) doSearch(searchInput.value.trim()); });
+
+        resultsDiv.addEventListener('click', (e) => {
+            const btn = e.target.closest('[data-id]');
+            if (!btn) return;
+            selectItem(btn.dataset.id, btn.dataset.equipo, btn.dataset.temporada, btn.dataset.nombre, btn.dataset.thumb);
+        });
+
+        if (clearBtn) clearBtn.addEventListener('click', clearSlot);
+
+        document.addEventListener('click', (e) => {
+            if (!searchInput.contains(e.target) && !resultsDiv.contains(e.target)) {
+                resultsDiv.style.display = 'none';
+            }
+        });
+    }
+
+    wireSlot(1);
+    wireSlot(2);
+    wireSlot(3);
+})();
+</script>

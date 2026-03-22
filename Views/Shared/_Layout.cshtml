@@ -1,4 +1,8 @@
-﻿<!DOCTYPE html>
+﻿@using ProyectoCamisetas.Models
+@using Microsoft.AspNetCore.Routing
+@using System.Linq
+@inject ProyectoCamisetas.Repository.ICamisetasRepository Repo
+<!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="utf-8" />
@@ -15,10 +19,38 @@
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/ProyectoCamisetas.styles.css" asp-append-version="true" />
+    @RenderSection("Styles", required: false)
 </head>
 <body>
+    @{
+        var navConfig = await Repo.GetNavMenuAsync();
+        string BuildNavUrl(NavLinkConfig link)
+        {
+            if (!string.IsNullOrWhiteSpace(link.Href)) return link.Href!;
+
+            var type = (link.Type ?? string.Empty).Trim().ToLowerInvariant();
+            var val = link.Value;
+            var rv = new RouteValueDictionary();
+            switch (type)
+            {
+                case "equipo": rv["equipo"] = val; break;
+                case "temporada": rv["temporada"] = val; break;
+                case "version": rv["version"] = val; break;
+                case "producto": rv["producto"] = val; break;
+                case "other": rv["other"] = val; break;
+                case "enstock": rv["enStock"] = string.IsNullOrWhiteSpace(val) ? "true" : val; break;
+                case "talla": rv["talla"] = val; break;
+                case "liga":
+                case "q":
+                default:
+                    rv["q"] = val;
+                    break;
+            }
+            return Url.Action("Index", "Camisetas", rv) ?? "#";
+        }
+    }
     <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-dark bg-navbar border-bottom box-shadow mb-3">
+        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-dark bg-navbar">
             <div class="container-fluid">
                 <a class="navbar-brand d-flex align-items-center gap-2" asp-area="" asp-controller="Home" asp-action="Index">
                     <img src="~/img/logo.jpg" alt="Logo Clásico del Gol" class="brand-logo" />
@@ -46,67 +78,19 @@
                             <!-- Panel deslizante (antes era .dropdown-menu) -->
                             <div id="catalogoPanel" class="dropdown-menu mega-dropdown p-3 collapse-slide" hidden>
                                 <div class="row g-2 flex-column">
-                                <div class="col-12 mega-section">
-                                    <h6 class="dropdown-header px-0 mega-title" tabindex="0">Clubes</h6>
-                                    <div class="submenu">
-                                        <a class="dropdown-item" asp-controller="Camisetas" asp-action="Index" asp-route-q="River">River</a>
-                                        <a class="dropdown-item" asp-controller="Camisetas" asp-action="Index" asp-route-q="Boca">Boca</a>
-                                        <a class="dropdown-item" asp-controller="Camisetas" asp-action="Index" asp-route-q="Barcelona">Barcelona</a>
-                                        <a class="dropdown-item" asp-controller="Camisetas" asp-action="Index" asp-route-q="Real Madrid">Real Madrid</a>
-                                        <a class="dropdown-item" asp-controller="Camisetas" asp-action="Index" asp-route-q="Chelsea">Chelsea</a>
-                                        <a class="dropdown-item" asp-controller="Camisetas" asp-action="Index" asp-route-q="Manchester United">Manchester United</a>
-                                        <a class="dropdown-item" asp-controller="Camisetas" asp-action="Index" asp-route-other="club">Otro (otros clubes)</a>
-                                    </div>
-                                </div>
-                                <div class="col-12 mega-section">
-                                    <h6 class="dropdown-header px-0 mega-title" tabindex="0">Selecciones</h6>
-                                    <div class="submenu">
-                                        <a class="dropdown-item" asp-controller="Camisetas" asp-action="Index" asp-route-liga="Mundial">Mundial</a>
-                                        <a class="dropdown-item" asp-controller="Camisetas" asp-action="Index" asp-route-equipo="Argentina">Argentina</a>
-                                        <a class="dropdown-item" asp-controller="Camisetas" asp-action="Index" asp-route-equipo="Brasil">Brasil</a>
-                                        <a class="dropdown-item" asp-controller="Camisetas" asp-action="Index" asp-route-equipo="Espana">Espa&ntilde;a</a>
-                                        <a class="dropdown-item" asp-controller="Camisetas" asp-action="Index" asp-route-equipo="Portugal">Portugal</a>
-                                        <a class="dropdown-item" asp-controller="Camisetas" asp-action="Index" asp-route-equipo="Francia">Francia</a>
-                                        <a class="dropdown-item" asp-controller="Camisetas" asp-action="Index" asp-route-other="seleccion">Otro (otras selecciones)</a>
-                                    </div>
-                                </div>
-                                <div class="col-12">
-                                    <div class="mega-section">
-                                        <h6 class="dropdown-header px-0 mega-title" tabindex="0">Liga/competición</h6>
-                                        <div class="submenu">
-                                            <a class="dropdown-item" asp-controller="Camisetas" asp-action="Index" asp-route-q="La Liga">La Liga</a>
-                                            <a class="dropdown-item" asp-controller="Camisetas" asp-action="Index" asp-route-q="Premier League">Premier League</a>
-                                            <a class="dropdown-item" asp-controller="Camisetas" asp-action="Index" asp-route-q="Serie A">Serie A</a>
-                                            <a class="dropdown-item" asp-controller="Camisetas" asp-action="Index" asp-route-q="Bundesliga">Bundesliga</a>
-                                            <a class="dropdown-item" asp-controller="Camisetas" asp-action="Index" asp-route-q="Ligue 1">Ligue 1</a>
-                                            <a class="dropdown-item" asp-controller="Camisetas" asp-action="Index" asp-route-other="liga">Otro (otras ligas/competiciones)</a>
+                                    @foreach (var section in (navConfig?.Sections ?? Enumerable.Empty<NavSection>()).OrderBy(s => s.Orden))
+                                    {
+                                        <div class="col-12 mega-section">
+                                            <h6 class="dropdown-header px-0 mega-title" tabindex="0">@(section.Title)</h6>
+                                            <div class="submenu">
+                                                @foreach (var link in section.Links.OrderBy(l => l.Orden))
+                                                {
+                                                    var href = BuildNavUrl(link);
+                                                    <a class="dropdown-item" href="@href">@(link.Label)</a>
+                                                }
+                                            </div>
                                         </div>
-                                    </div>
-                                    <div class="mega-section">
-                                        <h6 class="dropdown-header px-0 mega-title" tabindex="0">Disponibilidad</h6>
-                                        <div class="submenu">
-                                            <a class="dropdown-item" asp-controller="Camisetas" asp-action="Index" asp-route-enStock="true">En stock ahora</a>
-                                            <a class="dropdown-item" asp-controller="Camisetas" asp-action="Index" asp-route-enStock="false">Por encargo</a>
-                                        </div>
-                                    </div>
-                                    <div class="mega-section">
-                                        <h6 class="dropdown-header px-0 mega-title" tabindex="0">Version</h6>
-                                        <div class="submenu">
-                                            <a class="dropdown-item" asp-controller="Camisetas" asp-action="Index" asp-route-version="aficionado">Aficionado</a>
-                                            <a class="dropdown-item" asp-controller="Camisetas" asp-action="Index" asp-route-version="jugador">Version jugador</a>
-                                            <a class="dropdown-item" asp-controller="Camisetas" asp-action="Index" asp-route-version="retro">Retro</a>
-                                        </div>
-                                    </div>
-                                </div>
-                                    <div class="mega-section">
-                                        <h6 class="dropdown-header px-0 mega-title" tabindex="0">Producto</h6>
-                                        <div class="submenu">
-                                            <a class="dropdown-item" asp-controller="Camisetas" asp-action="Index" asp-route-producto="camiseta">Camiseta</a>
-                                            <a class="dropdown-item" asp-controller="Camisetas" asp-action="Index" asp-route-producto="campera">Campera</a>
-                                            <a class="dropdown-item" asp-controller="Camisetas" asp-action="Index" asp-route-producto="short">Short</a>
-                                            <a class="dropdown-item" asp-controller="Camisetas" asp-action="Index" asp-route-producto="conjunto">Conjunto</a>
-                                        </div>
-                                    </div>
+                                    }
                                 </div>
                             </div>
                         </li>
@@ -118,9 +102,16 @@
                             </li>
                         }
                     </ul>
-                    <form class="d-flex nav-search me-3" method="get" asp-controller="Camisetas" asp-action="Index" role="search">
-                        <input class="form-control me-2" type="search" name="q" placeholder="Buscar camisetas..." aria-label="Buscar" value="@Context.Request.Query["q"]">
-                        <button class="btn btn-outline-primary" type="submit">Buscar</button>
+                    <form class="nav-search me-3" method="get" asp-controller="Camisetas" asp-action="Index" role="search">
+                        <div class="search-pill">
+                            <input class="search-pill-input" type="search" name="q" placeholder="Buscar camisetas..." aria-label="Buscar" value="@Context.Request.Query["q"]">
+                            <button class="search-pill-btn" type="submit" aria-label="Buscar">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                    <circle cx="11" cy="11" r="8"/>
+                                    <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                                </svg>
+                            </button>
+                        </div>
                     </form>
                     <ul class="navbar-nav ms-auto">
                         <li class="nav-item d-flex align-items-center me-2">
@@ -207,6 +198,8 @@
 
 </body>
 </html>
+
+
 
 
 

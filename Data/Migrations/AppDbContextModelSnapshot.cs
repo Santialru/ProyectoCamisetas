@@ -56,6 +56,10 @@ namespace ProyectoCamisetas.Data.Migrations
                         .HasColumnType("boolean")
                         .HasColumnName("destacada_inicio");
 
+                    b.Property<short?>("DestacadaInicioOrden")
+                        .HasColumnType("smallint")
+                        .HasColumnName("destacada_inicio_orden");
+
                     b.Property<string>("Equipo")
                         .IsRequired()
                         .HasMaxLength(80)
@@ -159,6 +163,9 @@ namespace ProyectoCamisetas.Data.Migrations
 
                     b.HasKey("Id")
                         .HasName("pk_camisetas");
+
+                    b.HasIndex("DestacadaInicioOrden")
+                        .HasDatabaseName("ix_camisetas_destacada_inicio_orden");
 
                     b.HasIndex("Equipo")
                         .HasDatabaseName("ix_camisetas_equipo");

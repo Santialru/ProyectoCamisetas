@@ -1,0 +1,203 @@
+@model ProyectoCamisetas.Models.CrearVentaViewModel
+@{
+    ViewData["Title"] = "Crear venta";
+}
+
+<h1>Crear venta</h1>
+
+<div class="card mb-3">
+    <div class="card-body">
+        <form asp-action="CrearVenta" method="post" class="row g-3">
+            @Html.AntiForgeryToken()
+            @if (Model.PreselectId.HasValue)
+            {
+                <input type="hidden" id="admin-preselect-id" value="@Model.PreselectId.Value" />
+            }
+            @if (Model.PreselectTalla.HasValue)
+            {
+                <input type="hidden" id="admin-preselect-talla" value="@Model.PreselectTalla.Value" />
+            }
+            <div class="col-md-6">
+                <label class="form-label">Comprador</label>
+                <input asp-for="Comprador" class="form-control" placeholder="Nombre del comprador" />
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">Observaciones</label>
+                <input asp-for="Observaciones" class="form-control" placeholder="Observaciones generales (opcional)" />
+            </div>
+            <div class="col-12">
+                <label class="form-label">Buscar camisetas</label>
+                <input type="text" id="venta-search" class="form-control" placeholder="Equipo, temporada, nombre..." />
+                <div class="form-text">Empieza a escribir para filtrar en la lista de abajo.</div>
+            </div>
+            <div class="col-12">
+                <label class="form-label">Seleccionar productos</label>
+                <div class="row g-3">
+                    <div class="col-12 col-lg-8">
+                        <div class="table-responsive" style="max-height: 360px; overflow-y: auto;">
+                            <table class="table table-dark table-sm align-middle mb-0" id="venta-products-table">
+                                <thead>
+                                    <tr>
+                                        <th style="width:34px"></th>
+                                        <th>Producto</th>
+                                        <th>Equipo</th>
+                                        <th>Temporada</th>
+                                        <th>Talle</th>
+                                        <th>Stock</th>
+                                        <th class="text-end">Precio</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                @foreach (var item in Model.Disponibles)
+                                {
+                                    var talles = (item.TallesStock ?? Enumerable.Empty<ProyectoCamisetas.Models.CamisetaTalleStock>())
+                                                 .Where(t => t.Cantidad > 0)
+                                                 .OrderBy(t => t.Talla)
+                                                 .ToList();
+                                    if (!talles.Any()) { continue; }
+                                    foreach (var ts in talles)
+                                    {
+                                        var key = $"{item.Id}-{ts.Talla}";
+                                        <tr data-filter-text="@($"{item.Equipo} {item.Nombre} {item.Temporada} {ts.Talla}")"
+                                            data-key="@key">
+                                            <td>
+                                                <input type="checkbox"
+                                                       class="form-check-input select-line"
+                                                       data-id="@item.Id"
+                                                       data-talla="@ts.Talla"
+                                                       data-nombre="@item.Nombre"
+                                                       data-equipo="@item.Equipo"
+                                                       data-temporada="@item.Temporada"
+                                                       data-precio="@item.Precio.ToString("C")"
+                                                       data-key="@key" />
+                                            </td>
+                                            <td>@item.Nombre</td>
+                                            <td>@item.Equipo</td>
+                                            <td>@item.Temporada</td>
+                                            <td>@ts.Talla</td>
+                                            <td>@ts.Cantidad</td>
+                                            <td class="text-end">@item.Precio.ToString("C")</td>
+                                        </tr>
+                                    }
+                                }
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="form-text">Marca una o más filas para incluirlas en la venta.</div>
+                    </div>
+                    <div class="col-12 col-lg-4">
+                        <div class="card h-100">
+                            <div class="card-body">
+                                <h5 class="card-title">Carrito administrador</h5>
+                                <p id="admin-cart-empty" class="text-muted small mb-2">No hay productos seleccionados.</p>
+                                <ul id="admin-cart-list" class="list-group list-group-flush small d-none"></ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-12 d-flex gap-2">
+                <button type="submit" class="btn btn-success">Guardar venta</button>
+                <a asp-action="Ventas" class="btn btn-secondary">Cancelar</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    var search = document.getElementById('venta-search');
+    var rows = document.querySelectorAll('#venta-products-table tbody tr');
+    if (search && rows.length) {
+        search.addEventListener('input', function () {
+            var q = (search.value || '').toLowerCase().trim();
+            rows.forEach(function (tr) {
+                var txt = (tr.getAttribute('data-filter-text') || '').toLowerCase();
+                tr.style.display = (!q || txt.indexOf(q) !== -1) ? '' : 'none';
+            });
+        });
+    }
+
+    var checkboxes = document.querySelectorAll('.select-line');
+    var cartList = document.getElementById('admin-cart-list');
+    var cartEmpty = document.getElementById('admin-cart-empty');
+    var form = document.querySelector('form') ;
+
+    function updateCart() {
+        if (!cartList) return;
+        cartList.innerHTML = '';
+        var any = false;
+        checkboxes.forEach(function (cb) {
+            if (!cb.checked) return;
+            any = true;
+            var li = document.createElement('li');
+            li.className = 'list-group-item d-flex justify-content-between align-items-start';
+            var title = (cb.dataset.equipo || '') + ' ' + (cb.dataset.nombre || '');
+            var meta = (cb.dataset.temporada || '') + ' · Talle ' + (cb.dataset.talla || '');
+            var textDiv = document.createElement('div');
+            textDiv.className = 'me-2';
+            textDiv.innerHTML = '<div>' + title + '</div><small class="text-muted">' + meta + '</small>';
+            var btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'btn btn-sm btn-outline-danger';
+            btn.textContent = 'Quitar';
+            btn.addEventListener('click', function () {
+                cb.checked = false;
+                updateCart();
+            });
+            li.appendChild(textDiv);
+            li.appendChild(btn);
+            cartList.appendChild(li);
+        });
+        if (cartEmpty) {
+            cartEmpty.classList.toggle('d-none', any);
+        }
+        cartList.classList.toggle('d-none', !any);
+    }
+
+    checkboxes.forEach(function (cb) {
+        cb.addEventListener('change', updateCart);
+    });
+
+    var preIdEl = document.getElementById('admin-preselect-id');
+    var preTallaEl = document.getElementById('admin-preselect-talla');
+    if (preIdEl && preTallaEl) {
+        var pid = preIdEl.value;
+        var ptalla = preTallaEl.value;
+        checkboxes.forEach(function (cb) {
+            if (cb.dataset.id === pid && cb.dataset.talla === ptalla) {
+                cb.checked = true;
+            }
+        });
+    }
+    updateCart();
+
+    if (form) {
+        form.addEventListener('submit', function () {
+            // limpiar inputs ocultos previos
+            Array.from(form.querySelectorAll('input[data-cart-hidden="1"]')).forEach(function (el) { el.remove(); });
+            checkboxes.forEach(function (cb) {
+                if (!cb.checked) return;
+                var id = cb.dataset.id;
+                var talla = cb.dataset.talla;
+                if (!id || !talla) return;
+                var hidId = document.createElement('input');
+                hidId.type = 'hidden';
+                hidId.name = 'SelectedIds';
+                hidId.value = id;
+                hidId.setAttribute('data-cart-hidden', '1');
+                form.appendChild(hidId);
+
+                var hidTa = document.createElement('input');
+                hidTa.type = 'hidden';
+                hidTa.name = 'SelectedTallas';
+                hidTa.value = talla;
+                hidTa.setAttribute('data-cart-hidden', '1');
+                form.appendChild(hidTa);
+            });
+        });
+    }
+});
+</script>
+}

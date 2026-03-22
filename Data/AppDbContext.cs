@@ -11,6 +11,8 @@ namespace ProyectoCamisetas.Data
         public DbSet<Camiseta> Camisetas => Set<Camiseta>();
         public DbSet<CamisetaImagen> CamisetaImagenes => Set<CamisetaImagen>();
         public DbSet<CamisetaTalleStock> CamisetaTalles => Set<CamisetaTalleStock>();
+        public DbSet<HomeFeaturedCard> HomeFeatured => Set<HomeFeaturedCard>();
+        public DbSet<Venta> Ventas => Set<Venta>();
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -43,6 +45,19 @@ namespace ProyectoCamisetas.Data
                  .OnDelete(DeleteBehavior.Cascade);
             });
 
+            // Home featured grid -> 'home_featured'
+            modelBuilder.Entity<HomeFeaturedCard>(e =>
+            {
+                e.ToTable("home_featured");
+                e.Property(h => h.Orden).HasColumnType("smallint");
+                e.HasIndex(h => h.Orden).IsUnique();
+                e.HasIndex(h => h.CamisetaId).IsUnique();
+                e.HasOne(h => h.Camiseta!)
+                    .WithMany()
+                    .HasForeignKey(h => h.CamisetaId)
+                    .OnDelete(DeleteBehavior.Cascade);
+            });
+
             // CamisetaImagenes -> 'camiseta_imagenes'
             modelBuilder.Entity<CamisetaImagen>(e =>
             {
@@ -59,6 +74,19 @@ namespace ProyectoCamisetas.Data
                 e.Property(x => x.Talla).HasConversion<short>();
                 e.HasIndex(x => x.CamisetaId);
                 e.HasIndex(x => new { x.CamisetaId, x.Talla }).IsUnique();
+            });
+
+            // Ventas -> 'ventas'
+            modelBuilder.Entity<Venta>(e =>
+            {
+                e.ToTable("ventas");
+                e.HasIndex(v => v.CamisetaId);
+                e.HasIndex(v => v.FechaVenta);
+                e.Property(v => v.Talla).HasConversion<short>();
+                e.HasOne(v => v.Camiseta!)
+                    .WithMany()
+                    .HasForeignKey(v => v.CamisetaId)
+                    .OnDelete(DeleteBehavior.Restrict);
             });
         }
     }

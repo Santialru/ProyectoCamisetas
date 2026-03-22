@@ -1,4 +1,4 @@
-using ProyectoCamisetas.Models;
+﻿using ProyectoCamisetas.Models;
 
 namespace ProyectoCamisetas.Repository
 {
@@ -10,6 +10,7 @@ namespace ProyectoCamisetas.Repository
         Task<Camiseta?> GetByIdAsync(int id, CancellationToken ct = default);
         Task<IReadOnlyList<Camiseta>> GetRandomAsync(int take = 12, bool onlyAvailable = true, CancellationToken ct = default);
         Task<Camiseta?> GetHomeFeaturedAsync(CancellationToken ct = default);
+        Task<IReadOnlyList<Camiseta>> GetHomeFeaturedGridAsync(CancellationToken ct = default);
 
         Task<Camiseta> AddAsync(Camiseta entity, CancellationToken ct = default);
         Task UpdateAsync(Camiseta entity, CancellationToken ct = default);
@@ -17,11 +18,44 @@ namespace ProyectoCamisetas.Repository
         Task SetImagesAsync(int camisetaId, IEnumerable<string> urls, CancellationToken ct = default);
         Task SetTallesAsync(int camisetaId, IEnumerable<(Talla talla, int cantidad)> talles, CancellationToken ct = default);
         Task<bool> RegisterSaleAsync(int camisetaId, Talla talla, CancellationToken ct = default);
+        Task<bool> RegisterSaleAsync(int camisetaId, Talla talla, string? comprador, string? observaciones, CancellationToken ct = default);
+        Task<(IReadOnlyList<Venta> items, int total)> GetVentasAsync(
+            DateOnly? desde,
+            DateOnly? hasta,
+            string? equipo,
+            string? temporada,
+            Talla? talla,
+            string? comprador,
+            string? sort,
+            int page,
+            int pageSize,
+            CancellationToken ct = default);
+        Task<VentasSummary> GetVentasSummaryAsync(
+            DateOnly? desde,
+            DateOnly? hasta,
+            string? equipo,
+            string? temporada,
+            Talla? talla,
+            string? comprador,
+            CancellationToken ct = default);
+        Task<Venta?> GetVentaAsync(int id, CancellationToken ct = default);
+        Task<bool> UpdateVentaAsync(int id, string? comprador, string? observaciones, CancellationToken ct = default);
+        Task<bool> RecreateVentaAsync(Venta venta, CancellationToken ct = default);
+        Task<bool> DeleteVentaAsync(int ventaId, CancellationToken ct = default);
 
         Task SetHomeFeaturedAsync(int camisetaId, CancellationToken ct = default);
+        Task SetHomeFeaturedGridAsync(IEnumerable<(int camisetaId, short orden)> featured, CancellationToken ct = default);
+
+        // Home carousel (slides + overlay config)
+        Task<IReadOnlyList<ProyectoCamisetas.Models.HomeCarouselSlide>> GetHomeCarouselSlidesAsync(CancellationToken ct = default);
+        Task SaveHomeCarouselSlidesAsync(IEnumerable<ProyectoCamisetas.Models.HomeCarouselSlide> slides, CancellationToken ct = default);
+        Task SaveHomeCarouselAsync(ProyectoCamisetas.Models.HomeCarouselConfig config, CancellationToken ct = default);
+        Task<ProyectoCamisetas.Models.NavMenuConfig> GetNavMenuAsync(CancellationToken ct = default);
+        Task SaveNavMenuAsync(ProyectoCamisetas.Models.NavMenuConfig config, CancellationToken ct = default);
 
         // Restaurar precios previos eliminando descuentos
         Task<int> RestoreDiscountsAsync(IEnumerable<int> ids, CancellationToken ct = default);
         Task<int> RestoreAllDiscountsAsync(CancellationToken ct = default);
     }
 }
+
