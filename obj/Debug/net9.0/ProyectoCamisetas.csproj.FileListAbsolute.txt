@@ -358,5 +358,5 @@ C:\Users\santi\Desktop\camisetas\ProyectoCamisetas\obj\Debug\net9.0\refint\Proye
 C:\Users\santi\Desktop\camisetas\ProyectoCamisetas\obj\Debug\net9.0\ProyectoCamisetas.pdb
 C:\Users\santi\Desktop\camisetas\ProyectoCamisetas\obj\Debug\net9.0\ProyectoCamisetas.genruntimeconfig.cache
 C:\Users\santi\Desktop\camisetas\ProyectoCamisetas\obj\Debug\net9.0\ref\ProyectoCamisetas.dll
-C:\Users\santi\Desktop\camisetas\ProyectoCamisetas\obj\Debug\net9.0\compressed\geiylytxf3-w59hu0ynwf.gz
-C:\Users\santi\Desktop\camisetas\ProyectoCamisetas\obj\Debug\net9.0\compressed\ktisqv1850-wuq3hdyn9l.gz
+C:\Users\santi\Desktop\camisetas\ProyectoCamisetas\obj\Debug\net9.0\compressed\geiylytxf3-d8lcokrmnx.gz
+C:\Users\santi\Desktop\camisetas\ProyectoCamisetas\obj\Debug\net9.0\compressed\ktisqv1850-f03yrb7bki.gz

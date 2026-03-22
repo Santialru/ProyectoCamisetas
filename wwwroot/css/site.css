@@ -60,9 +60,20 @@ header .navbar {
   top: 0;
   left: 0;
   right: 0;
-  z-index: 1030;
-  padding-top: 20px;
-  padding-bottom: 20px;
+  z-index: 1040;
+  padding-top: 14px;
+  padding-bottom: 14px;
+  transform: translateY(0);
+  opacity: 1;
+  transition: transform 0.8s cubic-bezier(0.16, 1, 0.3, 1),
+              opacity 0.7s ease;
+}
+
+/* Estado oculto (gestionado por JS cuando hay hero carousel) */
+header .navbar.nav--hidden {
+  transform: translateY(-100%);
+  opacity: 0;
+  pointer-events: none;
 }
 
 
@@ -76,6 +87,13 @@ header .navbar {
 /* Let content area grow and push footer to bottom */
 body>.container {
   flex: 1 0 auto;
+  /* Offset para que el contenido no quede bajo el navbar fixed */
+  padding-top: var(--nav-h);
+}
+
+/* El hero carousel cancela el padding-top del container para pegarse al borde superior */
+#heroCarousel {
+  margin-top: calc(var(--nav-h) * -1);
 }
 
 .form-floating>.form-control-plaintext::placeholder,
@@ -599,49 +617,34 @@ body>.container {
 
 @media (max-width: 576px) {
   .mobile-hero-search {
-    display: flex;
-    align-items: center;
-    gap: 8px;
     position: absolute;
     top: 70px;
-    /* below the fixed navbar */
     left: 16px;
     right: 16px;
     z-index: 20;
-    padding: 10px 14px;
-    background: rgba(0, 0, 0, 0.35);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    border: 1px solid rgba(255, 255, 255, 0.15);
-    border-radius: 12px;
   }
 
-  .mobile-hero-search .form-control {
-    flex: 1;
-    background: rgba(255, 255, 255, 0.12);
-    border: 1px solid rgba(255, 255, 255, 0.2);
+  .mobile-hero-search .search-pill {
+    width: 100%;
+    background: rgba(0, 0, 0, 0.45);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border-color: rgba(255, 255, 255, 0.18);
+    padding: 4px 6px 4px 16px;
+  }
+
+  .mobile-hero-search .search-pill-input {
     color: #fff;
-    border-radius: 8px;
     font-size: 0.9rem;
-    padding: 6px 12px;
   }
 
-  .mobile-hero-search .form-control::placeholder {
-    color: rgba(255, 255, 255, 0.6);
+  .mobile-hero-search .search-pill-input::placeholder {
+    color: rgba(255, 255, 255, 0.55);
   }
 
-  .mobile-hero-search .form-control:focus {
-    background: rgba(255, 255, 255, 0.18);
-    border-color: rgba(255, 255, 255, 0.4);
-    box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.1);
-    color: #fff;
-  }
-
-  .mobile-hero-search .btn {
-    flex-shrink: 0;
-    border-radius: 8px;
-    font-size: 0.85rem;
-    padding: 6px 14px;
+  .mobile-hero-search .search-pill:focus-within {
+    border-color: rgba(255, 255, 255, 0.5);
+    box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.1);
   }
 
   /* Increase carousel height on mobile to accommodate the search */
@@ -935,6 +938,70 @@ body>.container {
   overflow: visible;
 }
 
+/* Buscador moderno tipo pill */
+.search-pill {
+  display: flex;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 999px;
+  padding: 0 6px 0 14px;
+  transition: background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+  min-width: 190px;
+}
+
+.search-pill:focus-within {
+  background: rgba(255, 255, 255, 0.11);
+  border-color: rgba(13, 110, 253, 0.6);
+  box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.15);
+}
+
+.search-pill-input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: #e9eef7;
+  font-size: .88rem;
+  padding: 7px 6px 7px 0;
+  min-width: 0;
+}
+
+.search-pill-input::placeholder {
+  color: #8a9bbf;
+}
+
+/* Remove native search clear button */
+.search-pill-input::-webkit-search-cancel-button,
+.search-pill-input::-webkit-search-decoration {
+  -webkit-appearance: none;
+}
+
+.search-pill-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(13, 110, 253, 0.85);
+  border: none;
+  border-radius: 999px;
+  color: #fff;
+  width: 30px;
+  height: 30px;
+  flex-shrink: 0;
+  cursor: pointer;
+  transition: background 0.18s ease, transform 0.15s ease;
+  padding: 0;
+}
+
+.search-pill-btn:hover {
+  background: #0d6efd;
+  transform: scale(1.08);
+}
+
+.search-pill-btn:active {
+  transform: scale(0.96);
+}
+
 .navbar .autocomplete-menu {
   left: 0;
   right: 0;
@@ -1173,16 +1240,13 @@ body>.container {
   }
 }
 
-/* Navbar oscura acorde al tema */
+/* Navbar: glass effect con sombra */
 .bg-navbar {
-  background: linear-gradient(180deg, #0f1625, #0c1220);
-}
-
-/* Mantener el header visible al hacer scroll */
-header .navbar {
-  position: sticky;
-  top: 0;
-  z-index: 1040;
+  background: rgba(11, 15, 26, 0.55);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  box-shadow: 0 2px 20px rgba(0, 0, 0, 0.55), 0 1px 0 rgba(255,255,255,0.04);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 /* Dark theme overrides for text, links, buttons, inputs */
@@ -1467,15 +1531,7 @@ footer.site-footer {
   border-color: #2b3448;
 }
 
-.nav-search .form-control {
-  background-color: #1b2437;
-  color: #e9eef7;
-  border-color: #2b3448;
-}
-
-.nav-search .form-control::placeholder {
-  color: #9aa6c1;
-}
+/* (legacy nav-search .form-control overrides removed — replaced by .search-pill) */
 
 @media (max-width: 576px) {
   .nav-search {

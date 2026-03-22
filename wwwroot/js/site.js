@@ -79,6 +79,18 @@ document.addEventListener('DOMContentLoaded', function () {
     setNavH();
     window.addEventListener('resize', setNavH);
   } catch (_) { /* ignore */ }
+
+  // Mostrar navbar con retardo al cargar (solo cuando hay hero carousel)
+  try {
+    var navEl = document.querySelector('header .navbar');
+    var heroEl = document.getElementById('heroCarousel');
+    if (navEl && heroEl) {
+      navEl.classList.add('nav--hidden');
+      setTimeout(function () {
+        navEl.classList.remove('nav--hidden');
+      }, 1500);
+    }
+  } catch (_) { /* ignore */ }
   const trigger = document.getElementById('catalogoDropdown');
   const panel = document.getElementById('catalogoPanel');
   const navCollapse = document.getElementById('navbarSupportedContent');
@@ -262,13 +274,19 @@ document.addEventListener('DOMContentLoaded', function () {
     var qs = new URLSearchParams(window.location.search).get('q');
     if (qs) input.value = qs;
 
+    var pill = document.createElement('div');
+    pill.className = 'search-pill';
+
     var btn = document.createElement('button');
     btn.type = 'submit';
-    btn.className = 'btn btn-light btn-sm';
-    btn.textContent = 'Buscar';
+    btn.className = 'search-pill-btn';
+    btn.setAttribute('aria-label', 'Buscar');
+    btn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>';
+    input.className = 'search-pill-input';
 
-    form.appendChild(input);
-    form.appendChild(btn);
+    pill.appendChild(input);
+    pill.appendChild(btn);
+    form.appendChild(pill);
 
     // Insert inside hero carousel if present
     var hero = document.getElementById('heroCarousel');

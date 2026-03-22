@@ -50,7 +50,7 @@
         }
     }
     <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-dark bg-navbar box-shadow mb-3">
+        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-dark bg-navbar">
             <div class="container-fluid">
                 <a class="navbar-brand d-flex align-items-center gap-2" asp-area="" asp-controller="Home" asp-action="Index">
                     <img src="~/img/logo.jpg" alt="Logo Clásico del Gol" class="brand-logo" />
@@ -102,9 +102,16 @@
                             </li>
                         }
                     </ul>
-                    <form class="d-flex nav-search me-3" method="get" asp-controller="Camisetas" asp-action="Index" role="search">
-                        <input class="form-control me-2" type="search" name="q" placeholder="Buscar camisetas..." aria-label="Buscar" value="@Context.Request.Query["q"]">
-                        <button class="btn btn-outline-primary" type="submit">Buscar</button>
+                    <form class="nav-search me-3" method="get" asp-controller="Camisetas" asp-action="Index" role="search">
+                        <div class="search-pill">
+                            <input class="search-pill-input" type="search" name="q" placeholder="Buscar camisetas..." aria-label="Buscar" value="@Context.Request.Query["q"]">
+                            <button class="search-pill-btn" type="submit" aria-label="Buscar">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                    <circle cx="11" cy="11" r="8"/>
+                                    <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                                </svg>
+                            </button>
+                        </div>
                     </form>
                     <ul class="navbar-nav ms-auto">
                         <li class="nav-item d-flex align-items-center me-2">
